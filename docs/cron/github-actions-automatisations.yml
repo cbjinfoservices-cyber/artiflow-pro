@@ -1,0 +1,68 @@
+# ⏰ Modèle — Déclencheur externe des automatisations ArtiFlow-pro
+#
+# Comment l'utiliser :
+#   1. Copie ce fichier dans ton dépôt GitHub sous :  .github/workflows/automatisations.yml
+#   2. Le domaine du Backend est déjà renseigné ci-dessous (variable BACKEND_HOST).
+#      Si tu changes de Backend, remplace-le par ton domaine réel (visible dans
+#      l'écran des fonctions Backend).
+#   3. Pousse le fichier. GitHub appellera les 21 fonctions chaque heure.
+#
+# Pourquoi « toutes les heures » pour tout ?
+#   Chaque fonction vérifie elle-même le jour/l'heure de ses réglages (et son anti-doublon)
+#   avant d'envoyer. On peut donc toutes les appeler sans risque : elles n'expédient qu'au
+#   bon moment. Pas besoin d'une planification fine par fonction.
+#
+# Note : les fonctions ont verify_jwt = false, elles sont appelables sans authentification.
+
+name: Automatisations ArtiFlow-pro
+
+on:
+  schedule:
+    # Toutes les heures, à la minute 0 (UTC).
+    - cron: "0 * * * *"
+  # Permet aussi de lancer le workflow à la main depuis l'onglet « Actions ».
+  workflow_dispatch:
+
+env:
+  BACKEND_HOST: "vbje6pqzh6ug1flwt901.helloreaddy.com"
+
+jobs:
+  declencher:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fonction:
+          - recap-quotidien
+          - envoi-journal-mensuel
+          - relance-envoi-manquant
+          - relancer-factures-retard
+          - escalade-relances
+          - rappel-prelevement-abonnement
+          - rappel-echeance-paiement-unique
+          - recap-recontact-volatils
+          - recap-hebdo-envois-auto
+          - recap-hebdo-alertes-taux
+          - recap-hebdo-echecs-blanc
+          - recap-hebdo-echecs-paiement
+          - recap-hebdo-alertes-stripe-non-traitees
+          - envoi-bilan-annuel
+          - alerte-mot-de-passe-ancien
+          - recap-mensuel-mot-de-passe
+          - recap-trimestriel-mot-de-passe
+          - envoi-recap-mensuel-annuel
+          - envoi-comparatif-cadence-annuel
+          - envoi-recap-echecs-annuel
+          - export-csv-mensuel
+    steps:
+      - name: Appeler ${{ matrix.fonction }}
+        run: |
+          echo "→ ${{ matrix.fonction }}"
+          code=$(curl -s -o /tmp/out.json -w "%{http_code}" \
+            -X POST "https://${BACKEND_HOST}/functions/v1/${{ matrix.fonction }}" \
+            -H "Content-Type: application/json" -d '')
+          echo "HTTP $code"
+          cat /tmp/out.json || true
+          if [ "$code" -ge 400 ]; then
+            echo "::warning::La fonction ${{ matrix.fonction }} a répondu $code"
+          fi

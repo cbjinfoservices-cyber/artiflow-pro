@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>ArtiFlow-pro — L'équipe sur les ondes</title>
+    <link>https://artiflow-pro.readdy.co/podcast</link>
+    <description>Les interviews et prises de parole de l'équipe ArtiFlow-pro dans les podcasts et médias du bâtiment : chiffrage par IA, RGPD et protection des données, produit et usages du terrain, croissance. Flux destiné aux plateformes d'écoute, aux journalistes et aux agrégateurs.</description>
+    <language>fr-FR</language>
+    <copyright>ArtiFlow-pro</copyright>
+    <lastBuildDate>Fri, 09 Oct 2026 09:00:00 +0200</lastBuildDate>
+    <generator>ArtiFlow-pro</generator>
+    <atom:link href="https://artiflow-pro.readdy.co/podcast/rss.xml" rel="self" type="application/rss+xml" />
+    <itunes:author>ArtiFlow-pro</itunes:author>
+    <itunes:summary>Les épisodes de podcast où l'équipe ArtiFlow-pro prend le micro : chiffrage par IA, RGPD, produit et croissance.</itunes:summary>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:owner>
+      <itunes:name>ArtiFlow-pro</itunes:name>
+      <itunes:email>presse@artiflow-pro.fr</itunes:email>
+    </itunes:owner>
+    <itunes:image href="https://readdy.ai/api/search-image?query=Minimal%20podcast%20cover%20art%20for%20a%20construction%20software%20brand%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%2C%20microphone%20silhouette%20with%20sound%20waves%20and%20subtle%20blueprint%20lines%20on%20a%20dark%20charcoal%20background%2C%20clean%20editorial%20design%2C%20high%20detail&width=1400&height=1400&seq=artiflow-podcast-cover&orientation=squarish" />
+    <itunes:category text="Business">
+      <itunes:category text="Entrepreneurship" />
+    </itunes:category>
+    <itunes:category text="Technology" />
+    <itunes:keywords>artisan, bâtiment, chiffrage, IA, RGPD, logiciel, productivité, construction</itunes:keywords>
+
+    <item>
+      <title>L'IA va-t-elle remplacer le chiffrage manuel ?</title>
+      <link>https://www.lechantiernumerique.fr/episodes/128</link>
+      <guid isPermaLink="false">artiflow-pro/episode-chantier-numerique-ia-chiffrage</guid>
+      <pubDate>Sat, 03 Oct 2026 09:00:00 +0200</pubDate>
+      <itunes:episode>128</itunes:episode>
+      <itunes:author>Léa Marchand</itunes:author>
+      <itunes:duration>42:00</itunes:duration>
+      <category>Chiffrage &amp; intelligence artificielle</category>
+      <description>Le Chantier Numérique reçoit Léa Marchand, cofondatrice d'ArtiFlow-pro. Elle démonte l'idée reçue selon laquelle l'IA remplacerait le savoir-faire de l'artisan : on parle chiffrage, confiance et temps rendu au terrain. Écoute sur les plateformes habituelles via https://www.lechantiernumerique.fr/episodes/128.</description>
+      <enclosure url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" length="0" />
+    </item>
+
+    <item>
+      <title>Sécurité et RGPD des outils de chantier</title>
+      <link>https://www.radio-artisan.fr/podcasts/87</link>
+      <guid isPermaLink="false">artiflow-pro/episode-radio-artisan-rgpd</guid>
+      <pubDate>Sat, 26 Sep 2026 09:00:00 +0200</pubDate>
+      <itunes:episode>87</itunes:episode>
+      <itunes:author>Karim Benali</itunes:author>
+      <itunes:duration>28:00</itunes:duration>
+      <category>RGPD &amp; protection des données</category>
+      <description>Radio Artisan reçoit Karim Benali, cofondateur et directeur technique. Il explique, sans jargon, ce qu'un logiciel de chantier devrait faire de vos données, et les questions à poser avant de signer. Écoute sur https://www.radio-artisan.fr/podcasts/87.</description>
+      <enclosure url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg" length="0" />
+    </item>
+
+    <item>
+      <title>Comment on entraîne une IA à chiffrer juste</title>
+      <link>https://www.techdubatiment.fr/episodes/54</link>
+      <guid isPermaLink="false">artiflow-pro/episode-tech-batiment-entrainer-ia</guid>
+      <pubDate>Fri, 18 Sep 2026 09:00:00 +0200</pubDate>
+      <itunes:episode>54</itunes:episode>
+      <itunes:author>Camille Dufour</itunes:author>
+      <itunes:duration>35:00</itunes:duration>
+      <category>Chiffrage &amp; intelligence artificielle</category>
+      <description>Tech du Bâtiment reçoit Camille Dufour, lead data &amp; IA. Elle ouvre la boîte noire : données de chantier, évaluation des modèles et juste métier au cœur d'un outil de chiffrage par IA. Écoute sur https://www.techdubatiment.fr/episodes/54.</description>
+      <enclosure url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg" length="0" />
+    </item>
+
+    <item>
+      <title>Accompagner les artisans, pas les abandonner</title>
+      <link>https://www.artisans-compagnie.fr/episodes/63</link>
+      <guid isPermaLink="false">artiflow-pro/episode-artisans-compagnie-accompagnement</guid>
+      <pubDate>Thu, 10 Sep 2026 09:00:00 +0200</pubDate>
+      <itunes:episode>63</itunes:episode>
+      <itunes:author>Antoine Lefèvre</itunes:author>
+      <itunes:duration>31:00</itunes:duration>
+      <category>Produit &amp; usages du terrain</category>
+      <description>Artisans &amp; Compagnie reçoit Antoine Lefèvre, responsable relation artisans. Il raconte l'accompagnement d'ArtiFlow-pro : formation, réponses rapides et améliorations issues des retours du terrain. Écoute sur https://www.artisans-compagnie.fr/episodes/63.</description>
+      <enclosure url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" type="audio/mpeg" length="0" />
+    </item>
+
+    <item>
+      <title>Concevoir pour le terrain, pas pour la démo</title>
+      <link>https://www.productstories.fr/episodes/41</link>
+      <guid isPermaLink="false">artiflow-pro/episode-product-stories-terrain</guid>
+      <pubDate>Wed, 02 Sep 2026 09:00:00 +0200</pubDate>
+      <itunes:episode>41</itunes:episode>
+      <itunes:author>Sophie Renard</itunes:author>
+      <itunes:duration>46:00</itunes:duration>
+      <category>Produit &amp; usages du terrain</category>
+      <description>Product Stories FR reçoit Sophie Renard, responsable produit. Elle détaille la méthode d'ArtiFlow-pro : observer le chantier, tester avec des gants et prioriser l'utile avant l'esthétique. Écoute sur https://www.productstories.fr/episodes/41.</description>
+      <enclosure url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" type="audio/mpeg" length="0" />
+    </item>
+
+    <item>
+      <title>Faire connaître un SaaS du bâtiment autrement</title>
+      <link>https://www.growth-tpe.fr/episodes/19</link>
+      <guid isPermaLink="false">artiflow-pro/episode-growth-tpe-visibilite</guid>
+      <pubDate>Sat, 22 Aug 2026 09:00:00 +0200</pubDate>
+      <itunes:episode>19</itunes:episode>
+      <itunes:author>Julien Barbier</itunes:author>
+      <itunes:duration>24:00</itunes:duration>
+      <category>Produit &amp; usages du terrain</category>
+      <description>Growth TPE reçoit Julien Barbier, responsable croissance. Il revient sur la stratégie de contenu d'ArtiFlow-pro : guides pratiques, newsletter et partenariats plutôt que publicité tapageuse. Écoute sur https://www.growth-tpe.fr/episodes/19.</description>
+      <enclosure url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" type="audio/mpeg" length="0" />
+    </item>
+  </channel>
+</rss>

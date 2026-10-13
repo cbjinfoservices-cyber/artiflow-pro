@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ArtiFlow-pro — Journal des mises à jour</title>
+    <link>https://artiflow-pro.readdy.co/nouveautes</link>
+    <description>Le journal des nouveautés d'ArtiFlow-pro : nouvelles fonctions, améliorations et correctifs, livrés en toute transparence pour les artisans du bâtiment. Devis, relances, planning, chantiers, comptabilité et offres.</description>
+    <language>fr-FR</language>
+    <copyright>ArtiFlow-pro</copyright>
+    <lastBuildDate>Fri, 09 Oct 2026 09:00:00 +0200</lastBuildDate>
+    <generator>ArtiFlow-pro</generator>
+    <atom:link href="https://artiflow-pro.readdy.co/nouveautes/rss.xml" rel="self" type="application/rss+xml" />
+
+    <item>
+      <title>3.0 — Journal des nouveautés public et flux RSS</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-3-0</guid>
+      <pubDate>Tue, 06 Oct 2026 09:00:00 +0200</pubDate>
+      <category>Site &amp; transparence</category>
+      <description>Le journal des mises à jour devient public : suivez chaque livraison et abonnez-vous au flux RSS pour être prévenu dès qu'une nouveauté sort. Page publique filtrable par catégorie, deux dernières nouveautés mises en avant sur l'accueil, et flux RSS pour s'abonner depuis son lecteur d'actualités.</description>
+    </item>
+
+    <item>
+      <title>2.9 — L'économie annuelle mise en avant sur toutes les offres</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-9</guid>
+      <pubDate>Sat, 12 Sep 2026 09:00:00 +0200</pubDate>
+      <category>Offres &amp; tarifs</category>
+      <description>En vue mensuelle, chaque carte d'offre affiche désormais un rappel cliquable de l'économie réalisée à l'année, calculée automatiquement sur le prix réel. Un clic bascule directement le sélecteur en mode annuel.</description>
+    </item>
+
+    <item>
+      <title>2.8 — Simulateur Entreprise et questions tracées</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-8</guid>
+      <pubDate>Fri, 28 Aug 2026 09:00:00 +0200</pubDate>
+      <category>Offres &amp; tarifs</category>
+      <description>Le simulateur estime en direct l'économie annuelle selon le nombre d'utilisateurs, et le formulaire de contact indique désormais de quelle page vient la question. Récap mensuel/annuel enrichi d'un point de contact dédié.</description>
+    </item>
+
+    <item>
+      <title>2.7 — Récap hebdomadaire des abonnements</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-7</guid>
+      <pubDate>Wed, 05 Aug 2026 09:00:00 +0200</pubDate>
+      <category>Espace artisan</category>
+      <description>Le back-office suit le MRR, la volatilité des changements d'offre et envoie un récapitulatif hebdomadaire avec recontact automatique des artisans volatils. Suivi du revenu récurrent mensuel sur historique et détection des artisans volatils.</description>
+    </item>
+
+    <item>
+      <title>2.6 — Relances SMS &amp; WhatsApp programmables</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-6</guid>
+      <pubDate>Sat, 18 Jul 2026 09:00:00 +0200</pubDate>
+      <category>Relances</category>
+      <description>Vous programmez vos relances clients à l'avance, sur le canal qui répond le mieux, avec aperçu du message avant envoi et replanification en masse. Aperçu du message client avant envoi et journal des envois.</description>
+    </item>
+
+    <item>
+      <title>2.5 — Comptabilité : export, balance âgée et TVA multi-taux</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-5</guid>
+      <pubDate>Tue, 30 Jun 2026 09:00:00 +0200</pubDate>
+      <category>Comptabilité</category>
+      <description>Le module comptabilité gagne un export au format attendu par votre comptable, une balance âgée des impayés et un récapitulatif de TVA par taux. Journal, balance âgée, envoi automatique au comptable et bilan d'archivage annuel.</description>
+    </item>
+
+    <item>
+      <title>2.4 — Planning intelligent par zone</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-4</guid>
+      <pubDate>Sun, 14 Jun 2026 09:00:00 +0200</pubDate>
+      <category>Planning &amp; chantiers</category>
+      <description>Les chantiers se regroupent automatiquement par secteur pour limiter les trajets, avec prise en compte des urgences et de vos disponibilités. Vue semaine utilisable à une main sur le chantier.</description>
+    </item>
+
+    <item>
+      <title>2.3 — Signature électronique des devis</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-3</guid>
+      <pubDate>Wed, 27 May 2026 09:00:00 +0200</pubDate>
+      <category>Devis &amp; factures</category>
+      <description>Vos clients signent le devis directement en ligne, depuis un lien sécurisé. Le devis passe automatiquement en « signé » dans votre espace, avec traçabilité de la signature côté artisan.</description>
+    </item>
+
+    <item>
+      <title>2.2 — Devis en plusieurs lots et modèles réutilisables</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-2</guid>
+      <pubDate>Sat, 09 May 2026 09:00:00 +0200</pubDate>
+      <category>Devis &amp; factures</category>
+      <description>Découpez un devis en lots (par corps d'état ou par phase), enregistrez vos modèles préférés et réutilisez-les en un clic. Modèles enregistrés et suivis d'usage.</description>
+    </item>
+
+    <item>
+      <title>2.1 — Fiches clients enrichies et notes prioritaires</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-1</guid>
+      <pubDate>Tue, 21 Apr 2026 09:00:00 +0200</pubDate>
+      <category>Espace artisan</category>
+      <description>Les clients particuliers et professionnels disposent de fiches plus complètes, avec notes prioritaires et historique des relances. Séparation particuliers et professionnels et notes prioritaires remontées dans le suivi.</description>
+    </item>
+
+    <item>
+      <title>2.0 — Nouveau tableau de bord avec prévisions IA</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-2-0</guid>
+      <pubDate>Thu, 02 Apr 2026 09:00:00 +0200</pubDate>
+      <category>Espace artisan</category>
+      <description>Le tableau de bord se refait une beauté : indicateurs clés, prévisions de chiffre d'affaires et alertes concrètes pour la semaine. Alertes actionnables pour la semaine.</description>
+    </item>
+  </channel>
+</rss>
