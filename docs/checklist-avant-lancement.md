@@ -1,6 +1,6 @@
 # ✅ Checklist finale avant lancement — ArtiFlow-pro
 
-> Dernière mise à jour : 2026.10.12
+> Dernière mise à jour : 2026.10.19
 > Ce document récapitule **tout ce qu'il faut vérifier avant de publier en production réelle**.
 > Le code est essentiellement terminé (~97 %) ; ce qui reste relève surtout de la **configuration** (pas du développement).
 
@@ -35,6 +35,7 @@ Vérification faite directement côté Backend (fonctions déployées + tables e
 | 6 | Connecter Twilio (SMS / WhatsApp) | Config | 🟠 Non (optionnel au lancement) | ⬜ À faire |
 | 7 | Activer la clé OpenAI (devis IA) | Config | 🟠 Non (dégrade une fonction) | ⬜ À faire |
 | 8 | Application mobile iOS / Android | Dev | ⚪ Non (non supporté) | ❌ Hors périmètre |
+| 9 | Contrôles éditoriaux avant publication (titres, descriptions, visuels de partage, sitemap) | Édito / SEO | 🟠 Non (mais à faire à chaque publication) | ✅ Procédure ci-dessous |
 
 ---
 
@@ -187,6 +188,104 @@ description. Sans clé, la fonction est coupée (le reste marche normalement).
 
 ---
 
+## 9. Contrôles éditoriaux avant publication  🟠
+
+**Pourquoi** : les contrôles techniques ci-dessus garantissent que le site tourne ;
+ces quatre contrôles-là garantissent qu'il **se partage bien**. Ils prennent deux
+minutes et se font juste avant de cliquer sur « Publier ».
+
+Ils se lisent dans cet ordre : le garde-fou des visuels vient **juste après** le
+contrôle des titres et des descriptions, parce que c'est le même sujet — l'aperçu
+d'un lien partagé.
+
+### 9.1 Titres
+
+- [ ] Un seul `<h1>` visible par page, et il reprend l'intention de la page
+- [ ] Le `<title>` fait **60 caractères ou moins** (au-delà, Google tronque)
+- [ ] Deux pages ne partagent pas le même titre (les pages villes et métiers sont
+      les premières concernées : le copier-coller d'une fiche à l'autre se voit tout de suite)
+- [ ] Le titre d'une page est bien celui de **la page**, pas celui de l'accueil
+
+> Le compteur affiché sous chaque titre dans l'audit donne directement `X/60` :
+> vert dans la plage, ambre au-delà. Plus besoin de copier le titre ailleurs.
+
+### 9.2 Descriptions
+
+- [ ] Chaque description fait **120 à 160 caractères**
+- [ ] Elle résume vraiment la page, sans être une recopie du titre
+- [ ] Aucune description ne se répète d'une page à l'autre
+- [ ] Elle contient la ville ou le métier quand c'est une page locale ou métier
+
+> Même principe : le compteur sous chaque description affiche `X/160` et
+> signale les valeurs trop courtes comme les trop longues.
+
+> Pour relire titres et descriptions d'un coup d'œil : Espace connecté → **Audit SEO**.
+> La liste affiche, page par page, le titre réellement appliqué, sa longueur, la
+> description, la sienne, et l'aperçu du lien tel qu'il apparaîtrait sur LinkedIn.
+> Le filtre **« Afficher uniquement les métadonnées hors plage »** ne laisse que
+> les champs à corriger.
+
+### 9.3 Garde-fou des titres et des descriptions
+
+Espace connecté → **Audit SEO** → bloc **« Garde-fou des titres et descriptions »**.
+
+- [ ] Le badge indique **« Aucun écart »**
+- [ ] Aucun titre partagé entre deux pages (doublon bloquant : les pages se
+      concurrencent dans les résultats)
+- [ ] Aucune description partagée entre deux pages (signe d'un copier-coller)
+- [ ] Aucun champ hors plage : titre ≤ 60, description 120–160
+
+Un écart de longueur se corrige en réécrivant le champ. Un doublon se corrige en
+réécrivant l'un des deux : jamais en supprimant la page au profit de l'autre.
+
+### 9.4 Garde-fou des visuels de partage
+
+Espace connecté → **Audit SEO** → bloc **« Garde-fou des visuels de partage »**.
+
+- [ ] Le badge indique **« Aucun écart »**
+- [ ] Les trois déclarations sont vertes : balises du HTML servi, image de repli du
+      routeur, image de l'accueil dans le sitemap
+- [ ] L'image affichée est bien celle choisie dans les Réglages SEO du projet
+- [ ] Une page qui a son visuel dédié ne réutilise pas l'image de marque
+      (et deux pages ne partagent pas le même visuel dédié)
+
+**Si un écart apparaît** : il nomme le fichier fautif. On réaligne les trois
+déclarations, on republie, puis on relance le contrôle. Ne pas publier en laissant
+un écart « bloquant » : l'aperçu du lien est cassé pour tout le monde.
+
+> Limite assumée : ce garde-fou compare ce que le code **déclare** à ce que le site
+> **sert**. Il n'interroge pas LinkedIn. Le contrôle du visuel réellement téléchargé
+> par les plateformes se fait après publication, à l'étape 1 de
+> [`docs/controle-post-publication.md`](controle-post-publication.md).
+
+### 9.5 Sitemap
+
+Le sitemap n'est plus saisi à la main : `src/lib/sitemap.ts` le reconstruit à partir
+mêmes données qui alimentent les pages (métiers, villes, guides, parcours, auteurs).
+Une nouvelle fiche ajoutée dans ces données apparaît donc dans la liste attendue
+sans qu'on ait à y penser.
+
+- [ ] Le bloc **« Garde-fou du sitemap »** de l'audit indique **« Aucun écart »**
+- [ ] Le nombre d'URL du fichier servi égale le nombre d'URL attendues
+- [ ] Aucune URL n'apparaît deux fois
+- [ ] Aucune entrée orpheline (page supprimée dont la ligne est restée)
+- [ ] Une page ne porte un `<lastmod>` que si son contenu a réellement changé —
+      jamais la date du jour de publication
+- [ ] Les pages d'espace connecté (`/app/...`) n'y figurent pas
+
+**Si un écart apparaît** : le bloc nomme l'URL fautive et la raison (page absente,
+doublon, entrée orpheline, page non générée). Le bouton **« Copier le sitemap
+généré »** fournit le XML complet à déposer dans `public/sitemap.xml`, puis on
+republie et on relance le contrôle.
+
+> Limite assumée : le fichier `public/sitemap.xml` reste un artefact statique. Le
+générateur vit dans le code du site et le garde-fou compare le fichier **servi** à
+la liste attendue — il détecte donc tout oubli, mais c'est la copie du XML qui
+met le fichier à jour. Le détail est dans
+[`docs/controle-post-publication.md`](controle-post-publication.md).
+
+---
+
 ## 🚦 Feu vert
 
 Le produit est **lançable** quand :
@@ -194,8 +293,9 @@ Le produit est **lançable** quand :
 1. ✅ Domaine acheté et vérifié
 2. ✅ Domaine d'envoi **Verified** dans Resend
 3. ✅ Clé Resend synchronisée vers les Secrets du Backend
-4. ⬜ Les **17 tâches planifiées** sont créées et passent au vert dans « Envois automatiques »
+4. ⬜ Les **18 tâches planifiées** sont créées et passent au vert dans « Envois automatiques »
 5. ⬜ Le **test « bout en bout »** des automatisations est concluant (fonctions au vert + email de test reçu)
+6. ⬜ Les **contrôles éditoriaux** de l'étape 9 sont passés : titres et descriptions dans leur plage, aucun doublon, garde-fous visuels et sitemap au vert
 
 Les étapes 6 et 7 (Twilio, OpenAI) sont **optionnelles** et peuvent suivre après le lancement.
 

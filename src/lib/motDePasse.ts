@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { MAX_HISTORIQUE_MOT_DE_PASSE } from "@/lib/ancienneteMotDePasse";
+import { originePublique } from "@/lib/site";
 
 /**
  * URL vers laquelle Resend/Supabase renvoie l'utilisateur après le clic sur le lien de
@@ -8,7 +9,7 @@ import { MAX_HISTORIQUE_MOT_DE_PASSE } from "@/lib/ancienneteMotDePasse";
  */
 export function lienReinitialisation(): string {
   const base = (__BASE_PATH__ || "").replace(/\/+$/, "");
-  return `${window.location.origin}${base}/app/auth/reset-password`;
+  return `${originePublique()}${base}/app/auth/reset-password`;
 }
 
 /**
@@ -19,6 +20,22 @@ export function lienReinitialisation(): string {
 export async function demanderReinitialisationMotDePasse(email: string): Promise<void> {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: lienReinitialisation(),
+  });
+  if (error) throw new Error(error.message);
+}
+
+/**
+ * Vérifie le code à 6 chiffres reçu par email dans le cadre d'une réinitialisation de
+ * mot de passe. L'email de récupération contient à la fois un lien cliquable et un code :
+ * cette fonction couvre le cas où l'utilisateur recopie le code au lieu de cliquer.
+ * En cas de succès, le Backend ouvre une session « récupération », ce qui permet ensuite
+ * de définir un nouveau mot de passe via `mettreAJourMotDePasse`.
+ */
+export async function verifierCodeRecuperation(email: string, code: string): Promise<void> {
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token: code,
+    type: "recovery",
   });
   if (error) throw new Error(error.message);
 }

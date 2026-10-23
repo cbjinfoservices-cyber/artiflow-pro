@@ -3,6 +3,7 @@ import PageSectionNav, { type PageSection } from "@/components/feature/PageSecti
 /** Repères de la page d'accueil : un sommaire collant pour naviguer d'un bloc à l'autre. */
 const SECTIONS: PageSection[] = [
   { id: "apercu", label: "L'application", icon: "ri-window-line" },
+  { id: "nouveautes", label: "Nouveautés", icon: "ri-sparkling-2-line" },
   { id: "fonctionnalites", label: "Vos espaces", icon: "ri-apps-2-line" },
   { id: "avant-apres", label: "Bénéfices", icon: "ri-arrow-left-right-line" },
   { id: "workflow", label: "En 4 étapes", icon: "ri-route-line" },

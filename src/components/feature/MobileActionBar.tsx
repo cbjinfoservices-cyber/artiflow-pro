@@ -1,3 +1,4 @@
+import PastilleOuverture from "@/components/base/PastilleOuverture";
 import { useDemoModal } from "@/hooks/useDemoModal";
 
 export const PHONE_HREF = "tel:+33788946191";
@@ -12,7 +13,15 @@ export default function MobileActionBar() {
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-background-200 bg-background-50/95 backdrop-blur-md">
-      <div className="w-full px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] flex items-center gap-2">
+      <div className="w-full px-3 pt-2 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
+        {/* Mini-indicateur discret « Ouvert / Fermé », calculé en direct sur l'heure courante. */}
+        <div className="mb-2 flex items-center justify-center">
+          <PastilleOuverture
+            variante="clair"
+            className="rounded-full border border-background-200 bg-background-100 px-2.5 py-1"
+          />
+        </div>
+        <div className="flex items-center gap-2">
         <a
           href={PHONE_HREF}
           className="flex-1 inline-flex items-center justify-center gap-1.5 h-12 rounded-md border border-background-300 bg-background-50 text-foreground-900 text-sm font-semibold whitespace-nowrap cursor-pointer"
@@ -37,6 +46,7 @@ export default function MobileActionBar() {
           <i className="ri-calendar-check-line text-base"></i>
           Démo
         </button>
+        </div>
       </div>
     </div>
   );

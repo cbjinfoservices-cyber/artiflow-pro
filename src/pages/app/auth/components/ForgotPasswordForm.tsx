@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { demanderReinitialisationMotDePasse } from "@/lib/motDePasse";
+import CodeRecuperationForm from "@/pages/app/auth/components/CodeRecuperationForm";
 import { ajouterLienAuthTest } from "@/lib/liensAuthTestsMemoire";
 import { translateAuthError } from "@/pages/app/auth/errors";
 import { Feedback, Field, inputIconClass } from "@/pages/app/auth/components/FormBits";
@@ -62,41 +63,50 @@ export default function ForgotPasswordForm({ onBack }: Props) {
 
   if (sent) {
     return (
-      <div className="flex flex-col items-center text-center gap-4 py-4">
-        <span className="w-14 h-14 flex items-center justify-center rounded-full bg-primary-100 text-primary-700">
-          <i className="ri-mail-check-line text-2xl"></i>
-        </span>
-        <div>
-          <p className="font-heading font-semibold text-lg text-foreground-950">Vérifiez votre boîte mail</p>
-          <p className="mt-2 text-sm text-foreground-500 leading-relaxed">
-            Si un compte existe pour <strong className="text-foreground-800">{email}</strong>, vous recevrez un
-            email avec un lien pour définir un nouveau mot de passe. Le lien peut mettre quelques minutes à arriver ;
-            s'il tarde, pensez à regarder vos{" "}
-            <strong className="text-foreground-800">spams / indésirables</strong> (l'expéditeur est ArtiFlow-pro).
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-2 h-10 px-5 rounded-md border border-background-200 text-sm font-semibold text-foreground-800 cursor-pointer hover:bg-background-100 transition-colors"
-        >
-          <i className="ri-arrow-left-line"></i>
-          Retour à la connexion
-        </button>
-        {cooldown > 0 ? (
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground-400">
-            <i className="ri-time-line"></i>
-            Nouvel envoi possible dans {cooldown} s
+      <div className="flex flex-col gap-4 py-2">
+        <div className="flex flex-col items-center text-center gap-3">
+          <span className="w-14 h-14 flex items-center justify-center rounded-full bg-primary-100 text-primary-700">
+            <i className="ri-mail-check-line text-2xl"></i>
           </span>
-        ) : (
+          <div>
+            <p className="font-heading font-semibold text-lg text-foreground-950">Vérifiez votre boîte mail</p>
+            <p className="mt-2 text-sm text-foreground-500 leading-relaxed">
+              Si un compte existe pour <strong className="text-foreground-800 break-all">{email}</strong>, vous avez
+              reçu un email avec <strong className="text-foreground-800">un lien</strong> et un{" "}
+              <strong className="text-foreground-800">code à 6 chiffres</strong> pour définir un nouveau mot de passe.
+              Pensez à regarder vos <strong className="text-foreground-800">spams / indésirables</strong> (l'expéditeur
+              est ArtiFlow-pro).
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 py-1">
+          <span className="h-px flex-1 bg-background-200"></span>
+          <span className="text-[11px] uppercase tracking-wide text-foreground-400">
+            Cliquez le lien ou saisissez le code
+          </span>
+          <span className="h-px flex-1 bg-background-200"></span>
+        </div>
+
+        <CodeRecuperationForm email={email.trim()} />
+
+        <div className="flex flex-col items-center gap-2 pt-1">
           <button
             type="button"
             onClick={() => setSent(false)}
             className="text-xs font-medium text-foreground-500 hover:text-primary-700 cursor-pointer"
           >
-            Renvoyer un email à une autre adresse
+            Utiliser une autre adresse email
           </button>
-        )}
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-2 h-10 px-5 rounded-md border border-background-200 text-sm font-semibold text-foreground-800 cursor-pointer hover:bg-background-100 transition-colors"
+          >
+            <i className="ri-arrow-left-line"></i>
+            Retour à la connexion
+          </button>
+        </div>
       </div>
     );
   }

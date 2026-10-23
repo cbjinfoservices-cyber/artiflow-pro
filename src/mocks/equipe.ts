@@ -19,6 +19,17 @@ export type MembreEquipe = {
   id: string;
   name: string;
   role: string;
+  /**
+   * Titre SEO court (< 60 caractères) utilisé dans l'onglet et les résultats de
+   * recherche. Repli automatique sur « nom · rôle chez ArtiFlow-pro » s'il est absent.
+   */
+  seoTitre?: string;
+  /**
+   * Description SEO dédiée (120–160 caractères), unique par membre.
+   * Elle remplace la concaténation « présentation + bio », qui dépassait
+   * largement la plage et faisait remonter un écart dans l'audit.
+   */
+  seoDescription: string;
   categorie: CategorieMembre;
   bio: string;
   photo: string;
@@ -51,10 +62,13 @@ export const equipe: MembreEquipe[] = [
     id: "lea-marchand",
     name: "Léa Marchand",
     role: "Cofondatrice & Directrice générale",
+    seoTitre: "Léa Marchand · Directrice générale — ArtiFlow-pro",
+    seoDescription:
+      "Léa Marchand, cofondatrice d'ArtiFlow-pro, met dix ans de conduite de travaux au service des artisans : produit, stratégie et relation terrain.",
     categorie: "direction",
     bio: "Ancienne conductrice de travaux, Léa connaît le quotidien des artisans parce qu'elle l'a vécu. Elle veille à ce que chaque décision serve le terrain avant tout.",
     photo:
-      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20confident%20friendly%20French%20businesswoman%20in%20her%20forties%20with%20short%20dark%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=600&height=750&seq=artiflow-team-lea&orientation=portrait",
+      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20confident%20friendly%20French%20businesswoman%20in%20her%20forties%20with%20short%20dark%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=320&height=400&seq=artiflow-team-lea&orientation=portrait",
     shareImage: IMAGE_PARTAGE_AUTEUR_LEA,
     tone: "primary",
     linkedin: "https://www.linkedin.com/company/artiflow-pro",
@@ -73,10 +87,13 @@ export const equipe: MembreEquipe[] = [
     id: "karim-benali",
     name: "Karim Benali",
     role: "Cofondateur & Directeur technique",
+    seoTitre: "Karim Benali · Directeur technique — ArtiFlow-pro",
+    seoDescription:
+      "Karim Benali, directeur technique d'ArtiFlow-pro, conçoit l'architecture et les services IA qui rédigent des devis fiables pour les artisans.",
     categorie: "technique",
     bio: "Ingénieur logiciel, Karim transforme des idées ambitieuses en outils simples. Il passe son temps à rendre l'IA utile et discrète pour les artisans.",
     photo:
-      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20friendly%20North%20African%20French%20software%20engineer%20man%20in%20his%20thirties%20with%20a%20short%20beard%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=600&height=750&seq=artiflow-team-karim&orientation=portrait",
+      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20friendly%20North%20African%20French%20software%20engineer%20man%20in%20his%20thirties%20with%20a%20short%20beard%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=320&height=400&seq=artiflow-team-karim&orientation=portrait",
     shareImage: IMAGE_PARTAGE_AUTEUR_KARIM,
     tone: "accent",
     linkedin: "https://www.linkedin.com/company/artiflow-pro",
@@ -95,10 +112,13 @@ export const equipe: MembreEquipe[] = [
     id: "sophie-renard",
     name: "Sophie Renard",
     role: "Responsable produit",
+    seoTitre: "Sophie Renard · Responsable produit — ArtiFlow-pro",
+    seoDescription:
+      "Sophie Renard, responsable produit chez ArtiFlow-pro, conçoit des écrans utilisables sur chantier, avec des gants, en plein soleil et sans réseau.",
     categorie: "produit",
     bio: "Sophie dessine les parcours de l'application. Elle part toujours d'une vraie situation de chantier pour concevoir des écrans qui vont droit au but.",
     photo:
-      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20warm%20approachable%20French%20woman%20product%20designer%20in%20her%20thirties%20with%20light%20brown%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=600&height=750&seq=artiflow-team-sophie&orientation=portrait",
+      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20warm%20approachable%20French%20woman%20product%20designer%20in%20her%20thirties%20with%20light%20brown%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=320&height=400&seq=artiflow-team-sophie&orientation=portrait",
     shareImage: IMAGE_PARTAGE_AUTEUR_SOPHIE,
     tone: "secondary",
     linkedin: "https://www.linkedin.com/company/artiflow-pro",
@@ -117,10 +137,13 @@ export const equipe: MembreEquipe[] = [
     id: "antoine-lefevre",
     name: "Antoine Lefèvre",
     role: "Responsable relation artisans",
+    seoTitre: "Antoine Lefèvre · Relation artisans — ArtiFlow-pro",
+    seoDescription:
+      "Antoine Lefèvre accompagne les artisans chez ArtiFlow-pro de l'essai à la maîtrise de l'outil, et transforme leurs retours en améliorations concrètes.",
     categorie: "relation",
     bio: "Antoine répond aux artisans du matin au soir. Il transforme leurs retours en améliorations concrètes, souvent dès la semaine suivante.",
     photo:
-      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20friendly%20approachable%20French%20support%20manager%20man%20in%20his%20forties%20with%20short%20greying%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=600&height=750&seq=artiflow-team-antoine&orientation=portrait",
+      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20friendly%20approachable%20French%20support%20manager%20man%20in%20his%20forties%20with%20short%20greying%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=320&height=400&seq=artiflow-team-antoine&orientation=portrait",
     shareImage: IMAGE_PARTAGE_AUTEUR_ANTOINE,
     tone: "primary",
     linkedin: "https://www.linkedin.com/company/artiflow-pro",
@@ -138,10 +161,13 @@ export const equipe: MembreEquipe[] = [
     id: "camille-dufour",
     name: "Camille Dufour",
     role: "Lead data & IA",
+    seoTitre: "Camille Dufour · Lead data & IA — ArtiFlow-pro",
+    seoDescription:
+      "Camille Dufour, lead data et IA chez ArtiFlow-pro, entraîne les modèles de chiffrage sur des devis réels et mesure leur justesse métier.",
     categorie: "data",
     bio: "Camille entraîne nos modèles de chiffrage sur des milliers de devis réels. Son obsession : des estimations justes, quel que soit votre corps d'état.",
     photo:
-      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20focused%20French%20woman%20data%20scientist%20in%20her%20late%20twenties%20with%20curly%20dark%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=600&height=750&seq=artiflow-team-camille&orientation=portrait",
+      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20focused%20French%20woman%20data%20scientist%20in%20her%20late%20twenties%20with%20curly%20dark%20hair%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=320&height=400&seq=artiflow-team-camille&orientation=portrait",
     shareImage: IMAGE_PARTAGE_AUTEUR_CAMILLE,
     tone: "accent",
     linkedin: "https://www.linkedin.com/company/artiflow-pro",
@@ -159,10 +185,13 @@ export const equipe: MembreEquipe[] = [
     id: "julien-barbier",
     name: "Julien Barbier",
     role: "Responsable croissance",
+    seoTitre: "Julien Barbier · Croissance & acquisition — ArtiFlow-pro",
+    seoDescription:
+      "Julien Barbier pilote la croissance d'ArtiFlow-pro : guides, contenus et partenariats pour faire connaître l'outil aux artisans, sans promesse creuse.",
     categorie: "croissance",
     bio: "Julien fait connaître ArtiFlow-pro auprès des artisans. Il préfère une démonstration honnête à n'importe quel argument marketing.",
     photo:
-      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20friendly%20French%20marketing%20manager%20man%20in%20his%20thirties%20with%20glasses%20and%20light%20stubble%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=600&height=750&seq=artiflow-team-julien&orientation=portrait",
+      "https://readdy.ai/api/search-image?query=Professional%20editorial%20portrait%20of%20a%20friendly%20French%20marketing%20manager%20man%20in%20his%20thirties%20with%20glasses%20and%20light%20stubble%2C%20warm%20orange%20and%20deep%20teal%20accent%20lighting%2C%20clean%20warm%20neutral%20background%2C%20natural%20soft%20window%20light%2C%20modern%20corporate%20photography%2C%20shallow%20depth%20of%20field%2C%20high%20detail&width=320&height=400&seq=artiflow-team-julien&orientation=portrait",
     shareImage: IMAGE_PARTAGE_AUTEUR_JULIEN,
     tone: "secondary",
     linkedin: "https://www.linkedin.com/company/artiflow-pro",

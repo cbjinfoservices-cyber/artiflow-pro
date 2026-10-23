@@ -11,22 +11,26 @@
  * parution pour refléter de véritables révisions éditoriales.
  */
 const miseAJourGuides: Record<string, string> = {
-  "devis-chaudiere-en-5-minutes": "2026-10-02",
+  "devis-chaudiere-en-5-minutes": "2026-10-17",
   "relance-apres-depannage-urgent": "2026-09-18",
   "devis-mise-aux-normes-postes-oublies": "2026-09-29",
   "messages-relance-devis-electricite": "2026-09-22",
-  "chiffrer-extension-sans-erreur-metres": "2026-10-01",
+  "chiffrer-extension-sans-erreur-metres": "2026-10-17",
   "organiser-chantiers-par-zone": "2026-09-15",
-  "devis-peinture-au-m2-methode-simple": "2026-10-03",
+  "devis-peinture-au-m2-methode-simple": "2026-10-17",
   "pourquoi-devis-facade-partent-trop-tard": "2026-09-19",
   "variantes-materiaux-dans-un-seul-devis": "2026-09-27",
   "suivre-commande-sur-mesure-du-devis-a-la-pose": "2026-09-13",
   "calculer-reserve-chutes-carrelage": "2026-09-30",
-  "devis-salle-de-bain-structurer": "2026-09-16",
+  "devis-salle-de-bain-structurer": "2026-10-17",
   "apres-orage-prioriser-urgences-toiture": "2026-10-04",
   "devis-sinistre-assurance-clair": "2026-09-18",
   "devis-faux-plafond-sans-erreur": "2026-09-25",
   "renovation-appartement-piece-par-piece": "2026-09-12",
+  "chiffrer-pose-split-climatisation": "2026-10-21",
+  "relancer-devis-pompe-a-chaleur": "2026-10-22",
+  "contrat-entretien-climatisation": "2026-10-22",
+  "facture-electronique-ce-qui-change-artisan": "2026-10-22",
 };
 
 /**

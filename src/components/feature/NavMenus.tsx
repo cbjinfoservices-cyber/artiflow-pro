@@ -16,6 +16,7 @@ export const metierIcons: Record<string, string> = {
   carreleur: "ri-layout-grid-line",
   couvreur: "ri-home-4-line",
   platrier: "ri-layout-2-line",
+  "installateur-climatisation": "ri-temp-cold-line",
 };
 
 const metierShortBySlug = new Map(metiers.map((m) => [m.slug, m.shortName]));
@@ -70,13 +71,24 @@ export function MetiersMenuContent({ onNavigate }: { onNavigate: () => void }) {
           );
         })}
       </div>
-      <div className="mt-1 pt-1 border-t border-background-200">
+      <div className="mt-1 pt-1 border-t border-background-200 flex flex-col gap-1">
         <Link
           to="/metiers"
           onClick={onNavigate}
           className="flex items-center justify-between px-3 py-2 rounded-xl bg-background-100/70 hover:bg-background-200 text-sm font-semibold text-foreground-900 cursor-pointer"
         >
           <span>Voir tous les métiers</span>
+          <i className="ri-arrow-right-line"></i>
+        </Link>
+        <Link
+          to="/zones-intervention"
+          onClick={onNavigate}
+          className="flex items-center justify-between px-3 py-2 rounded-xl bg-background-100/70 hover:bg-background-200 text-sm font-semibold text-foreground-900 cursor-pointer"
+        >
+          <span className="flex items-center gap-2">
+            <i className="ri-map-2-line text-secondary-600"></i>
+            Zones d'intervention
+          </span>
           <i className="ri-arrow-right-line"></i>
         </Link>
       </div>
@@ -249,6 +261,14 @@ export function MetiersMobileLinks({ onNavigate }: { onNavigate: () => void }) {
       >
         Voir tous les métiers
         <i className="ri-arrow-right-line"></i>
+      </Link>
+      <Link
+        to="/zones-intervention"
+        onClick={onNavigate}
+        className="flex items-center gap-2 h-10 px-3 rounded-full text-sm font-semibold text-primary-700 hover:bg-background-50 cursor-pointer"
+      >
+        <i className="ri-map-2-line"></i>
+        Zones d'intervention
       </Link>
     </>
   );

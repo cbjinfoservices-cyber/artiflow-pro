@@ -54,12 +54,132 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+type EnvoiOptions = {
+  nom: string;
+  to: string[];
+  cc?: string[];
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; content: string }>;
+};
+
+/**
+ * Envoie via Brevo, puis bascule automatiquement sur Resend si Brevo échoue.
+ * Cette fonction porte les relances clients : aucun envoi ne doit être perdu si
+ * Brevo est en incident. La tentative est tracée dans `envoi_fournisseur_historique`
+ * pour la carte « Suivi des envois » du back-office.
+ */
+async function envoyerEmailAvecRepli(
+  fonction: string,
+  opts: EnvoiOptions,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+): Promise<{ ok: boolean; fournisseur: string; repli: boolean; error?: string }> {
+  const trace = async (fournisseur: string, statut: string, repli: boolean, message?: string) => {
+    if (!admin) return;
+    try {
+      await admin
+        .from("envoi_fournisseur_historique")
+        .insert({ fonction, fournisseur, statut, repli, message: message ?? null });
+    } catch {
+      /* trace non bloquante */
+    }
+  };
+  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.fr";
+  let erreurBrevo = "";
+  if (brevoKey) {
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: { "api-key": brevoKey, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          sender: { name: opts.nom, email: brevoFrom },
+          to: opts.to.map((email) => ({ email })),
+          cc: opts.cc?.length ? opts.cc.map((email) => ({ email })) : undefined,
+          subject: opts.subject,
+          htmlContent: opts.html,
+          attachment: opts.attachments?.length
+            ? opts.attachments.map((a) => ({ name: a.filename, content: a.content }))
+            : undefined,
+        }),
+      });
+      if (res.ok) {
+        await trace("brevo", "succes", false);
+        return { ok: true, fournisseur: "brevo", repli: false };
+      }
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      erreurBrevo = data?.message || `Brevo a refusé l'envoi (code ${res.status}).`;
+      await trace("brevo", "echec", false, erreurBrevo);
+    } catch (e) {
+      erreurBrevo = e instanceof Error ? e.message : "Brevo est injoignable.";
+      await trace("brevo", "echec", false, erreurBrevo);
+    }
+  }
+  const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+  const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+  if (resendKey && fromDomain) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: `${opts.nom} <noreply@${fromDomain}>`,
+          to: opts.to,
+          cc: opts.cc?.length ? opts.cc : undefined,
+          subject: opts.subject,
+          html: opts.html,
+          attachments: opts.attachments?.length ? opts.attachments : undefined,
+        }),
+      });
+      if (res.ok) {
+        await trace("resend", "succes", false);
+        return { ok: true, fournisseur: "resend", repli: true };
+      }
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      const erreur = data?.message || `Resend a refusé l'envoi (code ${res.status}).`;
+      await trace("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    } catch (e) {
+      const erreur = e instanceof Error ? e.message : "Resend est injoignable.";
+      await trace("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    }
+  }
+  return { ok: false, fournisseur: "aucun", repli: false, error: "Aucun service d'envoi configuré (Resend non paramétré)." };
+}
+
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+interface DocIdentite {
+  accent: string;
+  logoHtml: string;
+  piedHtml: string;
+}
+
+/**
+ * Identité visuelle des documents reprise du profil de l'artisan : couleur d'accent,
+ * logo (optionnel) et message de pied de page. Utilisée dans les emails récapitulatifs
+ * et les relances automatiques pour une identité cohérente avec les PDF et les devis.
+ */
+function docIdentite(p: Record<string, unknown>): DocIdentite {
+  const nom = String(p?.entreprise ?? p?.metier ?? "Votre artisan");
+  const accent = /^#[0-9a-fA-F]{6}$/.test(String(p?.doc_couleur ?? "")) ? String(p?.doc_couleur) : "#C4783A";
+  const logoUrl = p?.doc_afficher_logo !== false ? String(p?.logo_url ?? "").trim() : "";
+  const logoHtml = logoUrl
+    ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(nom)}" style="max-height:44px;max-width:180px;display:block;margin:0 0 10px;">`
+    : "";
+  const pied = String(p?.doc_pied_page ?? "").trim();
+  const piedHtml = pied
+    ? `<p style="margin:10px 0 0;font-size:11px;color:#a1a1aa;">${escapeHtml(pied).replace(/\n/g, "<br>")}</p>`
+    : "";
+  return { accent, logoHtml, piedHtml };
 }
 
 /** Renvoie la première ligne d'un résultat de jointure (tableau ou objet). */
@@ -107,6 +227,7 @@ function isoFromOffset(days: number): string {
 function buildRelanceRappelHtml(
   nom: string,
   items: Array<{ client: string; datePrevue: string; message: string }>,
+  identite: DocIdentite,
 ): string {
   const lignes = items
     .map(
@@ -126,7 +247,10 @@ function buildRelanceRappelHtml(
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:640px;margin:0 auto;padding:24px;">
-    <div style="background:#ffffff;border-radius:12px;border:1px solid #e5e5e5;padding:24px;">
+    <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
+      <div style="padding:24px;">
+      ${identite.logoHtml}
       <p style="margin:0 0 4px;font-size:18px;font-weight:700;">${escapeHtml(nom)}</p>
       <div style="display:inline-block;margin-top:8px;padding:6px 12px;border-radius:999px;background:#ccfbf1;color:#0f766e;font-size:12px;font-weight:700;">
         Rappel avant envoi
@@ -143,6 +267,8 @@ function buildRelanceRappelHtml(
         <tbody>${lignes}</tbody>
       </table>
       <p style="margin:18px 0 0;font-size:12px;color:#a1a1aa;">Rappel automatique envoyé par ArtiFlow-pro depuis votre tableau de bord (widget « Relances programmées »).</p>
+      ${identite.piedHtml}
+      </div>
     </div>
   </div>
 </body></html>`;
@@ -193,12 +319,15 @@ function buildReminderHtml(
   montant: string,
   echeance: string,
   jours: number,
+  identite: DocIdentite,
 ): string {
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
       <div style="padding:24px;border-bottom:1px solid #eee;">
+        ${identite.logoHtml}
         <p style="margin:0;font-size:20px;font-weight:700;">${escapeHtml(emetteurNom)}</p>
       </div>
       <div style="padding:24px;">
@@ -222,7 +351,8 @@ function buildReminderHtml(
         </p>
       </div>
       <div style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#a1a1aa;text-align:center;">
-        Rappel envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.
+        <p style="margin:0;">Rappel envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.</p>
+        ${identite.piedHtml}
       </div>
     </div>
   </div>
@@ -240,6 +370,7 @@ function buildAlerteTauxHtml(
   jours: number,
   total: number,
   echecs: number,
+  identite: DocIdentite,
 ): string {
   const couleur = taux >= seuil ? "#0f766e" : "#b91c1c";
   const fond = taux >= seuil ? "#ccfbf1" : "#fee2e2";
@@ -247,7 +378,9 @@ function buildAlerteTauxHtml(
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
       <div style="padding:24px;border-bottom:1px solid #eee;">
+        ${identite.logoHtml}
         <p style="margin:0;font-size:18px;font-weight:700;">${escapeHtml(nom)}</p>
         <p style="margin:6px 0 0;font-size:13px;color:#71717a;">Alerte taux de réussite · ArtiFlow-pro</p>
       </div>
@@ -271,7 +404,8 @@ function buildAlerteTauxHtml(
         </p>
       </div>
       <div style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#a1a1aa;text-align:center;">
-        Alerte automatique envoyée par ArtiFlow-pro.
+        <p style="margin:0;">Alerte automatique envoyée par ArtiFlow-pro.</p>
+        ${identite.piedHtml}
       </div>
     </div>
   </div>
@@ -284,13 +418,15 @@ function applyTemplate(template: string, values: Record<string, string>): string
 }
 
 /** Construit l'email d'une relance client programmée (identité artisan + corps personnalisé). */
-function buildClientRelanceHtml(emetteurNom: string, contactLine: string, messageHtml: string): string {
+function buildClientRelanceHtml(emetteurNom: string, contactLine: string, messageHtml: string, identite: DocIdentite): string {
   return `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
       <div style="padding:24px;border-bottom:1px solid #eee;">
+        ${identite.logoHtml}
         <p style="margin:0;font-size:20px;font-weight:700;">${escapeHtml(emetteurNom)}</p>
         ${contactLine ? `<p style="margin:6px 0 0;font-size:13px;color:#71717a;">${contactLine}</p>` : ""}
       </div>
@@ -298,7 +434,8 @@ function buildClientRelanceHtml(emetteurNom: string, contactLine: string, messag
         <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#3f3f46;">${messageHtml}</p>
       </div>
       <div style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#a1a1aa;text-align:center;">
-        Email envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.
+        <p style="margin:0;">Email envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.</p>
+        ${identite.piedHtml}
       </div>
     </div>
   </div>
@@ -361,6 +498,7 @@ function buildRecapHtml(
   facturesEnRetard: FactureLine[],
   devisSansReponse: DevisLine[],
   windowLabel: string,
+  identite: DocIdentite,
   autoRelances: FactureLine[] = [],
   autoSeuil = 30,
 ): string {
@@ -523,7 +661,10 @@ function buildRecapHtml(
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:640px;margin:0 auto;padding:24px;">
-    <div style="background:#ffffff;border-radius:12px;border:1px solid #e5e5e5;padding:24px;">
+    <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
+      <div style="padding:24px;">
+      ${identite.logoHtml}
       <p style="margin:0 0 4px;font-size:18px;font-weight:700;">${escapeHtml(nom)}</p>
       <p style="margin:0 0 16px;font-size:13px;color:#71717a;">Récapitulatif quotidien ArtiFlow-pro · ${escapeHtml(
         windowLabel,
@@ -546,6 +687,8 @@ function buildRecapHtml(
       ${blocAuto}
       ${blocRepros}
       <p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Email automatique envoyé par ArtiFlow-pro (récapitulatif quotidien).</p>
+      ${identite.piedHtml}
+      </div>
     </div>
   </div>
 </body></html>`;
@@ -585,7 +728,7 @@ Deno.serve(async (req) => {
     let profilesQuery = admin
       .from("profiles")
       .select(
-        "id, entreprise, metier, email, recap_quotidien_actif, recap_canaux, recap_heure, recap_devis_seuil, pause_jusqu_au, recap_dernier_envoi, relance_facture_auto_actif, relance_facture_seuil, relance_facture_delai_min, alerte_echec_test_email, taux_alerte_email_actif, taux_alerte_seuil, taux_alerte_jours, taux_alerte_dernier_envoi_at",
+        "id, entreprise, metier, email, logo_url, doc_couleur, doc_afficher_logo, doc_pied_page, recap_quotidien_actif, recap_canaux, recap_heure, recap_devis_seuil, pause_jusqu_au, recap_dernier_envoi, relance_facture_auto_actif, relance_facture_seuil, relance_facture_delai_min, alerte_echec_test_email, taux_alerte_email_actif, taux_alerte_seuil, taux_alerte_jours, taux_alerte_dernier_envoi_at",
       );
     if (scopeUserId) profilesQuery = profilesQuery.eq("id", scopeUserId);
     const { data: profiles, error: profError } = await profilesQuery;
@@ -758,7 +901,7 @@ Deno.serve(async (req) => {
     }
 
     const usersProcessed = scopeUserId ? 1 : (profiles ?? []).length;
-    const canSend = Boolean(resendKey && fromDomain);
+    const canSend = Boolean(Deno.env.get("BREVO_API_KEY") || (resendKey && fromDomain));
 
     // Relances client programmées par l'artisan : traitées à chaque passage planifié.
     // On ne le fait jamais en test manuel ni en aperçu. Chaque relance due est envoyée
@@ -791,7 +934,7 @@ Deno.serve(async (req) => {
         if (userIdsDue.length > 0) {
           const { data: profsDue } = await admin
             .from("profiles")
-            .select("id, entreprise, metier, telephone, email, email_sujet_relance, email_corps_relance")
+            .select("id, entreprise, metier, telephone, email, logo_url, doc_couleur, doc_afficher_logo, doc_pied_page, email_sujet_relance, email_corps_relance")
             .in("id", userIdsDue);
           (profsDue ?? []).forEach((p) => {
             const row = p as Record<string, unknown>;
@@ -826,21 +969,20 @@ Deno.serve(async (req) => {
           const sujetModele = String(pd.email_sujet_relance ?? "").trim();
           const subjectDue = sujetModele ? applyTemplate(sujetModele, valuesDue) : `Un mot de ${nomDue}`;
           try {
-            const r = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `${nomDue} <noreply@${fromDomain}>`,
+            const envoiDue = await envoyerEmailAvecRepli(
+              "recap-quotidien:relance-client",
+              {
+                nom: nomDue,
                 to: [clientDue.email],
                 subject: subjectDue,
-                html: buildClientRelanceHtml(nomDue, contactDue, messageHtmlDue),
-              }),
-            });
-            if (!r.ok) {
-              const errData = (await r.json().catch(() => null)) as { message?: string } | null;
+                html: buildClientRelanceHtml(nomDue, contactDue, messageHtmlDue, docIdentite(pd)),
+              },
+              admin,
+            );
+            if (!envoiDue.ok) {
               await admin
                 .from("relances_client")
-                .update({ statut: "Échec", motif_echec: errData?.message || "Envoi refusé par Resend." })
+                .update({ statut: "Échec", motif_echec: envoiDue.error || "Envoi refusé." })
                 .eq("id", relanceId);
               continue;
             }
@@ -902,7 +1044,7 @@ Deno.serve(async (req) => {
         const uidList = [...byUser.keys()];
         const { data: profsRappel } = await admin
           .from("profiles")
-          .select("id, entreprise, metier, email, rappel_relance_actif, rappel_relance_heure")
+          .select("id, entreprise, metier, email, logo_url, doc_couleur, doc_afficher_logo, doc_pied_page, rappel_relance_actif, rappel_relance_heure")
           .in("id", uidList);
         const profRappelById = new Map<string, Record<string, unknown>>();
         (profsRappel ?? []).forEach((p) => {
@@ -944,17 +1086,17 @@ Deno.serve(async (req) => {
             items.length > 1 ? "s" : ""
           } demain`;
           try {
-            const r = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `${artisanNom} <noreply@${fromDomain}>`,
+            const envoiRappel = await envoyerEmailAvecRepli(
+              "recap-quotidien:rappel-relance",
+              {
+                nom: artisanNom,
                 to: [artisanEmail],
                 subject: sujet,
-                html: buildRelanceRappelHtml(artisanNom, items),
-              }),
-            });
-            if (!r.ok) continue;
+                html: buildRelanceRappelHtml(artisanNom, items, docIdentite(prof)),
+              },
+              admin,
+            );
+            if (!envoiRappel.ok) continue;
             // Marque le rappel comme envoyé pour ne pas le répéter au passage suivant.
             const idsRappel = rappelList
               .filter((r2) => String(r2.user_id) === uid)
@@ -1066,7 +1208,7 @@ Deno.serve(async (req) => {
       }
       // Mode aperçu : on construit l'email sans l'envoyer et on le renvoie au client.
       if (preview) {
-        previewHtml = buildRecapHtml(nom, repros, echecs, factures, devis, windowLabel);
+        previewHtml = buildRecapHtml(nom, repros, echecs, factures, devis, windowLabel, docIdentite(p));
         previewSubject = `Récapitulatif quotidien · ${repros.length} reprog., ${echecs.length} échec, ${nbFactures} facture, ${nbDevis} devis`;
         previewRepros = repros.length;
         previewEchecs = echecs.length;
@@ -1095,11 +1237,10 @@ Deno.serve(async (req) => {
         for (const f of critiques) {
           const rappelSubject = `Rappel : facture ${f.numero} en attente de règlement`;
           try {
-            const r = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `${nom} <noreply@${fromDomain}>`,
+            const envoiAuto = await envoyerEmailAvecRepli(
+              "recap-quotidien:relance-facture",
+              {
+                nom,
                 to: [f.email],
                 subject: rappelSubject,
                 html: buildReminderHtml(
@@ -1109,10 +1250,12 @@ Deno.serve(async (req) => {
                   frEuro(f.montant),
                   f.echeance ? frDate(f.echeance) : "—",
                   f.jours,
+                  docIdentite(p),
                 ),
-              }),
-            });
-            if (!r.ok) continue;
+              },
+              admin,
+            );
+            if (!envoiAuto.ok) continue;
             await admin.from("envois_email").insert({
               user_id: userId,
               facture_id: f.factureId,
@@ -1143,7 +1286,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const html = buildRecapHtml(nom, repros, echecs, factures, devis, windowLabel, autoRelances, seuilAutoFacture);
+        const html = buildRecapHtml(nom, repros, echecs, factures, devis, windowLabel, docIdentite(p), autoRelances, seuilAutoFacture);
         const subject = `Récapitulatif quotidien · ${repros.length} reprogrammation${
           repros.length > 1 ? "s" : ""
         }, ${echecs.length} échec${echecs.length > 1 ? "s" : ""}, ${nbFactures} facture${
@@ -1151,17 +1294,12 @@ Deno.serve(async (req) => {
         } en retard, ${nbDevis} devis sans réponse${
           autoRelances.length > 0 ? `, ${autoRelances.length} relance${autoRelances.length > 1 ? "s" : ""} auto` : ""
         }`;
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from: `${nom} <noreply@${fromDomain}>`,
-            to: [email],
-            subject,
-            html,
-          }),
-        });
-        if (res.ok) {
+        const envoi = await envoyerEmailAvecRepli(
+          "recap-quotidien",
+          { nom, to: [email], subject, html },
+          admin,
+        );
+        if (envoi.ok) {
           sent += 1;
           // On horodate le dernier envoi réel pour l'afficher dans l'application.
           await admin
@@ -1179,7 +1317,7 @@ Deno.serve(async (req) => {
           details.push({ userId, repros: repros.length, echecs: echecs.length, factures: nbFactures, devis: nbDevis, sent: true });
         } else {
           skipped += 1;
-          details.push({ userId, repros: repros.length, echecs: echecs.length, factures: nbFactures, devis: nbDevis, sent: false, reason: "Refus de Resend." });
+          details.push({ userId, repros: repros.length, echecs: echecs.length, factures: nbFactures, devis: nbDevis, sent: false, reason: envoi.error || "Envoi refusé." });
         }
       } catch {
         skipped += 1;
@@ -1225,17 +1363,17 @@ Deno.serve(async (req) => {
           const nomTaux = String(p.entreprise ?? p.metier ?? "Votre artisan");
           const sujetTaux = `Alerte ArtiFlow-pro : taux de réussite à ${tauxTaux}% (sous ${seuil}%)`;
           try {
-            const r = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `${nomTaux} <noreply@${fromDomain}>`,
+            const envoiTaux = await envoyerEmailAvecRepli(
+              "recap-quotidien:alerte-taux",
+              {
+                nom: nomTaux,
                 to: [destinataire],
                 subject: sujetTaux,
-                html: buildAlerteTauxHtml(nomTaux, tauxTaux, seuil, jours, totalTaux, echecsTaux),
-              }),
-            });
-            if (!r.ok) continue;
+                html: buildAlerteTauxHtml(nomTaux, tauxTaux, seuil, jours, totalTaux, echecsTaux, docIdentite(p)),
+              },
+              admin,
+            );
+            if (!envoiTaux.ok) continue;
             await admin
               .from("profiles")
               .update({ taux_alerte_dernier_envoi_at: new Date().toISOString() })

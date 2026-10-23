@@ -8,17 +8,20 @@ import {
   tailleLisible,
   type EntreeHistoriqueExport,
 } from "@/lib/historiqueExportsDonnees";
+import { lirePdfArchive, telechargerPdfArchive } from "@/lib/archivesRecapPdf";
 
 const LIBELLE_FORMAT: Record<string, string> = {
   csv: "CSV",
   json: "JSON",
   complet: "CSV + JSON",
+  "recap-pdf": "Récap PDF",
 };
 
 const ICONE_FORMAT: Record<string, string> = {
   csv: "ri-file-text-line",
   json: "ri-braces-line",
   complet: "ri-stack-line",
+  "recap-pdf": "ri-file-pdf-2-line",
 };
 
 /** Date lisible : « 12 oct. 2026 à 14:30 ». */
@@ -42,6 +45,8 @@ export default function HistoriqueExportsListe() {
   const [liste, setListe] = useState<EntreeHistoriqueExport[]>(() => lireHistoriqueExports());
   const [confirmerVidage, setConfirmerVidage] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  // Nom du PDF de récap en cours de relecture depuis l'archive locale.
+  const [ouverture, setOuverture] = useState<string | null>(null);
 
   useEffect(() => {
     const rafraichir = () => setListe(lireHistoriqueExports());
@@ -78,6 +83,22 @@ export default function HistoriqueExportsListe() {
     const jour = new Date().toISOString().slice(0, 10);
     downloadCsv(`artiflow-historique-exports-${jour}.csv`, toCsv(headers, rows));
     setToast("Historique des exports téléchargé en CSV.");
+  };
+
+  /** Rouvre le PDF d'un récap mensuel archivé dans le navigateur et le télécharge. */
+  const ouvrirRecapArchive = async (nom: string) => {
+    setOuverture(nom);
+    try {
+      const blob = await lirePdfArchive(nom);
+      if (!blob) {
+        setToast("Ce PDF n'est plus disponible dans l'archive locale de ce navigateur.");
+        return;
+      }
+      telechargerPdfArchive(nom, blob);
+      setToast("Récap mensuel téléchargé.");
+    } finally {
+      setOuverture(null);
+    }
   };
 
   if (liste.length === 0) {
@@ -167,6 +188,18 @@ export default function HistoriqueExportsListe() {
                 {e.nom ? ` · ${e.nom}` : ""}
               </p>
             </div>
+            {e.format === "recap-pdf" && e.nom && (
+              <button
+                type="button"
+                onClick={() => void ouvrirRecapArchive(e.nom)}
+                disabled={ouverture === e.nom}
+                title="Rouvrir ce récap mensuel archivé et le télécharger"
+                className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md bg-accent-100 border border-accent-200 text-accent-800 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              >
+                <i className={ouverture === e.nom ? "ri-loader-4-line animate-spin" : "ri-download-2-line"}></i>
+                Télécharger
+              </button>
+            )}
           </li>
         ))}
       </ul>

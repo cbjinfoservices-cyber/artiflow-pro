@@ -3,8 +3,9 @@ import type { BilanArchive, DernierBilan, OverrideAdresse } from "@/lib/artisanA
 import { downloadCsv, toCsv } from "@/lib/csv";
 import { todayISO } from "@/lib/dates";
 import { buildBilansArchivagePdf } from "@/lib/comptabilitePdf";
-import { savePdf } from "@/lib/pdf";
 import Infobulle from "@/components/base/Infobulle";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 
 interface BilanArchivageBlocProps {
   /** Vrai si l'email du comptable n'est pas encore renseigné. */
@@ -102,6 +103,8 @@ export default function BilanArchivageBloc({
   const [bilanBusy, setBilanBusy] = useState(false);
   const [bilanNotice, setBilanNotice] = useState<string | null>(null);
   const [bilanError, setBilanError] = useState<string | null>(null);
+  // Aperçu avant téléchargement de la liste des bilans d'archivage (même fenêtre que les devis/factures).
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
   const [bilanTestBusy, setBilanTestBusy] = useState(false);
   const [bilanTestNotice, setBilanTestNotice] = useState<string | null>(null);
   const [bilanTestError, setBilanTestError] = useState<string | null>(null);
@@ -241,7 +244,14 @@ export default function BilanArchivageBloc({
           lignes: b.nbLignes != null ? String(b.nbLignes) : "—",
         })),
       });
-      savePdf(doc, `bilans-archivage-envois-${todayISO()}.pdf`);
+      // Aperçu avant téléchargement : l'exercice, la date et le nombre de lignes sont vérifiés à l'écran.
+      ouvrirApercuPdf({
+        title: "Aperçu · Bilans d'archivage envoyés",
+        subtitle: "Vérifiez les exercices, les dates d'envoi et le nombre de lignes avant de télécharger le PDF.",
+        filename: `bilans-archivage-envois-${todayISO()}.pdf`,
+        build: async () => doc,
+        note: "Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF ».",
+      });
     } catch {
       /* l'échec de l'export PDF est silencieux : l'export CSV reste disponible */
     }
@@ -628,6 +638,17 @@ export default function BilanArchivageBloc({
           <i className="ri-checkbox-circle-line"></i>
           {bilanTestNotice}
         </p>
+      )}
+
+      {apercuPdf && (
+        <ApercuPdfModal
+          title={apercuPdf.title}
+          subtitle={apercuPdf.subtitle}
+          filename={apercuPdf.filename}
+          docBuilder={apercuPdf.build}
+          note={apercuPdf.note}
+          onClose={fermerApercuPdf}
+        />
       )}
     </div>
   );

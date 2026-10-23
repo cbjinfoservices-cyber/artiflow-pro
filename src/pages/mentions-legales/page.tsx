@@ -33,7 +33,7 @@ export default function MentionsLegalesPage() {
       title="Mentions légales"
       intro="Conformément à la loi pour la confiance dans l'économie numérique (LCEN), voici les informations relatives à l'éditeur et à l'exploitation du site ArtiFlow-pro."
       updatedAt="1 octobre 2026"
-      metaTitle="Mentions légales · ArtiFlow-pro"
+      metaTitle="Mentions légales et éditeur du site · ArtiFlow-pro"
       metaDescription="Mentions légales du site ArtiFlow-pro : éditeur, directeur de la publication, hébergement, propriété intellectuelle et conditions d'utilisation."
       metaImage={IMAGE_PARTAGE_MENTIONS}
       breadcrumbLabel="Mentions légales"

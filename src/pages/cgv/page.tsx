@@ -50,7 +50,7 @@ export default function CgvPage() {
       title="Conditions générales de vente et d'utilisation"
       intro="Les présentes conditions encadrent l'utilisation du logiciel ArtiFlow-pro et la souscription à ses abonnements. Elles s'appliquent à toute personne créant un compte ou utilisant le service, qu'elle soit professionnelle ou particulière."
       updatedAt="1 octobre 2026"
-      metaTitle="CGV & CGU · ArtiFlow-pro"
+      metaTitle="CGV & CGU : conditions générales de vente · ArtiFlow-pro"
       metaDescription="Conditions générales de vente et d'utilisation d'ArtiFlow-pro : abonnements, tarifs, paiement, renouvellement, résiliation, rétractation et responsabilité."
       metaImage={IMAGE_PARTAGE_CGV}
       breadcrumbLabel="CGV & CGU"

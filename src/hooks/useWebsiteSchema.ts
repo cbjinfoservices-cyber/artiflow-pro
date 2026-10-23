@@ -22,6 +22,7 @@ export function useWebsiteSchema(id = "artiflow-website-schema") {
       "@type": "Organization",
       "@id": `${origin}/#organization`,
       name: "ArtiFlow-pro",
+      url: `${origin}/`,
     },
   };
 

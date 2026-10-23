@@ -274,6 +274,145 @@ const howToGuides: Record<string, Omit<HowToInput, "slug">> = {
       },
     ],
   },
+  "devis-mise-aux-normes-postes-oublies": {
+    name: "Devis de mise aux normes : la méthode pour ne rien oublier",
+    description:
+      "La méthode pour chiffrer une mise aux normes électrique complète, en vérifiant les six postes les plus souvent oubliés.",
+    steps: [
+      {
+        name: "Repérer les oublis qui coûtent cher",
+        text: "Identifier les détails techniques que le client ne connaît pas (différentiel oublié, mise à la terre négligée, tableau non repéré) et qui font passer votre devis pour plus cher s'il est incomplet.",
+      },
+      {
+        name: "Vérifier les 6 postes clés",
+        text: "Passer en revue la liaison équipotentielle, la mise à la terre, les protections différentielles 30 mA, le repérage du tableau, la protection des circuits spécialisés et le remplacement des prises vétustes.",
+      },
+      {
+        name: "Détailler ligne par ligne",
+        text: "Faire apparaître chaque protection avec son prix et sa justification, pour rassurer un client qui comprend à quoi sert un différentiel 30 mA plutôt qu'une ligne obscure « divers tableau ».",
+      },
+      {
+        name: "Enregistrer un modèle réutilisable",
+        text: "Enregistrer ces postes comme modèle réutilisable, pour chiffrer la prochaine mise aux normes en quelques minutes avec une marge constante.",
+      },
+    ],
+  },
+  "pourquoi-devis-facade-partent-trop-tard": {
+    name: "Envoyer un devis de façade vite, sans oublier de poste",
+    description:
+      "La méthode pour produire un devis de ravalement rapidement, dès le retour du chantier, et répondre avant les concurrents.",
+    steps: [
+      {
+        name: "Comprendre d'où vient le retard",
+        text: "Identifier que le retard vient du chiffrage des surfaces et des couches de préparation : nettoyage haute pression, traitement fongicide, réparation des fissures, sous-couche puis finition.",
+      },
+      {
+        name: "Chiffrer surfaces et préparation par type de façade",
+        text: "Mesurer les surfaces et associer à chacune les postes de préparation correspondants, plutôt que de repartir d'une feuille blanche à chaque visite.",
+      },
+      {
+        name: "Préparer un modèle par type de façade",
+        text: "Préparer un modèle par type de façade (enduit, pierre, brique) avec les postes et les prix au m² déjà enregistrés, pour générer un devis en quelques minutes.",
+      },
+      {
+        name: "Répondre le premier",
+        text: "Envoyer le devis dès le retour du chantier : sur ce type de dossier, répondre en premier double souvent les chances de décrocher le chantier.",
+      },
+    ],
+  },
+  "devis-sinistre-assurance-clair": {
+    name: "Rédiger un devis de sinistre clair pour l'assurance",
+    description:
+      "La méthode pour produire un devis de sinistre complet et lisible par l'expert, afin d'accélérer l'indemnisation et votre paiement.",
+    steps: [
+      {
+        name: "Décrire précisément le désordre",
+        text: "Indiquer la nature exacte du désordre et sa localisation, en gardant à l'esprit que le document sera lu par l'expert d'assurance autant que par le client.",
+      },
+      {
+        name: "Détailler poste par poste",
+        text: "Éviter le forfaitaire global et lister dépose, remplacement, zinguerie et évacuation, avec les surfaces concernées, car les devis globaux sont les plus souvent contestés.",
+      },
+      {
+        name: "Ajouter des photos datées et le contexte météo",
+        text: "Joindre des photos datées et un rappel des conditions météo lorsqu'elles expliquent le désordre, une photo valant souvent mieux qu'un paragraphe.",
+      },
+      {
+        name: "Garder une trace de l'envoi",
+        text: "Conserver une copie du devis envoyé et la date de transmission, pour répondre en quelques minutes à une demande de précision de l'expert.",
+      },
+    ],
+  },
+  "chiffrer-pose-split-climatisation": {
+    name: "Chiffrer une pose de split sans oublier de poste",
+    description:
+      "La méthode pour produire un devis de climatisation complet, du support mural à la mise en service, sans repasser au bureau.",
+    totalTime: "PT10M",
+    steps: [
+      {
+        name: "Lister les postes invisibles du devis",
+        text: "Faire apparaître le support mural ou au sol, le perçage et le rebouchage, les liaisons frigorifiques au-delà du kit, l'évacuation des condensats, l'alimentation électrique dédiée et la reprise de l'ancien appareil.",
+      },
+      {
+        name: "Facturer la mise en service sur sa propre ligne",
+        text: "Distinguer contrôle d'étanchéité, tirage au vide, charge complémentaire, essais de fonctionnement et vérification des débits, avec un forfait clair.",
+      },
+      {
+        name: "Partir d'un modèle par type de pose",
+        text: "Préparer un modèle pour le mono-split, le multi-split et le gainable, avec les postes déjà présents et vos prix déjà enregistrés, pour ne saisir sur place que la puissance et les particularités du logement.",
+      },
+      {
+        name: "Envoyer le devis depuis le chantier",
+        text: "Générer, relire et envoyer le devis avant de repartir, en annonçant la somme attendue à la signature lorsque des fournitures sont engagées.",
+      },
+    ],
+  },
+  "contrat-entretien-climatisation": {
+    name: "Vendre un contrat d'entretien climatisation sans le brader",
+    description:
+      "La méthode pour chiffrer, écrire et faire reconduire un contrat d'entretien annuel de climatisation.",
+    steps: [
+      {
+        name: "Séparer l'entretien de la pose",
+        text: "Faire du contrat une ligne à part sur le devis, avec sa périodicité, le nombre d'appareils couverts et la date anniversaire de la première visite, au lieu de l'offrir en fin de document.",
+      },
+      {
+        name: "Détailler les opérations couvertes",
+        text: "Lister ce qui est réellement fait : filtres et échangeurs, étanchéité du circuit, pressions et charge de fluide, évacuation des condensats, essais et désinfection, puis préciser ce qui reste hors contrat.",
+      },
+      {
+        name: "Fixer un forfait et une échéance annuelle",
+        text: "Proposer deux ou trois formules selon le nombre d'appareils, avec un montant qui couvre le déplacement et le temps sur place, et une date de visite fixée dès la mise en service.",
+      },
+      {
+        name: "Programmer la relance de reconduction",
+        text: "Déclencher une relance automatique environ deux mois avant l'échéance, par SMS court puis par email, pour placer la visite dans le creux de la saison.",
+      },
+    ],
+  },
+  "facture-electronique-ce-qui-change-artisan": {
+    name: "Passer à la facture électronique sans tout changer",
+    description:
+      "Quatre vérifications pour émettre des factures conformes au format structuré, sans reprendre votre façon de travailler.",
+    steps: [
+      {
+        name: "Vérifier l'identité fiscale",
+        text: "Contrôler le SIRET, le numéro de TVA ou la mention de franchise en base, l'adresse de l'entreprise et les coordonnées de règlement (IBAN, délai de paiement) : ce sont ces données qui alimentent le fichier structuré.",
+      },
+      {
+        name: "Paramétrer les mentions fixes",
+        text: "Prévoir une fois pour toutes l'indemnité forfaitaire de recouvrement de 40 €, l'escompte pour paiement anticipé et, en sous-traitance, la mention d'autoliquidation par le preneur.",
+      },
+      {
+        name: "Choisir sa plateforme de dématérialisation",
+        text: "Retenir une plateforme immatriculée selon la taille de l'activité, en comparant les offres avec son comptable, puisque c'est lui qui récupérera ensuite les fichiers.",
+      },
+      {
+        name: "Suivre les statuts chaque semaine",
+        text: "Traiter les factures « à préparer », transmettre celles qui sont prêtes et corriger immédiatement les rejets, en même temps que les relances clients, pour éviter d'accumuler du retard invisible.",
+      },
+    ],
+  },
 };
 
 /** Retourne les données HowTo d'un guide, ou undefined s'il ne décrit pas de méthode pas à pas. */

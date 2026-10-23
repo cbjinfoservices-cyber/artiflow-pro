@@ -30,6 +30,8 @@ export default function CreneauFormModal({
   const [ville, setVille] = useState("");
   const [chantierId, setChantierId] = useState("");
   const [intervenantId, setIntervenantId] = useState(defaultIntervenantId ? String(defaultIntervenantId) : "");
+  const [statut, setStatut] = useState("confirmee");
+  const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const inputCls = "h-10 px-3 rounded-md bg-background-100 border border-background-200 text-sm outline-none focus:border-primary-400";
@@ -47,6 +49,8 @@ export default function CreneauFormModal({
       ville: ville.trim(),
       chantier_id: chantierId ? Number(chantierId) : null,
       intervenant_id: intervenantId ? Number(intervenantId) : null,
+      statut,
+      note: note.trim() || null,
     });
   };
 
@@ -120,6 +124,20 @@ export default function CreneauFormModal({
             ))}
           </select>
         </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-foreground-700">Statut</span>
+            <select value={statut} onChange={(e) => setStatut(e.target.value)} className={`${inputCls} cursor-pointer`}>
+              <option value="confirmee">Confirmée</option>
+              <option value="provisoire">À confirmer</option>
+              <option value="faite">Faite</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-foreground-700">Note (optionnel)</span>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex. prévoir une nacelle" className={inputCls} />
+          </label>
+        </div>
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     </Modal>

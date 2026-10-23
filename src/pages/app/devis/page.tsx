@@ -34,7 +34,9 @@ import BoutonPartager from "@/pages/app/components/BoutonPartager";
 import MenuVuesPartageesRecentes from "@/pages/app/components/MenuVuesPartageesRecentes";
 import RechercheRepliable from "@/components/feature/RechercheRepliable";
 import GuidePremiereVisite from "@/components/base/GuidePremiereVisite";
+import RappelAstucePage from "@/components/base/RappelAstucePage";
 import { guidePremiereVisiteVu, marquerGuidePremiereVisiteVu } from "@/lib/guidePremiereVisite";
+import { originePublique } from "@/lib/site";
 
 type PendingDelete = { id: number; numero: string } | null;
 type PendingModele = { id: number; numero: string; objet: string } | null;
@@ -449,7 +451,7 @@ export default function AppDevis() {
   // L'URL reflète toujours les filtres actifs : on la reconstruit depuis l'état pour être sûr.
   const copyFilterLink = async () => {
     const qs = buildParams().toString();
-    const url = `${window.location.origin}${window.location.pathname}${qs ? `?${qs}` : ""}`;
+    const url = `${originePublique()}${window.location.pathname}${qs ? `?${qs}` : ""}`;
     try {
       await navigator.clipboard.writeText(url);
       ajouterLienCopie("Vue filtrée · devis", url);
@@ -1491,6 +1493,9 @@ export default function AppDevis() {
             onQuickCreateClient={handleQuickCreateClient}
           />
         )}
+
+        {/* Rappel discret en bas d'écran : les astuces de cet écran vivent dans le panneau Aide. */}
+        <RappelAstucePage />
 
         {detailDevis && (
           <DevisDetailModal

@@ -9,17 +9,19 @@ import {
   IMAGE_PARTAGE_SUJETS,
 } from "@/lib/imagesPartage";
 import { metiers } from "@/mocks/metiers";
+import { villes } from "@/mocks/villes";
 import { articles } from "@/mocks/ressources";
 import { equipe } from "@/mocks/equipe";
 import { parcours } from "@/mocks/parcours";
 
 /** Origine d'un visuel de partage, pour repérer d'un coup d'œil les manques. */
-export type SourceVisuel = "dedie" | "generique" | "photo" | "heros";
+export type SourceVisuel = "dedie" | "site" | "generique" | "photo" | "heros";
 
 /** Groupes de pages affichés et filtrés dans l'audit. */
 export type GroupeAudit =
   | "Pages principales"
   | "Métiers du bâtiment"
+  | "Villes & zones"
   | "Guides Ressources"
   | "Équipe & auteurs"
   | "Parcours guidés"
@@ -52,16 +54,37 @@ const pagesPrincipales: EntreeAudit[] = [
     group: "Pages principales",
     title: "ArtiFlow-pro — Assistant IA pour artisans du bâtiment",
     description:
-      "ArtiFlow-pro est le SaaS IA des artisans : devis générés par IA, relances automatiques SMS et WhatsApp, planning intelligent et suivi de chantier. Demandez une démo.",
+      "ArtiFlow-pro, le SaaS IA des artisans du bâtiment : devis en 2 minutes, relances SMS et WhatsApp automatiques, planning et suivi de chantier.",
+    image: GENERIQUE,
+    source: "site",
+  },
+  {
+    path: "/zones-intervention",
+    label: "Zones d'intervention (hub)",
+    group: "Pages principales",
+    title: "Zones d'intervention · ArtiFlow-pro partout en France",
+    description:
+      "ArtiFlow-pro accompagne les artisans du bâtiment partout en France, avec une page dédiée à chacune de ses douze villes : Paris, Lyon, Marseille et Toulouse.",
     image:
-      "https://readdy.ai/api/search-image?query=Stylized%20product%20hero%20banner%20for%20an%20AI%20construction%20assistant%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20gradients%2C%20abstract%20dashboard%20and%20quote%20document%20shapes%2C%20blueprint%20grid%20lines%2C%20dark%20charcoal%20background%2C%20cinematic%20lighting%2C%20premium%20minimal%20editorial%20composition%2C%20wide%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-accueil&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20of%20a%20stylized%20map%20of%20France%20with%20connected%20city%20nodes%20and%20glowing%20route%20lines%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20line%20patterns%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-zones&orientation=landscape",
+    source: "dedie",
+  },
+  {
+    path: "/metiers/recapitulatif",
+    label: "Métiers (récapitulatif)",
+    group: "Pages principales",
+    title: "Récapitulatif des métiers du bâtiment | ArtiFlow-pro",
+    description:
+      "Toutes les fiches métiers d'ArtiFlow-pro : plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste et frigoriste climaticien, avec leurs guides.",
+    image:
+      "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20of%20a%20grid%20of%20building%20trade%20icons%20and%20tool%20silhouettes%20connected%20by%20thin%20lines%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20line%20patterns%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-metiers-recap&orientation=landscape",
     source: "dedie",
   },
   {
     path: "/tarifs",
     label: "Tarifs",
     group: "Pages principales",
-    title: "Tarifs ArtiFlow-pro · Devis, planning & relances pour artisans",
+    title: "Tarifs ArtiFlow-pro : devis & relances artisans",
     description:
       "Découvrez les tarifs ArtiFlow-pro : Essentiel à 29 €, Pro à 59 € et Entreprise à 99 € par mois. Sans engagement, 14 jours d'essai et devis IA illimités.",
     image:
@@ -72,9 +95,9 @@ const pagesPrincipales: EntreeAudit[] = [
     path: "/metiers",
     label: "Métiers (hub)",
     group: "Pages principales",
-    title: "ArtiFlow-pro · Tous les métiers du bâtiment : devis & relances",
+    title: "Métiers du bâtiment : devis & relances | ArtiFlow-pro",
     description:
-      "Plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste : découvrez comment ArtiFlow-pro génère les devis, relances et plannings de chaque corps d'état.",
+      "Plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste : les devis, relances et plannings d'ArtiFlow-pro pour chaque corps d'état.",
     image:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20composition%20of%20building%20trade%20tools%20and%20materials%20with%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20charcoal%20background%2C%20editorial%20hero%20banner%2C%20high%20detail%2C%20strong%20contrast&width=1200&height=630&seq=artiflow-og-metiers&orientation=landscape",
     source: "dedie",
@@ -83,7 +106,7 @@ const pagesPrincipales: EntreeAudit[] = [
     path: "/ressources",
     label: "Ressources (par métier)",
     group: "Pages principales",
-    title: "Ressources artisans : devis, relances et chantiers par métier",
+    title: "Ressources artisans : devis, relances | ArtiFlow-pro",
     description:
       "Guides courts et concrets pour les artisans du bâtiment : chiffrage des devis, relances clients et organisation de chantier, par corps d'état.",
     image:
@@ -94,9 +117,9 @@ const pagesPrincipales: EntreeAudit[] = [
     path: "/ressources/sujets",
     label: "Ressources par sujet",
     group: "Pages principales",
-    title: "Ressources artisans par sujet : relances, chiffrage, planning",
+    title: "Ressources par sujet : chiffrage & relances | ArtiFlow-pro",
     description:
-      "Explorez les guides ArtiFlow-pro par thème : chiffrage, relances clients et planning, avec les articles qui répondent à une question précise, quel que soit votre métier.",
+      "Explorez les guides ArtiFlow-pro par thème : chiffrage, relances clients et planning, avec un article pour chaque question de métier.",
     image: IMAGE_PARTAGE_SUJETS,
     source: "dedie",
   },
@@ -104,7 +127,7 @@ const pagesPrincipales: EntreeAudit[] = [
     path: "/ressources/bibliotheque",
     label: "Ma bibliothèque",
     group: "Pages principales",
-    title: "Ma bibliothèque : favoris et notes de vos guides | ArtiFlow-pro",
+    title: "Ma bibliothèque : favoris et notes | ArtiFlow-pro",
     description:
       "Retrouvez en un seul endroit tous vos guides mis en favori et vos notes personnelles, avec recherche unifiée et édition rapide des notes.",
     image: IMAGE_PARTAGE_BIBLIOTHEQUE,
@@ -116,7 +139,7 @@ const pagesPrincipales: EntreeAudit[] = [
     group: "Pages principales",
     title: "Plan du site ArtiFlow-pro · Pages, métiers et guides",
     description:
-      "Retrouvez toutes les pages d'ArtiFlow-pro au même endroit : les 8 métiers du bâtiment, les 16 guides, les tarifs et les ressources par sujet.",
+      "Retrouvez toutes les pages d'ArtiFlow-pro au même endroit : les métiers du bâtiment, les 20 guides, les tarifs et les ressources par sujet.",
     image:
       "https://readdy.ai/api/search-image?query=Stylized%20abstract%20banner%20representing%20a%20website%20sitemap%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%2C%20abstract%20connected%20node%20and%20grid%20shapes%2C%20blueprint%20lines%20on%20deep%20charcoal%20background%2C%20cinematic%20minimal%20editorial%20lighting%2C%20premium%20clean%20composition%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-plan&orientation=landscape",
     source: "dedie",
@@ -136,9 +159,9 @@ const pagesPrincipales: EntreeAudit[] = [
     path: "/a-propos",
     label: "À propos",
     group: "Pages principales",
-    title: "À propos d'ArtiFlow-pro · L'équipe derrière l'assistant des artisans",
+    title: "À propos d'ArtiFlow-pro : l'équipe des artisans",
     description:
-      "Découvrez l'équipe d'ArtiFlow-pro : des anciens du bâtiment et des passionnés de technologie qui rendent du temps aux artisans. Notre histoire, nos valeurs et nos chiffres.",
+      "Découvrez l'équipe d'ArtiFlow-pro : des anciens du bâtiment et des passionnés de technologie qui rendent du temps aux artisans, chaque jour.",
     image:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20composition%20of%20a%20collaborative%20team%20of%20builders%20and%20software%20makers%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%2C%20blueprint%20lines%20and%20tool%20silhouettes%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20banner%2C%20high%20detail%2C%20strong%20contrast&width=1200&height=630&seq=artiflow-og-apropos&orientation=landscape",
     source: "dedie",
@@ -149,7 +172,7 @@ const pagesPrincipales: EntreeAudit[] = [
     group: "Pages principales",
     title: "Podcast & médias ArtiFlow-pro · L'équipe sur les ondes",
     description:
-      "Écoutez les interviews et prises de parole de l'équipe ArtiFlow-pro dans les podcasts et médias du bâtiment : chiffrage par IA, RGPD, produit et croissance.",
+      "Écoutez les interviews de l'équipe ArtiFlow-pro dans les podcasts et médias du bâtiment : chiffrage par IA, RGPD, produit et croissance.",
     image:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20suggesting%20a%20podcast%20studio%20about%20construction%20software%2C%20a%20microphone%20silhouette%20with%20sound%20waves%20and%20subtle%20blueprint%20lines%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%2C%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20banner%2C%20high%20detail%2C%20strong%20contrast&width=1200&height=630&seq=artiflow-og-podcast&orientation=landscape",
     source: "dedie",
@@ -158,7 +181,7 @@ const pagesPrincipales: EntreeAudit[] = [
     path: "/nouveautes",
     label: "Nouveautés",
     group: "Pages principales",
-    title: "Nouveautés ArtiFlow-pro · Journal des mises à jour produit",
+    title: "Nouveautés ArtiFlow-pro · Journal des mises à jour",
     description:
       "Suivez les nouveautés d'ArtiFlow-pro : devis, relances, planning, comptabilité et offres. Le journal des mises à jour, transparent et mis à jour régulièrement.",
     image:
@@ -171,7 +194,7 @@ const pagesPrincipales: EntreeAudit[] = [
     group: "Pages principales",
     title: "Nous rejoindre · Carrières ArtiFlow-pro",
     description:
-      "Rejoignez l'équipe ArtiFlow-pro : postes ouverts en tech, data, support et croissance. Télétravail, impact concret et équipe à taille humaine. Candidature en 5 minutes.",
+      "Rejoignez l'équipe ArtiFlow-pro : postes ouverts en tech, data, support et croissance. Impact concret, équipe à taille humaine, candidature en 5 minutes.",
     image:
       "https://readdy.ai/api/search-image?query=Stylized%20abstract%20banner%20about%20joining%20a%20small%20tech%20team%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%2C%20abstract%20people%20and%20handshake%20silhouettes%2C%20blueprint%20line%20patterns%2C%20deep%20charcoal%20background%2C%20cinematic%20minimal%20editorial%20lighting%2C%20premium%20composition%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-rejoindre&orientation=landscape",
     source: "dedie",
@@ -184,7 +207,7 @@ const pagesLegales: EntreeAudit[] = [
     path: "/mentions-legales",
     label: "Mentions légales",
     group: "Pages légales",
-    title: "Mentions légales · ArtiFlow-pro",
+    title: "Mentions légales et éditeur du site · ArtiFlow-pro",
     description:
       "Mentions légales du site ArtiFlow-pro : éditeur, directeur de la publication, hébergement, propriété intellectuelle et conditions d'utilisation.",
     image: IMAGE_PARTAGE_MENTIONS,
@@ -194,7 +217,7 @@ const pagesLegales: EntreeAudit[] = [
     path: "/cgv",
     label: "CGV & CGU",
     group: "Pages légales",
-    title: "CGV & CGU · ArtiFlow-pro",
+    title: "CGV & CGU : conditions générales de vente · ArtiFlow-pro",
     description:
       "Conditions générales de vente et d'utilisation d'ArtiFlow-pro : abonnements, tarifs, paiement, renouvellement, résiliation, rétractation et responsabilité.",
     image: IMAGE_PARTAGE_CGV,
@@ -204,7 +227,7 @@ const pagesLegales: EntreeAudit[] = [
     path: "/rgpd",
     label: "RGPD & données",
     group: "Pages légales",
-    title: "RGPD & données personnelles · ArtiFlow-pro",
+    title: "RGPD et données personnelles : vos droits · ArtiFlow-pro",
     description:
       "Politique de confidentialité d'ArtiFlow-pro : données traitées, finalités, durées de conservation, cookies et exercice de vos droits RGPD.",
     image: IMAGE_PARTAGE_RGPD,
@@ -214,9 +237,9 @@ const pagesLegales: EntreeAudit[] = [
     path: "/cookies",
     label: "Politique de cookies",
     group: "Pages légales",
-    title: "Politique de cookies · ArtiFlow-pro",
+    title: "Politique de cookies et traceurs du site · ArtiFlow-pro",
     description:
-      "Politique de cookies d'ArtiFlow-pro : cookies strictement nécessaires, cookies de mesure d'audience, finalités, durées de conservation et gestion de vos préférences.",
+      "Politique de cookies d'ArtiFlow-pro : cookies strictement nécessaires, mesure d'audience, finalités, durées de conservation et gestion des préférences.",
     image: IMAGE_PARTAGE_COOKIES,
     source: "dedie",
   },
@@ -224,7 +247,7 @@ const pagesLegales: EntreeAudit[] = [
     path: "/accessibilite",
     label: "Accessibilité",
     group: "Pages légales",
-    title: "Accessibilité · ArtiFlow-pro",
+    title: "Déclaration d'accessibilité numérique WCAG · ArtiFlow-pro",
     description:
       "Déclaration d'accessibilité d'ArtiFlow-pro : engagement, niveau de conformité, mesures mises en place et contact pour signaler un problème d'accessibilité.",
     image: IMAGE_PARTAGE_ACCESSIBILITE,
@@ -243,13 +266,25 @@ const pagesMetiers: EntreeAudit[] = metiers.map((metier) => ({
   source: metier.ogImage ? "dedie" : "heros",
 }));
 
+const pagesVilles: EntreeAudit[] = villes.map((ville) => ({
+  path: `/zones-intervention/${ville.slug}`,
+  label: `${ville.name} · ${ville.departement}`,
+  group: "Villes & zones",
+  title: ville.metaTitle,
+  description: ville.metaDescription,
+  image: ville.shareImage,
+  source: "dedie",
+}));
+
 const pagesGuides: EntreeAudit[] = articles.map((article) => {
   const metier = metiers.find((m) => m.slug === article.category);
   return {
-    path: `/ressources/${article.slug}`,
+    // Un guide peut vivre sur sa propre page (href) plutôt que sur /ressources/:slug :
+    // on audite l'URL canonique réellement servie.
+    path: article.href ?? `/ressources/${article.slug}`,
     label: article.title,
     group: "Guides Ressources",
-    title: `${article.title} | ArtiFlow-pro`,
+    title: article.seoTitle ?? `${article.title} | ArtiFlow-pro`,
     description: article.excerpt,
     image: article.shareImage ?? metier?.heroImage ?? GENERIQUE,
     source: article.shareImage ? "dedie" : metier?.heroImage ? "heros" : "generique",
@@ -260,8 +295,8 @@ const pagesAuteurs: EntreeAudit[] = equipe.map((membre) => ({
   path: `/auteurs/${membre.id}`,
   label: membre.name,
   group: "Équipe & auteurs",
-  title: `${membre.name} · ${membre.role} chez ArtiFlow-pro`,
-  description: `Découvrez ${membre.name}, ${membre.role} chez ArtiFlow-pro, ainsi que ses guides, ses interventions publiques (conférences, webinaires) et ses épisodes podcast. ${membre.bio}`,
+  title: membre.seoTitre ?? `${membre.name} · ${membre.role} chez ArtiFlow-pro`,
+  description: membre.seoDescription,
   image: membre.shareImage ?? membre.photo,
   source: membre.shareImage ? "dedie" : "photo",
 }));
@@ -270,7 +305,7 @@ const pagesParcours: EntreeAudit[] = parcours.map((p) => ({
   path: `/ressources/parcours/${p.slug}`,
   label: p.name,
   group: "Parcours guidés",
-  title: `${p.name} — Parcours guidé | ArtiFlow-pro`,
+  title: `${p.name} · Parcours ArtiFlow-pro`,
   description: p.description,
   image: p.shareImage,
   source: "dedie",
@@ -280,6 +315,7 @@ const pagesParcours: EntreeAudit[] = parcours.map((p) => ({
 export const GROUPES_AUDIT: GroupeAudit[] = [
   "Pages principales",
   "Métiers du bâtiment",
+  "Villes & zones",
   "Guides Ressources",
   "Équipe & auteurs",
   "Parcours guidés",
@@ -290,6 +326,7 @@ export const GROUPES_AUDIT: GroupeAudit[] = [
 export const pagesPubliques: EntreeAudit[] = [
   ...pagesPrincipales,
   ...pagesMetiers,
+  ...pagesVilles,
   ...pagesGuides,
   ...pagesAuteurs,
   ...pagesParcours,
@@ -299,6 +336,7 @@ export const pagesPubliques: EntreeAudit[] = [
 /** Libellé lisible d'une source de visuel. */
 export const LIBELLE_SOURCE: Record<SourceVisuel, string> = {
   dedie: "Visuel dédié",
+  site: "Visuel de marque du site",
   generique: "Visuel générique",
   photo: "Photo de profil",
   heros: "Image héros",
@@ -316,6 +354,9 @@ export function estGenerique(entree: EntreeAudit): boolean {
  * repérer toutes les pages dont le visuel de partage reste à produire.
  */
 export function sansVisuelDedie(entree: EntreeAudit): boolean {
+  // L'accueil assume explicitement le visuel de marque du site : ce n'est pas
+  // un oubli, donc il ne doit pas apparaître dans les pages « à compléter ».
+  if (entree.source === "site") return false;
   return entree.source !== "dedie";
 }
 

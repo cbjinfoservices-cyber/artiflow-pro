@@ -31,6 +31,7 @@ import ClientFormModal from "@/pages/app/clients/components/ClientFormModal";
 import CompleterEmailsModal from "@/pages/app/components/CompleterEmailsModal";
 import RechercheRepliable from "@/components/feature/RechercheRepliable";
 import type { ClientItem } from "@/hooks/useArtisanData";
+import { originePublique } from "@/lib/site";
 
 /** Périodes de filtrage proposées pour la liste des relances à venir. */
 type Periode = "7" | "30" | "90" | "all";
@@ -208,7 +209,7 @@ export default function AppRelancesProgrammees() {
     if (periodeTraitees !== "all") params.set("ptraitees", periodeTraitees);
     if (statutTraitees !== "all") params.set("statut", statutTraitees);
     const qs = params.toString();
-    const url = `${window.location.origin}${window.location.pathname}${qs ? `?${qs}` : ""}`;
+    const url = `${originePublique()}${window.location.pathname}${qs ? `?${qs}` : ""}`;
     try {
       await navigator.clipboard.writeText(url);
       ajouterLienCopie("Vue filtrée · relances programmées", url);

@@ -9,6 +9,7 @@ import HistoriqueOffresCard from "@/pages/app/abonnement/components/HistoriqueOf
 import FacturesAbonnementCard from "@/pages/app/abonnement/components/FacturesAbonnementCard";
 import RappelOffreBanner from "@/pages/app/abonnement/components/RappelOffreBanner";
 import AbonnementCheckoutModal from "@/pages/tarifs/components/AbonnementCheckoutModal";
+import ResilierAbonnementCard from "@/pages/app/profil/components/ResilierAbonnementCard";
 import EncartPaiementIndisponible from "@/pages/app/components/EncartPaiementIndisponible";
 import { useDiagnosticPaiementEur } from "@/hooks/useDiagnosticPaiementEur";
 
@@ -211,6 +212,9 @@ export default function SuiviAbonnement() {
                   abonnement={abonnement}
                   onChangerMode={(mode) => setAboModal({ open: true, plan: abonnement.offre, mode })}
                 />
+                {abonnement.statut !== "Résilié" ? (
+                  <ResilierAbonnementCard abonnement={abonnement} onResilie={reload} />
+                ) : null}
                 {(abonnement.canal_paiement ?? "").includes("Stripe") ? (
                   <FacturesAbonnementCard abonnement={abonnement} />
                 ) : null}

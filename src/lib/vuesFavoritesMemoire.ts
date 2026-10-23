@@ -16,19 +16,64 @@ const MAX = 12;
 /** Événement diffusé après chaque modification, pour rafraîchir les listes à chaud. */
 export const VUES_FAVORITES_EVENT = "artiflow-vues-favorites";
 
-/** Relit les vues favorites (de la plus récente à la plus ancienne). */
+/** Ancienne page « Professionnels », supprimée au profit du carnet filtré. */
+const ANCIENNE_VUE_PRO = "/app/professionnels";
+/** Adresse actuelle de la vue « Professionnels » (le carnet filtré sur les entreprises). */
+const VUE_PRO_ACTUELLE = "/app/clients?type=Professionnels";
+
+/**
+ * Ramène une ancienne adresse de vue vers son équivalent actuel.
+ * Les vues épinglées avant la fusion pointent vers /app/professionnels : on les convertit
+ * (plutôt que de les jeter) pour que l'utilisateur retrouve ses raccourcis intacts.
+ */
+export function normaliserCheminVue(chemin: string): string {
+  if (
+    chemin === ANCIENNE_VUE_PRO ||
+    chemin.startsWith(`${ANCIENNE_VUE_PRO}?`) ||
+    chemin.startsWith(`${ANCIENNE_VUE_PRO}/`)
+  ) {
+    return VUE_PRO_ACTUELLE;
+  }
+  return chemin;
+}
+
+/** Écrit la liste sans diffuser d'événement (migration silencieuse). */
+function persisterSansEvenement(vues: VueFavorite[]): void {
+  try {
+    localStorage.setItem(CLE, JSON.stringify(vues));
+  } catch {
+    /* stockage indisponible : la migration sera retentée à la prochaine lecture */
+  }
+}
+
+/**
+ * Relit les vues favorites (de la plus récente à la plus ancienne).
+ * Les vues portant encore l'ancienne adresse « Professionnels » sont converties à la volée,
+ * dédoublonnées (une seule épingle pour la même vue) puis réécrites silencieusement.
+ */
 export function lireVuesFavorites(): VueFavorite[] {
   try {
     const raw = localStorage.getItem(CLE);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(
-        (v): v is VueFavorite =>
-          Boolean(v && typeof v.chemin === "string" && typeof v.label === "string" && v.chemin.startsWith("/")),
-      )
-      .slice(0, MAX);
+    const vues: VueFavorite[] = [];
+    let migre = false;
+    parsed.forEach((v) => {
+      if (!(v && typeof v.chemin === "string" && typeof v.label === "string" && v.chemin.startsWith("/"))) return;
+      const vue = v as VueFavorite;
+      const chemin = normaliserCheminVue(vue.chemin);
+      if (chemin !== vue.chemin) migre = true;
+      // Deux épingles peuvent désormais désigner la même vue : on garde la première (la plus récente).
+      if (vues.some((x) => x.chemin === chemin)) {
+        migre = true;
+        return;
+      }
+      vues.push({ ...vue, id: chemin, chemin });
+    });
+    const sortie = vues.slice(0, MAX);
+    if (migre) persisterSansEvenement(sortie);
+    return sortie;
   } catch {
     return [];
   }

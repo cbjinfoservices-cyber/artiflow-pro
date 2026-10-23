@@ -23,9 +23,14 @@ import {
 import { formatEuros } from "@/lib/format";
 import { formatShortDate, todayISO, toISODate, addDays } from "@/lib/dates";
 import { toCsv, downloadCsv } from "@/lib/csv";
+import { statutJuridiqueLabel, tailleEntrepriseLabel } from "@/lib/entreprise";
+import { repartitionParChamp } from "@/lib/repartition";
 import { downloadZip } from "@/lib/zip";
-import { buildAbonnementsArchivePdf, savePdf } from "@/lib/pdf";
+import { buildAbonnementsArchivePdf } from "@/lib/pdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 import DataState from "@/pages/app/components/DataState";
+import EmptyState from "@/pages/app/components/EmptyState";
 import Toast from "@/components/base/Toast";
 import AbonnementFormModal from "@/pages/app/abonnements/components/AbonnementFormModal";
 import AbonnementsCharts, { repartitionOffres, evolutionMrr } from "@/pages/app/abonnements/components/AbonnementsCharts";
@@ -207,6 +212,7 @@ export default function AppAbonnements() {
   const [formOpen, setFormOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
   const [exportingZip, setExportingZip] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [delaiRappel, setDelaiRappel] = useState(() => lireDelaiRappelRecontact());
@@ -729,9 +735,27 @@ export default function AppAbonnements() {
     }
     setExportingPdf(true);
     try {
-      const doc = await buildAbonnementsArchivePdf({
+      ouvrirApercuPdf({
+        title: "Aperçu · Archive des abonnements",
+        filename: `abonnements-artiflow-${suffix}-${todayISO()}.pdf`,
+        note: `${subset.length} abonnement${subset.length > 1 ? "s" : ""} · ${filtreLabel}`,
+        build: () =>
+          buildAbonnementsArchivePdf({
         kpis: { actifs, mrr, essais, impayes, manqueImpayes, resilies, parc: abos.length },
         repartition: repartitionOffres(subset),
+        repartitionEntreprise: {
+          total: subset.length,
+          statut: repartitionParChamp(subset, "statut_juridique").map((l) => ({
+            label: l.label,
+            count: l.count,
+            pct: l.pct,
+          })),
+          taille: repartitionParChamp(subset, "taille_entreprise").map((l) => ({
+            label: l.label,
+            count: l.count,
+            pct: l.pct,
+          })),
+        },
         mrrEvolution: evolutionMrr(subset).map((m) => ({ label: m.label, mrr: m.mrr })),
         abonnements: subset.map((a) => ({
           entreprise: a.entreprise,
@@ -740,12 +764,14 @@ export default function AppAbonnements() {
           ville: a.ville,
           offre: a.offre,
           statut: a.statut,
+          statut_juridique: a.statut_juridique ? statutJuridiqueLabel(a.statut_juridique) : null,
+          taille_entreprise: a.taille_entreprise ? tailleEntrepriseLabel(a.taille_entreprise) : null,
           montant_mensuel: a.montant_mensuel,
           date_echeance: a.date_echeance ? formatShortDate(a.date_echeance) : null,
         })),
         filtreLabel,
+      }),
       });
-      savePdf(doc, `abonnements-artiflow-${suffix}-${todayISO()}.pdf`);
     } catch {
       setToast("L'export PDF a échoué. Réessayez.");
     } finally {
@@ -788,6 +814,23 @@ export default function AppAbonnements() {
             }
           />
         </div>
+        {abos.length === 0 ? (
+          <EmptyState
+            icon="ri-money-euro-circle-line"
+            title="Aucun abonnement pour l'instant"
+            text="Le parc d'abonnés est vide : il n'y a aucun artisan abonné à suivre pour le moment. Dès qu'un premier abonnement est enregistré, les indicateurs (MRR, essais, impayés), les graphiques, le suivi des recontacts et les relances s'activeront ici."
+          >
+            <button
+              type="button"
+              onClick={() => setFormOpen(true)}
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
+            >
+              <i className="ri-add-line"></i>
+              Enregistrer un premier abonnement
+            </button>
+          </EmptyState>
+        ) : (
+          <>
         <RappelRecontactVolatils
           items={aRappeler}
           delaiJours={delaiRappel}
@@ -1551,6 +1594,8 @@ export default function AppAbonnements() {
         <p className="text-[11px] text-foreground-400">
           Vue back-office : {abos.length} abonnements suivis · {OFFRES.map((o) => `${countByOffre(o)} ${o}`).join(" · ")}
         </p>
+          </>
+        )}
 
         {formOpen && <AbonnementFormModal busy={busy} onClose={() => setFormOpen(false)} onSubmit={handleCreate} />}
         {apercuRecapOpen && user && (
@@ -1592,6 +1637,16 @@ export default function AppAbonnements() {
             offreB={comparer.b}
             abonnementId={comparer.abonnementId}
             onClose={() => setComparer(null)}
+          />
+        )}
+        {apercuPdf && (
+          <ApercuPdfModal
+            title={apercuPdf.title}
+            subtitle={apercuPdf.subtitle}
+            filename={apercuPdf.filename}
+            docBuilder={apercuPdf.build}
+            note={apercuPdf.note}
+            onClose={fermerApercuPdf}
           />
         )}
         {toast && <Toast message={toast} onClose={() => setToast(null)} />}

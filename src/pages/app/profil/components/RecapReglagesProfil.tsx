@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { metierLabel } from "@/lib/metiers";
+import { statutJuridiqueLabel, tailleEntrepriseLabel } from "@/lib/entreprise";
 import type { OngletProfil } from "@/lib/profilPrefs";
 import type { Profile } from "@/hooks/useAuth";
 
@@ -151,6 +152,8 @@ export default function RecapReglagesProfil({ profile, onNaviguer }: RecapReglag
         <RecapSection titre="Entreprise & mentions" icone="ri-building-line">
           <RecapLigne label="Entreprise" valeur={profile.entreprise?.trim() || "Non renseignée"} icone="ri-home-4-line" onNaviguer={onNaviguer} cible={{ onglet: "entreprise", ancre: "profil-infos-entreprise" }} />
           <RecapLigne label="Métier" valeur={metierLabel(profile.metier ?? "") || "Non renseigné"} icone="ri-tools-line" onNaviguer={onNaviguer} cible={{ onglet: "entreprise", ancre: "profil-infos-entreprise" }} />
+          <RecapLigne label="Statut juridique" valeur={statutJuridiqueLabel(profile.statut_juridique ?? "") || "Non renseigné"} icone="ri-briefcase-line" onNaviguer={onNaviguer} cible={{ onglet: "entreprise", ancre: "profil-infos-entreprise" }} />
+          <RecapLigne label="Taille" valeur={tailleEntrepriseLabel(profile.taille_entreprise ?? "") || "Non renseignée"} icone="ri-group-line" onNaviguer={onNaviguer} cible={{ onglet: "entreprise", ancre: "profil-infos-entreprise" }} />
           <RecapLigne label="Téléphone" valeur={profile.telephone?.trim() || "Non renseigné"} icone="ri-phone-line" onNaviguer={onNaviguer} cible={{ onglet: "entreprise", ancre: "profil-infos-entreprise" }} />
           <RecapLigne label="Logo" valeur={profile.logo_url ? "Ajouté" : "Aucun"} icone="ri-image-line" actif={Boolean(profile.logo_url)} onNaviguer={onNaviguer} cible={{ onglet: "entreprise", ancre: "profil-infos-entreprise" }} />
           <RecapLigne label="SIRET" valeur={profile.siret?.trim() || "Non renseigné"} icone="ri-hashtag" actif={Boolean(profile.siret?.trim())} onNaviguer={onNaviguer} cible={{ onglet: "entreprise", ancre: "profil-mentions-legales" }} />

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ChantierItem } from "@/hooks/useArtisanData";
-import { addEtape, deleteChantier, deleteEtape, toggleEtape } from "@/lib/artisanApi";
+import { addEtape, deleteChantier, deleteEtape, toggleEtape, updateChantierNote } from "@/lib/artisanApi";
 import { chantierProgress } from "@/lib/chantiers";
 import { couleurIntervenant, type Intervenant } from "@/lib/intervenants";
 import { chantierStatusTone } from "@/lib/statuts";
@@ -8,6 +8,7 @@ import { formatEuros } from "@/lib/format";
 import { formatShortDate } from "@/lib/dates";
 import Modal from "@/pages/app/components/Modal";
 import StatutBadge from "@/pages/app/components/StatutBadge";
+import SuiviClientPanel from "@/pages/app/chantiers/components/SuiviClientPanel";
 
 export default function ChantierDetailModal({
   chantier,
@@ -25,9 +26,18 @@ export default function ChantierDetailModal({
 }) {
   const [newEtape, setNewEtape] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Bloc note libre du chantier : suivi, points à retenir, consignes…
+  const [note, setNote] = useState(chantier.note ?? "");
+  const [noteSaved, setNoteSaved] = useState(false);
 
   const progress = chantierProgress(chantier);
   const doneCount = chantier.etapes.filter((e) => e.fait).length;
+
+  // Resynchronise la note locale quand on change de chantier ou après un rechargement.
+  useEffect(() => {
+    setNote(chantier.note ?? "");
+    setNoteSaved(false);
+  }, [chantier.id, chantier.note]);
 
   const run = async (fn: () => Promise<void>) => {
     setError(null);
@@ -49,6 +59,12 @@ export default function ChantierDetailModal({
   const handleDelete = async () => {
     await run(() => deleteChantier(chantier.id));
     onDeleted();
+  };
+
+  const handleSaveNote = async () => {
+    setNoteSaved(false);
+    await run(() => updateChantierNote(chantier.id, note));
+    setNoteSaved(true);
   };
 
   return (
@@ -142,7 +158,46 @@ export default function ChantierDetailModal({
         </ul>
       )}
 
+      <div className="mt-5 p-3.5 rounded-lg bg-background-50 border border-background-200">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="w-7 h-7 flex items-center justify-center rounded-md bg-accent-100 text-accent-700">
+            <i className="ri-sticky-note-line text-sm"></i>
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-foreground-900">Note du chantier</p>
+            <p className="text-[11px] text-foreground-500">Consignes, points de suivi, matériaux à prévoir…</p>
+          </div>
+        </div>
+        <textarea
+          value={note}
+          onChange={(e) => {
+            setNote(e.target.value);
+            setNoteSaved(false);
+          }}
+          rows={3}
+          placeholder="Ex. : Prévoir l'échelle pour la toiture. Client absent l'après-midi."
+          className="w-full px-3 py-2 rounded-md bg-background-100 border border-background-200 text-sm text-foreground-800 outline-none focus:border-primary-400 resize-none"
+        />
+        <div className="flex items-center justify-end gap-3 mt-2">
+          {noteSaved && (
+            <span className="text-[11px] text-accent-700 inline-flex items-center gap-1">
+              <i className="ri-checkbox-circle-line"></i>
+              Note enregistrée.
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleSaveNote}
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-secondary-100 text-secondary-800 text-xs font-semibold cursor-pointer hover:bg-secondary-200 whitespace-nowrap transition-colors"
+          >
+            <i className="ri-save-line"></i> Enregistrer la note
+          </button>
+        </div>
+      </div>
+
       {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
+
+      <SuiviClientPanel chantier={chantier} onReload={onReload} />
 
       <div className="flex justify-between items-center mt-6 pt-4 border-t border-background-200">
         <button

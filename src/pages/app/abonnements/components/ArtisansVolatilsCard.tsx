@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { formatEuros } from "@/lib/format";
 import { formatShortDate, todayISO } from "@/lib/dates";
-import { buildArtisansVolatilsPdf, savePdf } from "@/lib/pdf";
+import { buildArtisansVolatilsPdf } from "@/lib/pdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 import { SEUIL_TRES_VOLATIL, type AbonnementItem, type AbonnementHistoriqueResume } from "@/lib/abonnementsApi";
 import Toast from "@/components/base/Toast";
 import RecontacterArtisanModal from "@/pages/app/abonnements/components/RecontacterArtisanModal";
@@ -49,6 +51,7 @@ const MEDAILLES = [
 export default function ArtisansVolatilsCard({ abos, resumes, onComparer, onRecontactEnvoye }: Props) {
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
   const [cible, setCible] = useState<RecontacterCible | null>(null);
   const [tousOpen, setTousOpen] = useState(false);
   const [journalOuvert, setJournalOuvert] = useState<number | null>(null);
@@ -83,32 +86,36 @@ export default function ArtisansVolatilsCard({ abos, resumes, onComparer, onReco
     }
     setExporting(true);
     try {
-      const doc = await buildArtisansVolatilsPdf({
-        comptesConcernes,
-        comptesTresVolatils: tresVolatilsAll.length,
-        totalChangements,
-        seuilLabel: SEUIL_LABEL,
-        rows: rows.map((r, i) => {
-          const derniere = r.resume?.recentes.find((it) => it.ancienne_valeur && it.nouvelle_valeur);
-          return {
-            rang: i + 1,
-            entreprise: r.abo.entreprise,
-            metier: r.abo.metier,
-            ville: r.abo.ville,
-            email: r.abo.email,
-            offre: r.abo.offre,
-            changements: r.resume?.offres ?? 0,
-            dernierLabel:
-              derniere && derniere.ancienne_valeur
-                ? `${derniere.ancienne_valeur} → ${derniere.nouvelle_valeur ?? "—"}`
-                : null,
-            dernierDate: derniere ? formatShortDate(derniere.created_at) : null,
-            dernierMontant: derniere?.nouveau_montant ?? null,
-          };
-        }),
+      ouvrirApercuPdf({
+        title: "Aperçu · Artisans les plus volatils",
+        filename: `artisans-volatils-${todayISO()}.pdf`,
+        note: `Classement des ${rows.length} comptes qui changent le plus d'offre · seuil ${SEUIL_LABEL}`,
+        build: () =>
+          buildArtisansVolatilsPdf({
+            comptesConcernes,
+            comptesTresVolatils: tresVolatilsAll.length,
+            totalChangements,
+            seuilLabel: SEUIL_LABEL,
+            rows: rows.map((r, i) => {
+              const derniere = r.resume?.recentes.find((it) => it.ancienne_valeur && it.nouvelle_valeur);
+              return {
+                rang: i + 1,
+                entreprise: r.abo.entreprise,
+                metier: r.abo.metier,
+                ville: r.abo.ville,
+                email: r.abo.email,
+                offre: r.abo.offre,
+                changements: r.resume?.offres ?? 0,
+                dernierLabel:
+                  derniere && derniere.ancienne_valeur
+                    ? `${derniere.ancienne_valeur} → ${derniere.nouvelle_valeur ?? "—"}`
+                    : null,
+                dernierDate: derniere ? formatShortDate(derniere.created_at) : null,
+                dernierMontant: derniere?.nouveau_montant ?? null,
+              };
+            }),
+          }),
       });
-      savePdf(doc, `artisans-volatils-${todayISO()}.pdf`);
-      setToast("Classement exporté en PDF");
     } catch {
       setToast("L'export PDF a échoué. Réessayez.");
     } finally {
@@ -311,6 +318,16 @@ export default function ArtisansVolatilsCard({ abos, resumes, onComparer, onReco
           seuilLabel={SEUIL_LABEL}
           onClose={() => setTousOpen(false)}
           onSent={rafraichirJournaux}
+        />
+      )}
+      {apercuPdf && (
+        <ApercuPdfModal
+          title={apercuPdf.title}
+          subtitle={apercuPdf.subtitle}
+          filename={apercuPdf.filename}
+          docBuilder={apercuPdf.build}
+          note={apercuPdf.note}
+          onClose={fermerApercuPdf}
         />
       )}
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}

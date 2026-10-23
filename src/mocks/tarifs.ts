@@ -10,6 +10,8 @@ export const comparatif: { title: string; rows: { label: string; essentiel: Cell
       { label: "Devis en plusieurs lots", essentiel: false, pro: true, entreprise: true },
       { label: "Signature électronique client", essentiel: false, pro: true, entreprise: true },
       { label: "Facturation depuis un devis signé", essentiel: true, pro: true, entreprise: true },
+      { label: "Modèles de devis & factures réutilisables", essentiel: true, pro: true, entreprise: true },
+      { label: "Documents à votre image (couleur, logo, paiement)", essentiel: true, pro: true, entreprise: true },
     ],
   },
   {
@@ -19,6 +21,7 @@ export const comparatif: { title: string; rows: { label: string; essentiel: Cell
       { label: "Relances SMS & WhatsApp", essentiel: false, pro: true, entreprise: true },
       { label: "CRM clients & historique", essentiel: true, pro: true, entreprise: true },
       { label: "Paiement en ligne des clients", essentiel: false, pro: false, entreprise: true },
+      { label: "Identité de marque dans les emails & la signature client", essentiel: true, pro: true, entreprise: true },
     ],
   },
   {
@@ -27,6 +30,7 @@ export const comparatif: { title: string; rows: { label: string; essentiel: Cell
       { label: "Planning intelligent & trajets", essentiel: false, pro: true, entreprise: true },
       { label: "Suivi de chantier par étapes", essentiel: false, pro: true, entreprise: true },
       { label: "Photos horodatées illimitées", essentiel: false, pro: true, entreprise: true },
+      { label: "Notes et consignes par chantier", essentiel: false, pro: true, entreprise: true },
       { label: "Tableau de bord & prévisions IA", essentiel: "Basique", pro: "Avancé", entreprise: "Avancé" },
     ],
   },
@@ -68,6 +72,11 @@ export const tarifsFaq = [
       "Sur l'offre Pro et au-dessus, ArtiFlow-pro relance vos clients sur le canal où ils répondent le mieux. Email d'abord, puis SMS ou WhatsApp si pas de réponse — toujours avec des messages courtois que vous pouvez relire.",
   },
   {
+    question: "Puis-je personnaliser mes devis, factures et emails à mon image ?",
+    answer:
+      "Oui, et c'est inclus sur toutes les offres. Depuis votre profil, vous choisissez une couleur d'accent (ou une teinte sur mesure à la pipette), vous affichez ou masquez votre logo, vous renseignez vos coordonnées de paiement (IBAN, BIC, conditions de règlement) et un message de pied de page libre. On règle tout une seule fois : le même habillage s'applique à vos devis et factures PDF, à vos emails clients (devis, factures et relances) et à la page de signature en ligne. Votre client retrouve donc votre couleur et votre logo du premier document jusqu'au dernier clic — jamais de logo ArtiFlow côté client.",
+  },
+  {
     question: "Je travaille avec un apprenti, comment ça se passe ?",
     answer:
       "L'offre Entreprise gère plusieurs utilisateurs avec des rôles distincts : votre apprenti peut renseigner un chantier sans accéder à votre chiffre d'affaires.",
@@ -107,7 +116,7 @@ export const proTestimonials = [
     quote:
       "Avant, je relançais mes devis à l'arrache le soir. Depuis que je suis passé au Pro, les SMS et WhatsApp partent tout seuls — j'ai signé trois devis que j'aurais laissés tomber.",
     avatar:
-      "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20friendly%20French%20male%20plumber%20in%20his%20forties%20wearing%20a%20dark%20work%20polo%2C%20warm%20neutral%20beige%20studio%20background%2C%20soft%20natural%20lighting%2C%20confident%20smile%2C%20consistent%20editorial%20headshot%20style%2C%20high%20detail&width=200&height=200&seq=artiflow-pro-avatar-marc&orientation=squarish",
+      "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20friendly%20French%20male%20plumber%20in%20his%20forties%20wearing%20a%20dark%20work%20polo%2C%20warm%20neutral%20beige%20studio%20background%2C%20soft%20natural%20lighting%2C%20confident%20smile%2C%20consistent%20editorial%20headshot%20style%2C%20high%20detail&width=128&height=128&seq=artiflow-pro-avatar-marc&orientation=squarish",
   },
   {
     name: "Léa Martin",
@@ -116,7 +125,7 @@ export const proTestimonials = [
     quote:
       "Le planning intelligent me fait gagner au moins une heure de route par jour. Mes chantiers sont regroupés par zone et je rentre plus tôt chez moi, sans stress.",
     avatar:
-      "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20smiling%20French%20woman%20electrician%20in%20her%20thirties%20with%20tied-back%20hair%20wearing%20a%20navy%20work%20vest%2C%20warm%20neutral%20beige%20studio%20background%2C%20soft%20natural%20lighting%2C%20professional%20friendly%20expression%2C%20consistent%20editorial%20headshot%20style%2C%20high%20detail&width=200&height=200&seq=artiflow-pro-avatar-lea&orientation=squarish",
+      "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20smiling%20French%20woman%20electrician%20in%20her%20thirties%20with%20tied-back%20hair%20wearing%20a%20navy%20work%20vest%2C%20warm%20neutral%20beige%20studio%20background%2C%20soft%20natural%20lighting%2C%20professional%20friendly%20expression%2C%20consistent%20editorial%20headshot%20style%2C%20high%20detail&width=128&height=128&seq=artiflow-pro-avatar-lea&orientation=squarish",
   },
   {
     name: "Rémi Faure",
@@ -125,7 +134,7 @@ export const proTestimonials = [
     quote:
       "La signature électronique a tout changé : mes clients signent le devis avant même que je range l'outillage. Je facture dans la foulée, plus personne ne traîne.",
     avatar:
-      "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20cheerful%20French%20male%20carpenter%20in%20his%20fifties%20with%20short%20grey%20hair%20wearing%20a%20grey%20work%20shirt%2C%20warm%20neutral%20beige%20studio%20background%2C%20soft%20natural%20lighting%2C%20honest%20smile%2C%20consistent%20editorial%20headshot%20style%2C%20high%20detail&width=200&height=200&seq=artiflow-pro-avatar-remi&orientation=squarish",
+      "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20cheerful%20French%20male%20carpenter%20in%20his%20fifties%20with%20short%20grey%20hair%20wearing%20a%20grey%20work%20shirt%2C%20warm%20neutral%20beige%20studio%20background%2C%20soft%20natural%20lighting%2C%20honest%20smile%2C%20consistent%20editorial%20headshot%20style%2C%20high%20detail&width=128&height=128&seq=artiflow-pro-avatar-remi&orientation=squarish",
   },
 ];
 

@@ -1,0 +1,46 @@
+import { IMAGE_PARTAGE_PERSONNALISATION } from "@/lib/imagesPartage";
+
+/**
+ * Visuels de partage (Open Graph / Twitter) de chaque annonce du journal.
+ *
+ * Une annonce sans visuel dédié retombe sur l'image générique du site, ce qui donne un
+ * aperçu social fade. Cette table associe donc à chaque livraison une image 1200×630, dans
+ * la même direction artistique (ambre et vert profond sur fond charbon). Elle sert à la page
+ * récapitulative du journal, qui présente chaque annonce avec sa vignette de partage.
+ */
+export const IMAGES_ANNONCES: Record<string, string> = {
+  "renvois-programmes":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20scheduling%20an%20email%20resend%2C%20a%20large%20countdown%20clock%20beside%20an%20envelope%20and%20a%20circular%20arrow%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-renvois-programmes&orientation=landscape",
+  "verification-adresse":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20verifying%20an%20email%20address%20before%20sending%2C%20a%20shield%20with%20a%20check%20mark%20beside%20a%20corrected%20envelope%20and%20a%20magnifying%20glass%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-verification-adresse&orientation=landscape",
+  "suivi-emails-clients":
+    "https://readdy.ai/api/search-image?query=Stylized%20editorial%20illustration%20of%20email%20delivery%20tracking%20for%20a%20construction%20business%2C%20a%20stylized%20envelope%20with%20a%20green%20check%20beside%20a%20red%20crossed%20envelope%2C%20a%20small%20countdown%20clock%20and%20a%20notification%20card%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20subtle%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-suivi-emails&orientation=landscape",
+  "personnalisation-documents": IMAGE_PARTAGE_PERSONNALISATION,
+  "v3-0":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20a%20public%20product%20changelog%20and%20RSS%20feed%2C%20a%20stack%20of%20release%20notes%20beside%20a%20broadcast%20antenna%20and%20feed%20waves%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-journal-rss&orientation=landscape",
+  "v2-9":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20annual%20savings%20on%20subscription%20plans%2C%20three%20pricing%20cards%20beside%20a%20gift%20tag%20and%20a%20downward%20price%20curve%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-economie-annuelle&orientation=landscape",
+  "v2-8":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20an%20enterprise%20pricing%20simulator%20and%20tracked%20contact%20questions%2C%20team%20silhouettes%20beside%20a%20calculator%20and%20speech%20bubbles%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-simulateur-entreprise&orientation=landscape",
+  "v2-7":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20a%20weekly%20subscription%20revenue%20recap%2C%20rising%20line%20charts%20and%20recurring%20revenue%20cards%20beside%20a%20calendar%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-recap-abonnements&orientation=landscape",
+  "v2-6":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20scheduled%20SMS%20and%20WhatsApp%20payment%20reminders%2C%20chat%20message%20bubbles%20beside%20a%20calendar%20and%20a%20bell%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-relances-sms&orientation=landscape",
+  "v2-5":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20accounting%20exports%2C%20aged%20balance%20and%20multi%20rate%20VAT%2C%20ledger%20sheets%20beside%20a%20calculator%20and%20a%20stamp%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-comptabilite-tva&orientation=landscape",
+  "v2-4":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20smart%20planning%20by%20geographic%20zone%2C%20a%20map%20with%20grouped%20pins%20beside%20a%20weekly%20calendar%20grid%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-planning-zones&orientation=landscape",
+  "v2-3":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20electronic%20signature%20of%20construction%20quotes%2C%20a%20signed%20document%20beside%20a%20stylus%20and%20a%20padlock%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-signature-devis&orientation=landscape",
+  "v2-2":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20multi%20lot%20quotes%20and%20reusable%20templates%2C%20stacked%20document%20sections%20beside%20a%20folder%20and%20a%20duplicate%20arrow%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-devis-lots&orientation=landscape",
+  "v2-1":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20enriched%20client%20records%20and%20priority%20notes%2C%20contact%20cards%20beside%20a%20sticky%20note%20and%20a%20bookmark%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-fiches-clients&orientation=landscape",
+  "v2-0":
+    "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20a%20new%20dashboard%20with%20AI%20revenue%20forecasts%2C%20an%20analytics%20panel%20beside%20a%20rising%20curve%20and%20a%20spark%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-tableau-de-bord&orientation=landscape",
+};
+
+/** Visuel de partage d'une annonce, avec repli sur l'image générique du journal. */
+export function imageAnnonce(id: string): string | undefined {
+  return IMAGES_ANNONCES[id];
+}

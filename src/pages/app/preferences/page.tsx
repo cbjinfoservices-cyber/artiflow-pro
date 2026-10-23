@@ -33,6 +33,7 @@ import {
 import { usePreferencesAffichageSync } from "@/hooks/usePreferencesAffichageSync";
 import ExportDonneesCard from "@/pages/app/components/ExportDonneesCard";
 import StatutEnvoiEmailsCard from "@/pages/app/components/StatutEnvoiEmailsCard";
+import RecapInvitationsIntervenantsCard from "@/pages/app/preferences/components/RecapInvitationsIntervenantsCard";
 
 /** Petit indicateur chiffré du récapitulatif d'en-tête. */
 interface Stat {
@@ -345,8 +346,9 @@ export default function AppPreferences() {
         <div className="min-w-0">
           <h2 className="font-heading font-semibold text-lg text-foreground-950">Préférences d'affichage</h2>
           <p className="text-sm text-foreground-500 mt-0.5 max-w-2xl">
-            Ces réglages ne concernent que l'affichage de votre espace. Ils n'ont aucune incidence sur vos
-            données métier, et sont retrouvés automatiquement sur vos autres appareils.
+            Réglez ici l'affichage de votre espace et le rythme de vos emails automatiques. Rien n'a
+            d'incidence sur vos données de chantier ou de facturation, et tout est retrouvé automatiquement
+            sur vos autres appareils.
           </p>
         </div>
         <div className="shrink-0 flex flex-wrap items-center gap-2">
@@ -717,6 +719,25 @@ export default function AppPreferences() {
             {boutonDerniereRaz("filtres")}
           </div>
         </div>
+      </section>
+
+      {/* Récap des invitations d'intervenants : réglage d'un email hebdomadaire automatique. */}
+      <section id="section-recap-invitations" className="scroll-mt-28 flex flex-col gap-3">
+        <div className="flex items-start gap-3">
+          <span className="w-9 h-9 shrink-0 flex items-center justify-center rounded-md bg-secondary-100 text-secondary-700">
+            <i className="ri-mail-star-line"></i>
+          </span>
+          <div className="min-w-0">
+            <h3 className="font-heading font-semibold text-base text-foreground-950">
+              Récap invitations intervenants
+            </h3>
+            <p className="text-xs text-foreground-500 mt-0.5 leading-relaxed">
+              Le seul réglage de cette page qui concerne un email automatique : programmez le jour et l'heure
+              du récapitulatif des invitations à relancer, ou coupez-le.
+            </p>
+          </div>
+        </div>
+        <RecapInvitationsIntervenantsCard />
       </section>
 
       {/* Envoi des emails : repère de configuration (clé + domaine vérifiés) */}

@@ -15,12 +15,24 @@ import ApercuPartageCard, {
   RESEAUX_APERCU,
   type ReseauApercu,
 } from "@/pages/app/audit-seo/components/ApercuPartageCard";
+import GardeFouVisuels from "@/pages/app/audit-seo/components/GardeFouVisuels";
+import GardeFouMetadonnees from "@/pages/app/audit-seo/components/GardeFouMetadonnees";
+import GardeFouSitemap from "@/pages/app/audit-seo/components/GardeFouSitemap";
+import CompteurCaracteres from "@/pages/app/audit-seo/components/CompteurCaracteres";
+import {
+  LIMITES_META,
+  compterMetadonneesHorsLimites,
+  mesurerDescription,
+  mesurerTitre,
+  metadonneesHorsLimites,
+} from "@/lib/auditMetadonnees";
 
 type FiltreGroupe = "tous" | GroupeAudit;
 
 /** Style de la pastille indiquant l'origine du visuel de partage. */
 const STYLE_SOURCE: Record<SourceVisuel, string> = {
   dedie: "bg-secondary-100 text-secondary-800",
+  site: "bg-secondary-100/70 text-secondary-900 border border-secondary-200",
   generique: "bg-accent-100 text-accent-900",
   photo: "bg-primary-100 text-primary-700",
   heros: "bg-background-100 text-foreground-700 border border-background-200",
@@ -28,6 +40,7 @@ const STYLE_SOURCE: Record<SourceVisuel, string> = {
 
 const ICONE_SOURCE: Record<SourceVisuel, string> = {
   dedie: "ri-image-2-line",
+  site: "ri-store-2-line",
   generique: "ri-error-warning-line",
   photo: "ri-user-line",
   heros: "ri-landscape-line",
@@ -46,6 +59,7 @@ export default function AppAuditSeo() {
 
   const [groupe, setGroupe] = useState<FiltreGroupe>("tous");
   const [manquesSeulement, setManquesSeulement] = useState(false);
+  const [metaSeulement, setMetaSeulement] = useState(false);
   const [reseau, setReseau] = useState<ReseauApercu>("linkedin");
 
   const totalGeneriques = useMemo(() => pagesPubliques.filter(estGenerique).length, []);
@@ -53,6 +67,7 @@ export default function AppAuditSeo() {
     () => pagesPubliques.filter((p) => p.source === "dedie").length,
     []
   );
+  const totalHorsLimites = useMemo(() => compterMetadonneesHorsLimites(), []);
 
   const comptesParGroupe = useMemo(() => {
     const map = new Map<GroupeAudit, number>();
@@ -65,12 +80,14 @@ export default function AppAuditSeo() {
       pagesPubliques.filter((p) => {
         if (groupe !== "tous" && p.group !== groupe) return false;
         if (manquesSeulement && !sansVisuelDedie(p)) return false;
+        if (metaSeulement && !metadonneesHorsLimites(p)) return false;
         return true;
       }),
-    [groupe, manquesSeulement]
+    [groupe, manquesSeulement, metaSeulement]
   );
 
   const totalManquesAffiches = liste.filter(sansVisuelDedie).length;
+  const totalMetaAffiches = liste.filter(metadonneesHorsLimites).length;
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
@@ -83,14 +100,20 @@ export default function AppAuditSeo() {
           <div>
             <h2 className="font-heading font-bold text-xl text-foreground-950">Audit SEO des pages publiques</h2>
             <p className="text-sm text-foreground-500">
-              Titre, description et visuel de partage de chaque page — repérez les visuels manquants d'un coup d'œil.
+              Titre, description et visuel de partage de chaque page, avec le compteur de caractères
+              — tout se vérifie ici, sans copier-coller.
             </p>
           </div>
         </div>
       </div>
 
+      {/* Garde-fous : visuels, métadonnées (longueurs et doublons), sitemap. */}
+      <GardeFouVisuels />
+      <GardeFouMetadonnees />
+      <GardeFouSitemap />
+
       {/* Synthèse */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <div className="p-4 md:p-5 rounded-lg bg-background-100 border border-background-200">
           <span className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary-100 text-primary-700 text-lg">
             <i className="ri-pages-line"></i>
@@ -117,6 +140,18 @@ export default function AppAuditSeo() {
             {totalGeneriques}
           </p>
           <p className="text-xs text-foreground-600">sur l'image générique (à compléter)</p>
+        </div>
+        <div className="p-4 md:p-5 rounded-lg bg-background-100 border border-background-200">
+          <span className="w-9 h-9 flex items-center justify-center rounded-lg bg-secondary-100 text-secondary-700 text-lg">
+            <i className="ri-text-spacing"></i>
+          </span>
+          <p className="mt-3 font-heading font-extrabold text-2xl text-foreground-950 tabular-nums">
+            {totalHorsLimites}
+          </p>
+          <p className="text-xs text-foreground-600">
+            titres ou descriptions hors plage ({LIMITES_META.titreMax} / {LIMITES_META.descriptionMin}–
+            {LIMITES_META.descriptionMax})
+          </p>
         </div>
       </div>
 
@@ -161,22 +196,37 @@ export default function AppAuditSeo() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={manquesSeulement}
-              onChange={(e) => setManquesSeulement(e.target.checked)}
-              className="w-4 h-4 cursor-pointer accent-accent-600"
-            />
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-700">
-              <i className="ri-error-warning-line text-accent-700"></i>
-              Afficher uniquement les pages sans visuel dédié
-            </span>
-          </label>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={manquesSeulement}
+                onChange={(e) => setManquesSeulement(e.target.checked)}
+                className="w-4 h-4 cursor-pointer accent-accent-600"
+              />
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-700">
+                <i className="ri-error-warning-line text-accent-700"></i>
+                Afficher uniquement les pages sans visuel dédié
+              </span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={metaSeulement}
+                onChange={(e) => setMetaSeulement(e.target.checked)}
+                className="w-4 h-4 cursor-pointer accent-secondary-600"
+              />
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-700">
+                <i className="ri-text-spacing text-secondary-700"></i>
+                Afficher uniquement les métadonnées hors plage
+              </span>
+            </label>
+          </div>
           <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background-50 border border-background-200 text-xs font-semibold text-foreground-600 whitespace-nowrap">
             <i className="ri-list-check-2"></i>
             {liste.length} page{liste.length > 1 ? "s" : ""}
             {totalManquesAffiches > 0 && ` · ${totalManquesAffiches} manque${totalManquesAffiches > 1 ? "s" : ""}`}
+            {totalMetaAffiches > 0 && ` · ${totalMetaAffiches} hors plage`}
           </span>
         </div>
 
@@ -222,7 +272,8 @@ export default function AppAuditSeo() {
             Aucun manque à signaler ici
           </h3>
           <p className="mt-2 text-sm text-foreground-600 max-w-md">
-            Toutes les pages de ce filtre disposent d'un visuel de partage dédié.
+            Toutes les pages de ce filtre disposent d'un visuel de partage dédié et de métadonnées
+            dans leur plage.
           </p>
         </div>
       ) : (
@@ -272,9 +323,23 @@ function LigneAudit({ entree, reseau }: { entree: EntreeAudit; reseau: ReseauApe
         <h3 className="mt-2.5 font-heading font-semibold text-sm md:text-base text-foreground-950">
           {entree.title}
         </h3>
+        <div className="mt-1.5">
+          <CompteurCaracteres
+            prefixe="Titre"
+            mesure={mesurerTitre(entree.title)}
+            plage={`≤ ${LIMITES_META.titreMax}`}
+          />
+        </div>
         <p className="mt-1.5 text-xs md:text-sm text-foreground-600 leading-relaxed">
           {entree.description}
         </p>
+        <div className="mt-1.5">
+          <CompteurCaracteres
+            prefixe="Description"
+            mesure={mesurerDescription(entree.description)}
+            plage={`${LIMITES_META.descriptionMin}–${LIMITES_META.descriptionMax}`}
+          />
+        </div>
         <p className="mt-2 text-[11px] text-foreground-400">
           <i className="ri-price-tag-3-line mr-1"></i>
           {entree.label}

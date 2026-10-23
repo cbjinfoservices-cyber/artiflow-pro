@@ -5,6 +5,8 @@ import ArticleSommaire from "@/components/feature/ArticleSommaire";
 import FaqAccordion from "@/components/feature/FaqAccordion";
 import GuidePrevNext from "@/pages/ressources/components/GuidePrevNext";
 import GuideLienCard from "@/pages/ressources/components/GuideLienCard";
+import EtapeSuivanteParcours from "@/pages/ressources/components/EtapeSuivanteParcours";
+import ParagrapheArticle from "@/pages/ressources/components/ParagrapheArticle";
 import MarquerLuButton from "@/pages/ressources/components/MarquerLuButton";
 import NotesGuide from "@/pages/ressources/components/NotesGuide";
 import ALireEnsuite from "@/pages/ressources/components/ALireEnsuite";
@@ -24,7 +26,7 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { useArticleSchema } from "@/hooks/useArticleSchema";
 import { useFaqSchema } from "@/hooks/useFaqSchema";
 import { useHowToSchema } from "@/hooks/useHowToSchema";
-import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
+import FilAriane from "@/components/feature/FilAriane";
 
 const slugify = (value: string) =>
   value
@@ -47,8 +49,18 @@ export default function ArticlePage() {
   const howTo = getHowToGuide(article?.slug);
   const miseAJour = getGuideMiseAJour(article?.slug);
 
+  // Chemin du guide : sert à la fois au fil d'Ariane visible et au BreadcrumbList.
+  const filArianeItems = article
+    ? [
+        { name: "Accueil", path: "/" },
+        { name: "Ressources", path: "/ressources" },
+        ...(metier ? [{ name: metier.name, path: `/metiers/${metier.slug}` }] : []),
+        { name: article.title, path: `/ressources/${article.slug}` },
+      ]
+    : [];
+
   usePageMeta(
-    article ? `${article.title} | ArtiFlow-pro` : "Guide artisan | ArtiFlow-pro",
+    article ? article.seoTitle ?? `${article.title} | ArtiFlow-pro` : "Guide artisan | ArtiFlow-pro",
     article?.excerpt,
     { image: article?.shareImage ?? metier?.heroImage, type: "article" }
   );
@@ -64,6 +76,10 @@ export default function ArticlePage() {
           section: metier?.name,
           image: article.shareImage ?? metier?.heroImage,
           author: auteur ? { name: auteur.name, id: auteur.id } : null,
+          schemaType: article.blogPosting ? "BlogPosting" : "Article",
+          description: article.blogPosting?.description,
+          datePublishedIso: article.blogPosting?.datePublished,
+          dateModifiedIso: article.blogPosting?.dateModified,
         }
       : null
   );
@@ -74,18 +90,6 @@ export default function ArticlePage() {
   );
 
   useHowToSchema(howTo ? { ...howTo, dateModified: miseAJour } : null);
-
-  useBreadcrumbSchema(
-    article
-      ? [
-          { name: "Accueil", path: "/" },
-          { name: "Ressources", path: "/ressources" },
-          ...(metier ? [{ name: metier.name, path: `/metiers/${metier.slug}` }] : []),
-          { name: article.title, path: `/ressources/${article.slug}` },
-        ]
-      : [],
-    "artiflow-article-breadcrumb-schema"
-  );
 
   if (!article) {
     return <Navigate to="/ressources" replace />;
@@ -131,35 +135,24 @@ export default function ArticlePage() {
 
       <main>
         <section className="relative w-full pt-16 md:pt-18 overflow-hidden bg-foreground-950">
-          {metier && (
-            <img
-              src={metier.heroImage}
-              alt={`Guide ${metier.name} · ${article.title}`}
-              title={`${article.title} · ArtiFlow-pro`}
-              className="absolute inset-0 w-full h-full object-cover object-top"
-            />
-          )}
+          <img
+            src={metier ? metier.heroImage : article.shareImage}
+            alt={
+              metier
+                ? `Guide ${metier.name} · ${article.title}`
+                : `Guide ArtiFlow-pro · ${article.title}`
+            }
+            title={`${article.title} · ArtiFlow-pro`}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-foreground-950/85 via-foreground-950/75 to-foreground-950/90"></div>
 
           <div className="relative w-full px-4 md:px-8 lg:px-12 pt-12 md:pt-16 pb-12 md:pb-16">
-            <nav className="flex flex-wrap items-center gap-2 text-xs text-background-200/80 mb-6">
-              <Link to="/" className="hover:text-background-50 cursor-pointer">Accueil</Link>
-              <i className="ri-arrow-right-s-line"></i>
-              <Link to="/ressources" className="hover:text-background-50 cursor-pointer">Ressources</Link>
-              {metier && (
-                <>
-                  <i className="ri-arrow-right-s-line"></i>
-                  <Link
-                    to={`/metiers/${metier.slug}`}
-                    className="hover:text-background-50 cursor-pointer"
-                  >
-                    {metier.name}
-                  </Link>
-                </>
-              )}
-              <i className="ri-arrow-right-s-line"></i>
-              <span className="text-background-50">{article.title}</span>
-            </nav>
+            <FilAriane
+              items={filArianeItems}
+              variante="sombre"
+              schemaId="artiflow-article-breadcrumb-schema"
+            />
 
             <div className="max-w-3xl">
               {metier && (
@@ -231,18 +224,37 @@ export default function ArticlePage() {
                       </h2>
                       <div className="mt-3.5 flex flex-col gap-4">
                         {section.body.map((paragraphe, pIndex) => (
-                          <p
+                          <ParagrapheArticle
                             key={pIndex}
+                            texte={paragraphe}
                             className={`leading-relaxed ${
                               sIndex === 0 && pIndex === 0
                                 ? "text-base md:text-lg text-foreground-800"
                                 : "text-sm md:text-base text-foreground-600"
                             }`}
-                          >
-                            {paragraphe}
-                          </p>
+                          />
                         ))}
                       </div>
+                      {section.subs && section.subs.length > 0 && (
+                        <div className="mt-6 flex flex-col gap-6">
+                          {section.subs.map((sub) => (
+                            <div key={sub.title}>
+                              <h3 className="font-heading font-semibold text-base md:text-lg text-foreground-900 tracking-tight">
+                                {sub.title}
+                              </h3>
+                              <div className="mt-2 flex flex-col gap-3">
+                                {sub.body.map((paragraphe, pIndex) => (
+                                  <ParagrapheArticle
+                                    key={pIndex}
+                                    texte={paragraphe}
+                                    className="text-sm md:text-base text-foreground-600 leading-relaxed"
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </section>
                   ))}
                 </div>
@@ -317,6 +329,8 @@ export default function ArticlePage() {
                     {favori ? "Dans mes favoris" : "Ajouter aux favoris"}
                   </button>
                 </div>
+
+                <EtapeSuivanteParcours slug={article.slug} />
 
                 <div className="mt-12 pt-8 border-t border-background-200">
                   <GuidePrevNext

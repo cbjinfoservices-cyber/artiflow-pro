@@ -26,7 +26,7 @@ export default function PodcastPage() {
 
   usePageMeta(
     "Podcast & médias ArtiFlow-pro · L'équipe sur les ondes",
-    "Écoutez les interviews et prises de parole de l'équipe ArtiFlow-pro dans les podcasts et médias du bâtiment : chiffrage par IA, RGPD, produit et croissance.",
+    "Écoutez les interviews de l'équipe ArtiFlow-pro dans les podcasts et médias du bâtiment : chiffrage par IA, RGPD, produit et croissance.",
     {
       type: "website",
       // Carte Twitter « player » + métadonnées audio, pilotées par l'épisode à la une.
@@ -111,6 +111,9 @@ export default function PodcastPage() {
                   src="https://readdy.ai/api/search-image?query=Stylized%20artistic%20scene%20of%20a%20warm%20podcast%20recording%20corner%20for%20a%20construction%20software%20brand%2C%20microphone%20on%20a%20boom%20arm%20with%20headphones%20and%20blurred%20blueprint%20lines%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%2C%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=900&height=700&seq=artiflow-podcast-hero&orientation=landscape"
                   alt="Coin studio pour enregistrer les podcasts d'ArtiFlow-pro"
                   title="Podcast et médias ArtiFlow-pro"
+                  width={900}
+                  height={700}
+                  decoding="async"
                   className="w-full h-full object-cover object-top"
                 />
               </div>

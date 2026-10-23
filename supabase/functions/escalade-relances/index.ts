@@ -30,6 +30,31 @@ function escapeHtml(value: unknown): string {
     .replace(/"/g, "&quot;");
 }
 
+interface DocIdentite {
+  accent: string;
+  logoHtml: string;
+  piedHtml: string;
+}
+
+/**
+ * Identité visuelle des documents reprise du profil de l'artisan : couleur d'accent,
+ * logo (optionnel) et message de pied de page. Reprise dans les relances automatiques
+ * et les emails récapitulatifs pour une identité cohérente avec les PDF et les devis.
+ */
+function docIdentite(p: Record<string, unknown>): DocIdentite {
+  const nom = String(p?.entreprise ?? p?.metier ?? "Votre artisan");
+  const accent = /^#[0-9a-fA-F]{6}$/.test(String(p?.doc_couleur ?? "")) ? String(p?.doc_couleur) : "#C4783A";
+  const logoUrl = p?.doc_afficher_logo !== false ? String(p?.logo_url ?? "").trim() : "";
+  const logoHtml = logoUrl
+    ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(nom)}" style="max-height:44px;max-width:180px;display:block;margin:0 0 10px;">`
+    : "";
+  const pied = String(p?.doc_pied_page ?? "").trim();
+  const piedHtml = pied
+    ? `<p style="margin:10px 0 0;font-size:11px;color:#a1a1aa;">${escapeHtml(pied).replace(/\n/g, "<br>")}</p>`
+    : "";
+  return { accent, logoHtml, piedHtml };
+}
+
 function isoTodayUTC(): string {
   const d = new Date();
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
@@ -82,6 +107,7 @@ function buildRecapHtml(
   echoue: number,
   clients: Array<{ nom: string; canal: string; numero: string; jours: number }>,
   echoues: Array<{ nom: string; canal: string; numero: string; jours: number; erreur: string }> = [],
+  identite: DocIdentite,
 ): string {
   const lignes = clients
     .map(
@@ -141,7 +167,10 @@ function buildRecapHtml(
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:640px;margin:0 auto;padding:24px;">
-    <div style="background:#ffffff;border-radius:12px;border:1px solid #e5e5e5;padding:24px;">
+    <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
+      <div style="padding:24px;">
+      ${identite.logoHtml}
       <p style="margin:0 0 4px;font-size:18px;font-weight:700;">${escapeHtml(nom)}</p>
       <p style="margin:0 0 16px;font-size:13px;color:#71717a;">Escalade automatique des relances en retard</p>
       <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:700;">
@@ -168,6 +197,8 @@ function buildRecapHtml(
         <tbody>${lignes}</tbody>
       </table>` : ""}
       <p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Email automatique envoyé par ArtiFlow-pro après un passage d'escalade planifié.</p>
+      ${identite.piedHtml}
+      </div>
     </div>
   </div>
 </body></html>`;
@@ -178,6 +209,7 @@ function buildAlerteHtml(
   nom: string,
   echoue: number,
   echoues: Array<{ nom: string; canal: string; numero: string; jours: number; erreur: string }>,
+  identite: DocIdentite,
 ): string {
   const lignes = echoues
     .map(
@@ -201,7 +233,10 @@ function buildAlerteHtml(
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:640px;margin:0 auto;padding:24px;">
-    <div style="background:#ffffff;border-radius:12px;border:1px solid #fecaca;padding:24px;">
+    <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #fecaca;">
+      <div style="height:6px;background:${identite.accent};"></div>
+      <div style="padding:24px;">
+      ${identite.logoHtml}
       <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#b91c1c;">Échec d'envoi détecté</p>
       <p style="margin:0 0 16px;font-size:13px;color:#71717a;">${escapeHtml(
         nom,
@@ -224,6 +259,8 @@ function buildAlerteHtml(
         <tbody>${lignes}</tbody>
       </table>
       <p style="margin:20px 0 0;font-size:12px;color:#a1a1aa;">Email automatique envoyé par ArtiFlow-pro après un passage d'escalade planifié.</p>
+      ${identite.piedHtml}
+      </div>
     </div>
   </div>
 </body></html>`;
@@ -266,7 +303,7 @@ Deno.serve(async (req) => {
     let profilesQuery = admin
       .from("profiles")
       .select(
-        "id, entreprise, metier, telephone, email, email_sujet_relance, relance_auto_actif, relance_seuil, relance_escalade_retard, pause_jusqu_au",
+        "id, entreprise, metier, telephone, email, logo_url, doc_couleur, doc_afficher_logo, doc_pied_page, email_sujet_relance, relance_auto_actif, relance_seuil, relance_escalade_retard, pause_jusqu_au",
       );
     if (scopeUserId) profilesQuery = profilesQuery.eq("id", scopeUserId);
     const { data: profiles, error: profError } = await profilesQuery;
@@ -274,7 +311,7 @@ Deno.serve(async (req) => {
 
     const settingsByUser = new Map<
       string,
-      { seuil: number; retardSeuil: number; nom: string; sujet: string; email: string; auto: boolean; paused: boolean }
+      { seuil: number; retardSeuil: number; nom: string; sujet: string; email: string; auto: boolean; paused: boolean; identite: DocIdentite }
     >();
     const todayPause = new Date().toISOString().slice(0, 10);
     (profiles ?? []).forEach((p) => {
@@ -290,6 +327,7 @@ Deno.serve(async (req) => {
         email: String(row.email ?? ""),
         auto: row.relance_auto_actif !== false,
         paused: enPause && !scopeUserId,
+        identite: docIdentite(row),
       });
     });
 
@@ -311,7 +349,7 @@ Deno.serve(async (req) => {
       numero: string;
       clientId: number | null;
       jours: number;
-      config: { seuil: number; retardSeuil: number; nom: string; sujet: string; email: string };
+      config: { seuil: number; retardSeuil: number; nom: string; sujet: string; email: string; identite: DocIdentite };
     }> = [];
 
     // Nombre de relances en retard par artisan (sert à savoir si un passage les a concernés).
@@ -362,7 +400,7 @@ Deno.serve(async (req) => {
         clients: Array<{ nom: string; canal: string; numero: string; jours: number }>;
         echoues: Array<{ nom: string; canal: string; numero: string; jours: number; erreur: string }>;
         relancesEchouees: number[];
-        config: { nom: string; email: string };
+        config: { nom: string; email: string; identite: DocIdentite };
       }
     >();
     const resultFor = (c: (typeof candidates)[number]) => {
@@ -375,7 +413,7 @@ Deno.serve(async (req) => {
           clients: [],
           echoues: [],
           relancesEchouees: [],
-          config: { nom: c.config.nom, email: c.config.email },
+          config: { nom: c.config.nom, email: c.config.email, identite: c.config.identite },
         };
         resultsByUser.set(c.userId, res);
       }
@@ -410,10 +448,15 @@ Deno.serve(async (req) => {
           const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:600px;margin:0 auto;padding:24px;">
-    <div style="background:#ffffff;border-radius:12px;border:1px solid #e5e5e5;padding:24px;">
+    <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${c.config.identite.accent};"></div>
+      <div style="padding:24px;">
+      ${c.config.identite.logoHtml}
       <p style="margin:0 0 12px;font-size:18px;font-weight:700;">${escapeHtml(c.config.nom)}</p>
       <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#3f3f46;">${escapeHtml(message).replace(/\n/g, "<br>")}</p>
       <p style="margin:0;font-size:12px;color:#a1a1aa;">Relance automatique envoyée via ArtiFlow-pro.</p>
+      ${c.config.identite.piedHtml}
+      </div>
     </div>
   </div>
 </body></html>`;
@@ -505,7 +548,7 @@ Deno.serve(async (req) => {
       // bandeau in-app), même si aucun envoi n'a réussi lors de ce passage.
       if (res.echoue > 0 && res.config.email && resendKey && fromDomain) {
         try {
-          const html = buildAlerteHtml(res.config.nom, res.echoue, res.echoues);
+          const html = buildAlerteHtml(res.config.nom, res.echoue, res.echoues, res.config.identite);
           const resAlert = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
@@ -527,7 +570,7 @@ Deno.serve(async (req) => {
       // Email récapitulatif à l'artisan (uniquement s'il y a eu au moins un envoi).
       if (res.envoye > 0 && res.config.email && resendKey && fromDomain) {
         try {
-          const html = buildRecapHtml(res.config.nom, res.envoye, res.echoue, res.clients, res.echoues);
+          const html = buildRecapHtml(res.config.nom, res.envoye, res.echoue, res.clients, res.echoues, res.config.identite);
           const resRecap = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },

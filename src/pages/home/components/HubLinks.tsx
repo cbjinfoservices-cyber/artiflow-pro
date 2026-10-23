@@ -4,7 +4,7 @@ const hubs = [
   {
     to: "/metiers",
     icon: "ri-hammer-line",
-    kicker: "8 corps d'état",
+    kicker: "9 corps d'état",
     title: "Les métiers du bâtiment",
     description:
       "Plombier, électricien, maçon, peintre, carreleur… Chaque métier a sa page dédiée, ses conseils sur mesure et ses exemples de devis.",
@@ -24,7 +24,7 @@ const hubs = [
   {
     to: "/ressources/sujets",
     icon: "ri-book-open-line",
-    kicker: "3 thèmes, 16 guides",
+    kicker: "5 thèmes, 20 guides",
     title: "Les guides par sujet",
     description:
       "Chiffrage, relances clients, planning : retrouvez nos conseils courts classés par thème, quel que soit votre corps d'état.",

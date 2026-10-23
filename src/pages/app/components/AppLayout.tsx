@@ -1,28 +1,42 @@
 import { useEffect, useMemo } from "react";
-import { NavLink, Outlet, useLocation, Link, useNavigate, Navigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, Link, Navigate } from "react-router-dom";
 import { useRobotsMeta } from "@/hooks/useRobotsMeta";
 import { useAuth } from "@/hooks/useAuth";
 import { useRelancesRetard } from "@/hooks/useRelancesRetard";
 import { useRelancesProgrammeesCount } from "@/hooks/useRelancesProgrammeesCount";
+import { useEcheancesDuJour } from "@/hooks/useEcheancesDuJour";
 import { useComptableMoisManquantsDetail } from "@/hooks/useComptableMoisManquants";
 import { useCompteurBibliotheque } from "@/hooks/useBibliotheque";
 import { useEnvoisAutoMenu } from "@/hooks/useEnvoisAutomatiques";
 import { useJournalErreursChargement } from "@/hooks/useJournalErreursChargement";
 import { useMonAbonnement } from "@/hooks/useMonAbonnement";
+import { useProsInscritsCount } from "@/hooks/useProsInscritsCount";
+import { useClientsCounts } from "@/hooks/useClientsCounts";
 import { libelleDans } from "@/lib/envoisAutomatiques";
 import { useSonActif } from "@/hooks/useSonActif";
 import { usePreferencesAffichageSync } from "@/hooks/usePreferencesAffichageSync";
 import { useNotificationImminente } from "@/hooks/useNotificationImminente";
+import { useRejetsEfactures } from "@/hooks/useRejetsEfactures";
+import { useChantiersSansNouvelles } from "@/hooks/useChantiersSansNouvelles";
+import { useEchecsEnvoisClients } from "@/hooks/useEchecsEnvoisClients";
+import { useRecapMoisOublie } from "@/hooks/useRecapMoisOublie";
+import { useEnvoiAutoNouvellesEtat } from "@/hooks/useEnvoiAutoNouvellesEtat";
 import { useImminencePrefs } from "@/hooks/useImminencePrefs";
 import BoutonAide from "@/pages/app/components/aide/BoutonAide";
 import IndicateurSynchroPublique from "@/components/feature/IndicateurSynchroPublique";
 import { statutMeta } from "@/lib/monAbonnement";
 import RelanceDuJourBanner from "@/pages/app/components/RelanceDuJourBanner";
+import BandeauQuoiDeNeuf from "@/pages/app/components/BandeauQuoiDeNeuf";
+import CompteurQuoiDeNeuf from "@/pages/app/components/CompteurQuoiDeNeuf";
+import BandeauRattachementIntervenant from "@/pages/app/components/BandeauRattachementIntervenant";
 import BandeauProchainesAuto from "@/pages/app/components/BandeauProchainesAuto";
 import ClocheImminents from "@/pages/app/components/ClocheImminents";
 import EspaceArtisanNav from "@/pages/app/components/EspaceArtisanNav";
 import MenuMobileApp from "@/pages/app/components/MenuMobileApp";
 import MenuCompte from "@/pages/app/components/MenuCompte";
+import NavCompte, { classeLienCompte } from "@/pages/app/components/NavCompte";
+import EcranAbonnementResilie from "@/pages/app/components/EcranAbonnementResilie";
+import BandeauSuppressionProgrammee from "@/pages/app/components/BandeauSuppressionProgrammee";
 
 // Les entrées de menu et leur découpage en sous-thèmes vivent dans `menuAppData` (partagés avec la
 // barre latérale artisan).
@@ -32,9 +46,10 @@ const titles: Record<string, string> = {
   "/app/devis": "Devis",
   "/app/bibliotheque-lignes": "Bibliothèque de lignes",
   "/app/factures": "Factures",
+  "/app/facturation-electronique": "Facturation électronique",
   "/app/clients": "Clients",
-  "/app/professionnels": "Professionnels",
   "/app/abonnements": "Abonnements",
+  "/app/pros-inscrits": "Pros inscrits",
   "/app/mon-compte-gestionnaire": "Mon compte gestionnaire",
   "/app/comptabilite": "Comptabilité",
   "/app/planning": "Planning",
@@ -48,9 +63,16 @@ const titles: Record<string, string> = {
   "/app/back-office": "Back-office",
 };
 
+/** Pages rassemblées dans le bloc « Mon compte » de la barre latérale (rouverture automatique). */
+const CHEMINS_COMPTE: readonly string[] = [
+  "/app/profil",
+  "/app/mon-compte-gestionnaire",
+  "/app/comptabilite",
+  "/app/preferences",
+];
+
 export default function AppLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const {
     profile,
     user,
@@ -68,6 +90,9 @@ export default function AppLayout() {
     enRetard: retardProgramme,
   } = useRelancesProgrammeesCount(location.pathname);
   const { count: moisManquants, mois: moisManquantsListe } = useComptableMoisManquantsDetail(location.pathname);
+  // Échéances du jour (factures à encaisser, relances qui partent aujourd'hui) : alimente le
+  // compteur du groupe « Aujourd'hui », visible même quand le bloc est replié.
+  const echeancesJour = useEcheancesDuJour(location.pathname);
   const biblio = useCompteurBibliotheque();
   // Pastille « à vérifier » de l'entrée « Envois automatiques » et grille chronologique des
   // exécutions prévues dans la fenêtre d'alerte (bandeau du menu) : réservées aux comptes artisan.
@@ -82,6 +107,15 @@ export default function AppLayout() {
     exclusionsImminentes,
   );
   const { abonnement } = useMonAbonnement();
+  // Nombre de pros inscrits : alimente la pastille de l'entrée « Pros inscrits » du menu
+  // (barre latérale + tiroir mobile), pour repérer d'un coup d'œil les nouvelles arrivées.
+  const prosInscrits = useProsInscritsCount(isGestionnaire, location.pathname);
+  // Nombre d'entreprises et de particuliers au carnet : pastilles des deux sous-entrées du bloc
+  // « Clients » du menu, pour voir le volume de chaque type d'un coup d'œil sans ouvrir la page.
+  const { particuliers: clientsParticuliers, entreprises: clientsPro } = useClientsCounts(
+    !isGestionnaire,
+    location.pathname,
+  );
   // Nombre de blocages de chargement encore ouverts : alimente la pastille rouge de l'entrée
   // Back-office du menu latéral, pour voir d'un coup d'œil qu'un écran est cassé sans y entrer.
   const { erreurs: erreursChargement } = useJournalErreursChargement();
@@ -97,7 +131,28 @@ export default function AppLayout() {
   // Notification navigateur des traitements imminents : le hook est monté ici (layout) pour
   // fonctionner depuis n'importe quelle page, même hors de la page des envois automatiques.
   const notifImminente = useNotificationImminente(executionsImminentes);
+  // Factures électroniques rejetées : remontées dans la cloche de l'en-tête, pour être
+  // visibles depuis n'importe quelle page et pas seulement depuis le registre.
+  const { rejets: rejetsEfactures } = useRejetsEfactures(location.pathname);
+  // Chantiers dont le client n'a plus de nouvelles depuis 14 jours : même logique, pour que
+  // l'alerte « client oublié » remonte dans la cloche depuis n'importe quelle page.
+  const { chantiers: chantiersSansNouvelles } = useChantiersSansNouvelles(location.pathname);
+  // Emails clients refusés par le service d'envoi : remontés dans la cloche pour repérer
+  // les clients non joignables sans ouvrir la page Chantiers.
+  const { parChantier: echecsEnvoisClients, reload: reloadEchecsClients } = useEchecsEnvoisClients(location.pathname);
+  const echecsEnvoisListe = useMemo(() => Object.values(echecsEnvoisClients), [echecsEnvoisClients]);
+  // Récap mensuel resté en plan : la date programmée est passée sans envoi ni archivage.
+  // Le hook expose aussi le report en cours, affiché en bandeau annulable dans la cloche.
+  const { oublie: recapOublie, report: recapReporte } = useRecapMoisOublie(location.pathname);
+  const { actif: autoNouvellesActif } = useEnvoiAutoNouvellesEtat(location.pathname);
   const offreStatut = abonnement ? statutMeta(abonnement.statut) : null;
+  // Accès suspendu après une résiliation : les pages métier sont bloquées, mais le profil
+  // (où l'artisan peut reprendre une offre) et les préférences restent accessibles.
+  const accesSuspendu =
+    !isGestionnaire &&
+    abonnement?.statut === "Résilié" &&
+    !location.pathname.startsWith("/app/profil") &&
+    !location.pathname.startsWith("/app/preferences");
   const retardCible = critiques > 0 ? 30 : 0;
   const title = titles[location.pathname] || "ArtiFlow-pro";
 
@@ -138,7 +193,6 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-50">
-      <BoutonAide />
       <aside className="hidden lg:flex flex-col w-60 shrink-0 bg-background-100 border-r border-background-200">
         <div className="h-16 flex items-center gap-2.5 px-5 border-b border-background-200">
           <span className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary-500 text-background-50">
@@ -161,10 +215,21 @@ export default function AppLayout() {
               retardProgramme={retardProgramme}
               envoisAutoAttention={envoisAutoAttention}
               biblio={biblio}
+              rejetsEfacture={rejetsEfactures.length}
+              echeancesJour={echeancesJour}
+              clientsPro={clientsPro}
+              clientsParticuliers={clientsParticuliers}
+              chantiersSansNouvelles={chantiersSansNouvelles.length}
+              moisManquants={moisManquants}
+              voirComptabilite={voirComptabilite}
             />
           )}
 
-          <p className="px-3 pt-4 pb-1 text-[11px] font-semibold text-foreground-400 uppercase tracking-wide">Back-office</p>
+          {isGestionnaire && (
+            <p className="px-3 pt-4 pb-1 text-[11px] font-semibold text-foreground-400 uppercase tracking-wide">
+              Back-office
+            </p>
+          )}
           {isGestionnaire && (
             <NavLink
               to="/app/back-office"
@@ -189,68 +254,6 @@ export default function AppLayout() {
               )}
             </NavLink>
           )}
-          {voirComptabilite && (
-            <NavLink
-              to="/app/comptabilite"
-              title="Préparez les documents pour votre comptable (journal, TVA, régularité)."
-              className={({ isActive }) =>
-                `flex items-center gap-3 h-11 px-3 rounded-md text-sm font-medium cursor-pointer transition-colors ${
-                  isActive
-                    ? "bg-primary-100 text-primary-800"
-                    : "text-foreground-600 hover:bg-background-200 hover:text-foreground-950"
-                }`
-              }
-            >
-              <i className="ri-file-chart-line text-lg"></i>
-              Comptabilité
-              {moisManquants > 0 && (
-                <span className="relative group ml-auto inline-flex items-center">
-                  <span
-                    role="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      navigate("/app/comptabilite?manquants=1");
-                    }}
-                    className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold cursor-pointer hover:bg-accent-600 transition-colors"
-                    aria-label={`${moisManquants} mois manquant${moisManquants > 1 ? "s" : ""} — ouvrir l'alerte de régularité`}
-                  >
-                    {moisManquants > 99 ? "99+" : moisManquants}
-                  </span>
-                  <span className="pointer-events-none absolute right-0 bottom-full mb-2 z-50 hidden group-hover:block w-56 p-3 rounded-lg bg-background-50 border border-background-200 text-left">
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground-900 mb-1.5">
-                      <i className="ri-file-chart-line text-accent-600"></i>
-                      Régularité comptable
-                    </span>
-                    <span className="flex items-center justify-between text-[11px] text-foreground-600">
-                      <span className="inline-flex items-center gap-1.5">
-                        <i className="ri-calendar-close-line text-accent-600"></i>
-                        Mois manquants
-                      </span>
-                      <strong className="text-foreground-900 tabular-nums">{moisManquants}</strong>
-                    </span>
-                    {moisManquantsListe.length > 0 && (
-                      <span className="mt-2 pt-2 border-t border-background-200 flex flex-col gap-1">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-foreground-400">
-                          <i className="ri-list-check-2"></i>
-                          Mois concernés
-                        </span>
-                        {moisManquantsListe.slice(0, 4).map((m) => (
-                          <span key={m} className="inline-flex items-center gap-1.5 text-[11px] text-foreground-700 capitalize">
-                            <i className="ri-calendar-line text-foreground-400"></i>
-                            {m}
-                          </span>
-                        ))}
-                        {moisManquantsListe.length > 4 && (
-                          <span className="text-[11px] text-foreground-500">+ {moisManquantsListe.length - 4} autre{moisManquantsListe.length - 4 > 1 ? "s" : ""}</span>
-                        )}
-                      </span>
-                    )}
-                  </span>
-                </span>
-              )}
-            </NavLink>
-          )}
           {isGestionnaire && (
             <NavLink
               to="/app/abonnements"
@@ -268,7 +271,8 @@ export default function AppLayout() {
           )}
           {isGestionnaire && (
             <NavLink
-              to="/app/mon-compte-gestionnaire"
+              to="/app/pros-inscrits"
+              title="Les professionnels inscrits à la plateforme et les détails de leur inscription."
               className={({ isActive }) =>
                 `flex items-center gap-3 h-11 px-3 rounded-md text-sm font-medium cursor-pointer transition-colors ${
                   isActive
@@ -277,54 +281,96 @@ export default function AppLayout() {
                 }`
               }
             >
-              <i className="ri-shield-user-line text-lg"></i>
-              <span className="truncate">Compte gestionnaire</span>
-              {gestionnaires.length > 0 && (
+              <i className="ri-user-star-line text-lg"></i>
+              Pros inscrits
+              {prosInscrits.total > 0 && (
                 <span
-                  className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-secondary-500 text-background-50 text-[10px] font-bold"
-                  title={`${gestionnaires.length} adresse${gestionnaires.length > 1 ? "s" : ""} gestionnaire${gestionnaires.length > 1 ? "s" : ""} reconnue${gestionnaires.length > 1 ? "s" : ""}`}
+                  className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold whitespace-nowrap"
+                  title={`${prosInscrits.total} pro${prosInscrits.total > 1 ? "s" : ""} inscrit${prosInscrits.total > 1 ? "s" : ""}${
+                    prosInscrits.nouveauxMois > 0
+                      ? ` · ${prosInscrits.nouveauxMois} nouveau${prosInscrits.nouveauxMois > 1 ? "x" : ""} ce mois-ci`
+                      : ""
+                  }`}
+                  aria-label={`${prosInscrits.total} pros inscrits`}
                 >
-                  {gestionnaires.length > 99 ? "99+" : gestionnaires.length}
+                  {prosInscrits.total > 99 ? "99+" : prosInscrits.total}
                 </span>
               )}
             </NavLink>
           )}
-
           {!backOfficeOnly && (
-            <p className="px-3 pt-4 pb-1 text-[11px] font-semibold text-foreground-400 uppercase tracking-wide">Compte</p>
-          )}
-          {!backOfficeOnly && (
-            <NavLink
-              to="/app/profil"
-              title="Vos informations : entreprise, métier, coordonnées, e-mails."
-              className={({ isActive }) =>
-                `flex items-center gap-3 h-11 px-3 rounded-md text-sm font-medium cursor-pointer transition-colors ${
-                  isActive
-                    ? "bg-primary-100 text-primary-800"
-                    : "text-foreground-600 hover:bg-background-200 hover:text-foreground-950"
-                }`
-              }
-            >
-              <i className="ri-user-settings-line text-lg"></i>
-              Mon profil
-            </NavLink>
+            <NavCompte chemins={CHEMINS_COMPTE}>
+              <NavLink
+                to="/app/profil"
+                title="Vos informations : entreprise, métier, coordonnées, e-mails."
+                className={({ isActive }) => classeLienCompte(isActive)}
+              >
+                <i className="ri-user-settings-line text-lg"></i>
+                Mon profil
+              </NavLink>
+
+              {/* La comptabilité a rejoint son propre bloc du menu métier : elle ne figure plus ici. */}
+              <NavLink
+                to="/app/preferences"
+                title="Réglez ce que vous voyez à l'écran (formats, affichages, rappels)."
+                className={({ isActive }) => classeLienCompte(isActive)}
+              >
+                <i className="ri-equalizer-2-line text-lg"></i>
+                Préférences d'affichage
+              </NavLink>
+            </NavCompte>
           )}
 
-          <p className="px-3 pt-4 pb-1 text-[11px] font-semibold text-foreground-400 uppercase tracking-wide">Système</p>
-          <NavLink
-            to="/app/preferences"
-              title="Réglez ce que vous voyez à l'écran (formats, affichages, rappels)."
-            className={({ isActive }) =>
-              `flex items-center gap-3 h-11 px-3 rounded-md text-sm font-medium cursor-pointer transition-colors ${
-                isActive
-                  ? "bg-primary-100 text-primary-800"
-                  : "text-foreground-600 hover:bg-background-200 hover:text-foreground-950"
-              }`
-            }
-          >
-            <i className="ri-equalizer-2-line text-lg"></i>
-            Préférences d'affichage
-          </NavLink>
+          {backOfficeOnly && (
+            <NavCompte chemins={CHEMINS_COMPTE}>
+              <NavLink
+                to="/app/mon-compte-gestionnaire"
+                title="Vos accès gestionnaire et le journal des modifications."
+                className={({ isActive }) => classeLienCompte(isActive)}
+              >
+                <i className="ri-shield-user-line text-lg"></i>
+                <span className="truncate">Compte gestionnaire</span>
+                {gestionnaires.length > 0 && (
+                  <span
+                    className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-secondary-500 text-background-50 text-[10px] font-bold"
+                    title={`${gestionnaires.length} adresse${gestionnaires.length > 1 ? "s" : ""} gestionnaire${gestionnaires.length > 1 ? "s" : ""} reconnue${gestionnaires.length > 1 ? "s" : ""}`}
+                  >
+                    {gestionnaires.length > 99 ? "99+" : gestionnaires.length}
+                  </span>
+                )}
+              </NavLink>
+
+              {voirComptabilite && (
+                <NavLink
+                  to="/app/comptabilite"
+                  title="Préparez les documents pour votre comptable (journal, TVA, régularité)."
+                  className={({ isActive }) => classeLienCompte(isActive)}
+                >
+                  <i className="ri-file-chart-line text-lg"></i>
+                  Comptabilité
+                  {moisManquants > 0 && (
+                    <span
+                      title={`${moisManquants} mois manquant${moisManquants > 1 ? "s" : ""}${
+                        moisManquantsListe.length ? ` : ${moisManquantsListe.slice(0, 4).join(", ")}` : ""
+                      }`}
+                      className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold tabular-nums"
+                    >
+                      {moisManquants > 99 ? "99+" : moisManquants}
+                    </span>
+                  )}
+                </NavLink>
+              )}
+
+              <NavLink
+                to="/app/preferences"
+                title="Réglez ce que vous voyez à l'écran (formats, affichages, rappels)."
+                className={({ isActive }) => classeLienCompte(isActive)}
+              >
+                <i className="ri-equalizer-2-line text-lg"></i>
+                Préférences d'affichage
+              </NavLink>
+            </NavCompte>
+          )}
         </nav>
 
         <div className="p-3 border-t border-background-200">
@@ -386,52 +432,43 @@ export default function AppLayout() {
             )}
           </div>
           <div className="flex items-center gap-2.5">
-            {!backOfficeOnly && executionsImminentes.length > 0 && (
+            {!backOfficeOnly && (
               <>
-                <Link
-                  to="/app/envois-automatiques"
-                  title={`${executionsImminentes.length} traitement${executionsImminentes.length > 1 ? "s" : ""} automatique${executionsImminentes.length > 1 ? "s" : ""} dans l'heure :\n${executionsImminentes
-                    .map((e) => `${e.item.nom} — ${libelleDans(e.dansMs)}`)
-                    .join("\n")}`}
-                  aria-label={`${executionsImminentes.length} traitement(s) imminent(s) — ouvrir les envois automatiques`}
-                  className="inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-accent-100 border border-accent-200 text-accent-800 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
-                >
-                  <span className="relative w-5 h-5 flex items-center justify-center">
-                    <i className="ri-timer-flash-line text-sm"></i>
-                    <span
-                      className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary-500 animate-pulse"
-                      aria-hidden="true"
-                    ></span>
-                  </span>
-                  <span className="hidden sm:inline">Imminents</span>
-                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold tabular-nums">
-                    {executionsImminentes.length > 99 ? "99+" : executionsImminentes.length}
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={notifImminente.toggle}
-                  title={
-                    notifImminente.actif
-                      ? "Désactiver la notification navigateur des traitements imminents"
-                      : notifImminente.permission === "denied"
-                        ? "Notifications bloquées par le navigateur"
-                        : "Notifier le navigateur quand un traitement devient imminent"
-                  }
-                  aria-label="Notification navigateur des traitements imminents"
-                  aria-pressed={notifImminente.actif}
-                  className={`inline-flex items-center justify-center w-10 h-10 rounded-md border whitespace-nowrap cursor-pointer transition-colors ${
-                    notifImminente.actif
-                      ? "bg-accent-500 border-accent-500 text-background-50 hover:bg-accent-600"
-                      : "bg-background-100 border-background-200 text-foreground-500 hover:border-primary-300"
-                  }`}
-                >
-                  <i
-                    className={
-                      notifImminente.actif ? "ri-notification-3-fill text-base" : "ri-notification-off-line text-base"
-                    }
-                  ></i>
-                </button>
+                {executionsImminentes.length > 0 && (
+                  <Link
+                    to="/app/envois-automatiques"
+                    title={`${executionsImminentes.length} traitement${executionsImminentes.length > 1 ? "s" : ""} automatique${executionsImminentes.length > 1 ? "s" : ""} dans l'heure :\n${executionsImminentes
+                      .map((e) => `${e.item.nom} — ${libelleDans(e.dansMs)}`)
+                      .join("\n")}`}
+                    aria-label={`${executionsImminentes.length} traitement(s) imminent(s) — ouvrir les envois automatiques`}
+                    className="inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-accent-100 border border-accent-200 text-accent-800 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
+                  >
+                    <span className="relative w-5 h-5 flex items-center justify-center">
+                      <i className="ri-timer-flash-line text-sm"></i>
+                      <span
+                        className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary-500 animate-pulse"
+                        aria-hidden="true"
+                      ></span>
+                    </span>
+                    <span className="hidden sm:inline">Imminents</span>
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold tabular-nums">
+                      {executionsImminentes.length > 99 ? "99+" : executionsImminentes.length}
+                    </span>
+                  </Link>
+                )}
+                <ClocheImminents
+                  executions={executionsImminentes}
+                  prefs={imminence}
+                  notif={notifImminente}
+                  rejets={rejetsEfactures}
+                  sansNouvelles={chantiersSansNouvelles}
+                  echecs={echecsEnvoisListe}
+                  recapOublie={recapOublie}
+                  recapReport={recapReporte}
+                  onReloadEchecs={reloadEchecsClients}
+                  autoNouvellesActif={autoNouvellesActif}
+                  entreprise={profile?.entreprise ?? null}
+                />
               </>
             )}
             {voirMonAbonnement && abonnement && offreStatut && (
@@ -471,14 +508,25 @@ export default function AppLayout() {
                 </span>
               </>
             )}
+            {!backOfficeOnly && <CompteurQuoiDeNeuf />}
+            <BoutonAide />
             <IndicateurSynchroPublique />
             <MenuCompte backOfficeOnly={backOfficeOnly} />
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 lg:pb-6">
-          {!backOfficeOnly && <RelanceDuJourBanner refreshKey={location.pathname} />}
-          <Outlet />
+          {accesSuspendu ? (
+            <EcranAbonnementResilie offre={abonnement?.offre} />
+          ) : (
+            <>
+              {!backOfficeOnly && <BandeauQuoiDeNeuf />}
+              <BandeauSuppressionProgrammee />
+              {!backOfficeOnly && <RelanceDuJourBanner refreshKey={location.pathname} />}
+              {!backOfficeOnly && <BandeauRattachementIntervenant />}
+              <Outlet />
+            </>
+          )}
         </main>
       </div>
 
@@ -493,9 +541,15 @@ export default function AppLayout() {
         retardProgramme={retardProgramme}
         envoisAutoAttention={envoisAutoAttention}
         biblio={biblio}
+        echeancesJour={echeancesJour}
+        clientsPro={clientsPro}
+        clientsParticuliers={clientsParticuliers}
+        chantiersSansNouvelles={chantiersSansNouvelles.length}
         moisManquants={moisManquants}
         voirComptabilite={voirComptabilite}
         isGestionnaire={isGestionnaire}
+        prosInscrits={prosInscrits.total}
+        prosInscritsNouveaux={prosInscrits.nouveauxMois}
         gestionnairesCount={gestionnaires.length}
         compteLink={compteLink}
         displayName={displayName}

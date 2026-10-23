@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { jsPDF } from "jspdf";
 import type { ClientItem, DevisItem } from "@/hooks/useArtisanData";
 import { createDevisModeleFromDevis, fetchDevisLignes, type LigneInput } from "@/lib/artisanApi";
 import { appendLignesToDevis } from "@/lib/devisLignes";
@@ -14,7 +15,9 @@ import { supabase } from "@/lib/supabase";
 import { devisStatusTone } from "@/lib/statuts";
 import { formatEuros } from "@/lib/format";
 import { formatShortDate } from "@/lib/dates";
-import { buildDocumentPdf, savePdf } from "@/lib/pdf";
+import { buildDocumentPdf } from "@/lib/pdf";
+import { statutJuridiqueLabel } from "@/lib/entreprise";
+import { styleDocumentsDepuisProfil } from "@/lib/documentStyle";
 import {
   buildSignUrl,
   ensureDevisSignToken,
@@ -27,6 +30,7 @@ import Infobulle from "@/components/base/Infobulle";
 import StatutBadge from "@/pages/app/components/StatutBadge";
 import SignatureModal from "@/pages/app/devis/components/SignatureModal";
 import LignesBibliothequeModal from "@/pages/app/devis/components/LignesBibliothequeModal";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
 
 const EMPTY_SIGNATURE: DevisSignatureInfo = { signature_image: null, signataire_nom: null, signed_at: null };
 
@@ -58,6 +62,7 @@ export default function DevisDetailModal({
   const [savingModel, setSavingModel] = useState(false);
   const [notice, setNotice] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [biblioOpen, setBiblioOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { enregistrer, enregistrerPlusieurs } = useEnregistrerLigneBibliotheque();
   const categoriesEnregistrement = useCategoriesEnregistrement(user?.id ?? null);
   const { lignes: biblioLignes, reload: reloadBiblio } = useLignesBibliotheque(user?.id ?? null);
@@ -90,8 +95,9 @@ export default function DevisDetailModal({
     };
   }, [devis.id]);
 
-  const handleDownload = async () => {
-    const doc = await buildDocumentPdf({
+  // Construit le PDF du devis (sans le télécharger), pour l'aperçu comme pour le téléchargement.
+  const buildDevisDoc = async (): Promise<jsPDF> =>
+    buildDocumentPdf({
       type: "devis",
       numero: devis.numero,
       dateLabel: formatShortDate(devis.created_at),
@@ -103,6 +109,7 @@ export default function DevisDetailModal({
         telephone: profile?.telephone ?? "",
         email: profile?.email ?? user?.email ?? "",
         logo: profile?.logo_url ?? null,
+        formeJuridique: statutJuridiqueLabel(profile?.statut_juridique) || null,
         siret: profile?.siret ?? null,
         tva: profile?.tva ?? null,
         assurance: profile?.assurance ?? null,
@@ -115,6 +122,7 @@ export default function DevisDetailModal({
       lignes,
       totalHT: devis.total_ht,
       totalTTC: devis.total_ttc,
+      style: styleDocumentsDepuisProfil(profile),
       signature: signature.signed_at
         ? {
             nom: signature.signataire_nom ?? client?.nom ?? "Client",
@@ -123,7 +131,12 @@ export default function DevisDetailModal({
           }
         : null,
     });
-    savePdf(doc, `Devis-${devis.numero}.pdf`);
+
+  // Ouvre l'aperçu du devis AVANT téléchargement : on repère ainsi un souci de mise en page
+  // (largeur de colonne, texte coupé…) directement à l'écran.
+  const handlePreview = () => {
+    setNotice(null);
+    setPreviewOpen(true);
   };
 
   const handleCopyLink = async () => {
@@ -399,18 +412,18 @@ export default function DevisDetailModal({
               </button>
             </Infobulle>
             <Infobulle
-              contenu="Télécharger le devis en PDF (prêt à imprimer), avec la signature du client s'il a signé."
+              contenu="Voir le devis en PDF avant de le télécharger : repérez d'un coup d'œil la mise en page, puis enregistrez le fichier."
               position="haut"
-              largeur={250}
+              largeur={260}
             >
               <button
                 type="button"
-                onClick={handleDownload}
+                onClick={handlePreview}
                 disabled={loading}
                 className="inline-flex items-center gap-2 h-10 px-5 rounded-md bg-primary-500 text-background-50 text-sm font-semibold cursor-pointer hover:bg-primary-600 whitespace-nowrap transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <i className="ri-file-download-line"></i>
-                Télécharger en PDF
+                <i className="ri-eye-line"></i>
+                Aperçu du PDF
               </button>
             </Infobulle>
           </>
@@ -575,6 +588,16 @@ export default function DevisDetailModal({
           busy={busy}
           onClose={() => setSignOpen(false)}
           onSubmit={handleSignInPerson}
+        />
+      )}
+
+      {previewOpen && (
+        <ApercuPdfModal
+          title={`Aperçu · ${devis.numero}`}
+          filename={`Devis-${devis.numero}.pdf`}
+          docBuilder={buildDevisDoc}
+          note="Le PDF reprend votre logo, vos mentions légales et la signature du client si le devis est signé."
+          onClose={() => setPreviewOpen(false)}
         />
       )}
 

@@ -23,6 +23,8 @@ export default function GuideLienCard({ article }: { article: Article }) {
             src={imageCarte}
             alt={`Guide ${nomCategorie} · ${article.title}`}
             title={`${article.title} · ArtiFlow-pro`}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
           />
         )}

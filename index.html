@@ -2,10 +2,25 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <!-- Politique de sécurité du navigateur (CSP) : on autorise uniquement les
+         origines réellement utilisées par le site (images Readdy, polices Google,
+         icônes Remix via cdnjs, Backend helloreaddy.com / *.supabase.co, mesure
+         d'audience Google, iframe Google Maps, agent vocal vapi). Tout le reste
+         est refusé par défaut, ce qui limite les scripts ou contenus injectés. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://static.readdy.ai https://*.readdy.ai https://*.readdy-site.link https://*.helloreaddy.com https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.readdy.ai https://*.readdy-site.link https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://*.readdy.ai https://*.readdy-site.link https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://readdy.ai https://public.readdy.ai https://static.readdy.ai https://storage.readdy-site.link https://storage.helloreaddy.com https://*.readdy.ai https://*.readdy-site.link https://*.helloreaddy.com https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://maps.gstatic.com https://*.gstatic.com https://*.googleusercontent.com; connect-src 'self' https://readdy.ai https://static.readdy.ai https://*.readdy.ai https://*.readdy-site.link wss://*.readdy-site.link https://*.helloreaddy.com https://*.supabase.co https://api.vapi.ai https://*.vapi.ai https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self' blob: data: https:; frame-src 'self' blob: https://www.google.com https://maps.google.com https://*.helloreaddy.com https://*.readdy.ai; worker-src 'self' blob:; form-action 'self' https://readdy.ai https://*.helloreaddy.com"
+    />
+    <!-- Referrer : n'expose l'URL complète qu'en interne au site, seulement
+         l'origine vers les domaines externes. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- Les polices et les icônes sont chargées par script plus bas, la
+         feuille de style principale est importée par l'application. -->
     <link rel="icon" type="image/png" href="https://readdy.ai/api/search-image?query=Minimal%20flat%20app%20icon%20mark%20for%20an%20AI%20construction%20assistant%2C%20geometric%20hammer%20and%20spark%20symbol%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%2C%20centered%20on%20clean%20off-white%20background%2C%20simple%20crisp%20vector%20style&width=512&height=512&seq=artiflow-pro-favicon&orientation=squarish" />
     <link rel="apple-touch-icon" href="https://readdy.ai/api/search-image?query=Minimal%20flat%20app%20icon%20mark%20for%20an%20AI%20construction%20assistant%2C%20geometric%20hammer%20and%20spark%20symbol%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%2C%20centered%20on%20clean%20off-white%20background%2C%20simple%20crisp%20vector%20style&width=512&height=512&seq=artiflow-pro-favicon&orientation=squarish" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ArtiFlow-pro — Logiciel IA pour artisans du bâtiment</title>
+    <title>ArtiFlow-pro — Assistant IA pour artisans du bâtiment</title>
     <meta
       name="description"
       content="ArtiFlow-pro, le logiciel IA des artisans du bâtiment : devis en 2 minutes, relances SMS et WhatsApp automatiques, planning et suivi de chantier. Essai gratuit."
@@ -21,7 +36,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ArtiFlow-pro" />
     <meta property="og:locale" content="fr_FR" />
-    <meta property="og:title" content="ArtiFlow-pro — Logiciel IA pour artisans du bâtiment" />
+    <meta property="og:title" content="ArtiFlow-pro — Assistant IA pour artisans du bâtiment" />
     <meta
       property="og:description"
       content="Devis en 2 minutes, relances SMS et WhatsApp automatiques, planning et suivi de chantier. Le logiciel IA des artisans du bâtiment."
@@ -29,7 +44,7 @@
     <meta property="og:url" content="https://artiflow-pro.fr/" />
     <meta
       property="og:image"
-      content="https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20with%20warm%20amber%20orange%20and%20deep%20teal%20green%20geometric%20shapes%2C%20blueprint%20line%20patterns%20and%20artisan%20tool%20silhouettes%20floating%20over%20a%20deep%20charcoal%20background%2C%20cinematic%20soft%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-2&orientation=landscape&nocache=true"
+      content="https://public.readdy.ai/ai/img_res/8e3ba55f81d58fbfb413ad69b5686b01.webp"
     />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -39,26 +54,114 @@
     />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ArtiFlow-pro — Logiciel IA pour artisans du bâtiment" />
+    <meta name="twitter:title" content="ArtiFlow-pro — Assistant IA pour artisans du bâtiment" />
     <meta
       name="twitter:description"
       content="Devis en 2 minutes, relances SMS et WhatsApp automatiques, planning et suivi de chantier pour les artisans du bâtiment."
     />
     <meta
       name="twitter:image"
-      content="https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20with%20warm%20amber%20orange%20and%20deep%20teal%20green%20geometric%20shapes%2C%20blueprint%20line%20patterns%20and%20artisan%20tool%20silhouettes%20floating%20over%20a%20deep%20charcoal%20background%2C%20cinematic%20soft%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-2&orientation=landscape&nocache=true"
+      content="https://public.readdy.ai/ai/img_res/8e3ba55f81d58fbfb413ad69b5686b01.webp"
     />
     <meta
       name="twitter:image:alt"
       content="ArtiFlow-pro — assistant IA pour artisans du bâtiment"
     />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.min.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+  <!-- Police critique : on précharge la feuille Google Fonts dès le début du
+       <head>, pour que le premier rendu utilise déjà la bonne police (moins de
+       décalage de texte). Le style est ensuite appliqué par le script injecté
+       un peu plus bas : le préchargement ne bloque rien, il chauffe le cache. -->
+  <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap"
+  />
+
+  <!-- Style critique minimal, posé directement dans la page : dès le tout pre-
+       mier rendu, le fond, la police de repli, les couleurs de texte et le
+       dimensionnement sont déjà bons, sans attendre la feuille principale. -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background-color: #fdfcf8; }
+    @supports (color: oklch(0.5 0 0)) { html { background-color: oklch(0.985 0.006 85); } }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: #fdfcf8;
+      color: #2b211a;
+      font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    @supports (color: oklch(0.5 0 0)) {
+      body { background-color: oklch(0.985 0.006 85); color: oklch(0.16 0.015 50); }
+    }
+    h1, h2, h3, h4, h5 {
+      font-family: 'Bricolage Grotesque', 'Manrope', ui-sans-serif, system-ui, sans-serif;
+      margin: 0;
+    }
+    p { margin: 0; }
+    #root { min-height: 100vh; }
+  </style>
+
+  <!-- Feuilles de style non critiques (polices + icônes) : injectées par script
+       après analyse de la page, donc plus aucun <link rel="stylesheet"> n'est
+       analysé au rendu initial. Font Awesome a été retiré : le projet n'utilise
+       que les icônes Remix (ri-*). -->
+  <script>
+    (function () {
+      var feuilles = [
+        "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap",
+        "https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.min.css"
+      ];
+      for (var i = 0; i < feuilles.length; i++) {
+        var l = document.createElement("link");
+        // Préchargement : la feuille se télécharge sans bloquer le rendu, puis
+        // devient active dès qu'elle est prête. Les polices et icônes ne
+        // retardent donc plus l'affichage.
+        l.rel = "preload";
+        l.as = "style";
+        // Déjà géré ici : on le marque pour que le script de chargement
+        // asynchrone ne s'en occupe pas une seconde fois.
+        l.setAttribute("data-css-async", "fait");
+        l.onload = function () { this.rel = "stylesheet"; };
+        l.href = feuilles[i];
+        document.head.appendChild(l);
+      }
+    })();
+  </script>
+
+  <!-- Image du héros de l'accueil : préchargée pour qu'elle démarre avant même
+       l'exécution du script de la page. On sépare desktop / mobile pour ne
+       télécharger que la version utile selon la taille de l'écran. -->
+  <link rel="preconnect" href="https://readdy.ai" crossorigin />
+  <link
+    rel="preload"
+    as="image"
+    media="(min-width: 768px)"
+    fetchpriority="high"
+    href="https://readdy.ai/api/search-image?query=Stylized%20artistic%20construction%20worksite%20scene%20with%20scaffolding%2C%20brick%20masonry%20wall%2C%20plumbing%20pipes%2C%20electrical%20wiring%20and%20painting%20tools%2C%20crane%20and%20timber%20frames%2C%20warm%20orange%20and%20deep%20teal%20green%20accents%20on%20a%20deep%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20completely%20blank%20unmarked%20surfaces%2C%20no%20signage%2C%20no%20lettering%2C%20no%20words%2C%20no%20text%2C%20no%20poster%2C%20clean%20plain%20walls%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1920&height=1080&seq=artiflow-hero-clean-2&orientation=landscape"
+  />
+  <link
+    rel="preload"
+    as="image"
+    media="(max-width: 767px)"
+    fetchpriority="high"
+    href="https://readdy.ai/api/search-image?query=Stylized%20artistic%20construction%20worksite%20scene%20with%20scaffolding%2C%20brick%20masonry%20wall%2C%20plumbing%20pipes%2C%20electrical%20wiring%20and%20painting%20tools%2C%20crane%20and%20timber%20frames%2C%20warm%20orange%20and%20deep%20teal%20green%20accents%2C%20cinematic%20moody%20lighting%2C%20completely%20blank%20unmarked%20surfaces%2C%20no%20signage%2C%20no%20lettering%2C%20no%20words%2C%20no%20text%2C%20clean%20plain%20walls%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=800&height=1000&seq=artiflow-hero-mobile&orientation=portrait"
+  />
     <meta name="google-site-verification" content="pczIPB55EGAWB1pTG6fVRgDkpwolCu5-XnnCFB2V4ks" />
+
+    <!-- Données structurées : les entités du site (Organization,
+         SoftwareApplication, WebSite) sont injectées par l'application via les
+         modules de schéma dédiés, avec des identifiants stables
+         (#organization, #application, #website). Aucun JSON-LD n'est écrit en
+         dur ici : les adresses sont construites à partir de l'origine réelle du
+         site, jamais d'un domaine figé. -->
 </head>
   <body>
     <div id="root"></div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { effacerFiltresDevis, lireFiltresDevis } from "@/lib/devisFiltresMemoire";
 import { triLabel } from "@/lib/devisTri";
 import { ajouterLienCopie } from "@/lib/liensCopiesMemoire";
+import { originePublique } from "@/lib/site";
 
 /** Sous-ensemble d'un devis utile pour retrouver le nom d'un modèle filtré. */
 interface DevisLite {
@@ -72,7 +73,7 @@ export default function VueFiltreeDevisCard({ devis }: { devis: DevisLite[] }) {
 
   // Copie le lien complet de la vue filtrée pour l'envoyer / le partager tel quel.
   const copierLien = async () => {
-    const url = `${window.location.origin}${lien}`;
+    const url = `${originePublique()}${lien}`;
     try {
       await navigator.clipboard.writeText(url);
       ajouterLienCopie("Vue filtrée · devis", url);

@@ -9,7 +9,11 @@ import {
   relanceIsActive,
 } from "@/lib/statuts";
 import { fetchIntervenants, type Intervenant } from "@/lib/intervenants";
+import { fetchComptesRattaches } from "@/lib/rattachementIntervenant";
+import { normaliseStatutCreneau } from "@/lib/planningIntervenant";
+import { estStatutIndisponible, periodeDepuisHeure, type Indisponibilite } from "@/lib/indisponibilites";
 import { journaliserDepuisErreur } from "@/lib/journalErreursChargement";
+import { normalizeEfStatut, type EfStatut } from "@/lib/factureElectronique";
 
 export interface DevisItem {
   id: number;
@@ -55,6 +59,12 @@ export interface EtapeItem {
   id: number;
   libelle: string;
   fait: boolean;
+  /** Photo de l'étape : chemin de stockage (ou URL), ou null. */
+  photo_url: string | null;
+  /** Commentaire rédigé pour le client sur cette étape, ou null. */
+  note_client: string | null;
+  /** L'étape est visible sur la page de suivi du client. */
+  visible_client: boolean;
 }
 
 export interface ChantierItem {
@@ -68,6 +78,18 @@ export interface ChantierItem {
   clientNom: string | null;
   /** Intervenant qui pilote le chantier, ou null si personne n'est désigné. */
   intervenant_id: number | null;
+  /** Bloc note libre attaché au chantier (suivi, points à retenir…), ou null. */
+  note: string | null;
+  /** Jeton du lien de suivi partageable avec le client, ou null. */
+  suivi_token: string | null;
+  /** Le suivi est partagé avec le client (lien actif). */
+  suivi_actif: boolean;
+  /** Message libre affiché au client sur sa page de suivi, ou null. */
+  message_client: string | null;
+  /** Date et heure du dernier email de suivi réellement parti au client (ISO), ou null. */
+  suivi_dernier_email_at: string | null;
+  /** Date de création du chantier (sert au rappel « aucun email depuis 14 jours »). */
+  created_at: string | null;
   etapes: EtapeItem[];
 }
 
@@ -95,6 +117,12 @@ export interface CreneauItem {
   chantier_id: number | null;
   /** Intervenant affecté au créneau, ou null si le créneau n'est pas encore attribué. */
   intervenant_id: number | null;
+  /** Statut : « confirmee », « provisoire » ou « faite ». */
+  statut: string;
+  /** Note libre de l'intervenant (ex. « client absent »), ou null. */
+  note: string | null;
+  /** Date et heure de la dernière modification (ISO), ou null. */
+  updated_at: string | null;
 }
 
 export interface FactureLigneItem {
@@ -123,6 +151,12 @@ export interface FactureItem {
   client_id: number | null;
   clientNom: string | null;
   lignes: FactureLigneItem[] | null;
+  /** Étape du cycle de vie de la facture électronique. */
+  efacture_statut: EfStatut;
+  /** Date de transmission à la plateforme ou au client (ISO), ou null. */
+  efacture_transmis_le: string | null;
+  /** Motif du rejet renvoyé par la plateforme, ou null. */
+  efacture_motif: string | null;
 }
 
 export interface EnvoiItem {
@@ -175,6 +209,8 @@ interface ArtisanDataResult {
   escaladeJournal: EscaladeJournalItem[];
   /** Intervenants (membres de l'équipe) de l'entreprise. */
   intervenants: Intervenant[];
+  /** Congés et indisponibilités posés par le responsable (une ligne par jour). */
+  indisponibilites: Indisponibilite[];
   reload: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -263,6 +299,7 @@ export function useArtisanData(): ArtisanDataResult {
   const [envois, setEnvois] = useState<EnvoiItem[]>([]);
   const [escaladeJournal, setEscaladeJournal] = useState<EscaladeJournalItem[]>([]);
   const [intervenants, setIntervenants] = useState<Intervenant[]>([]);
+  const [indisponibilites, setIndisponibilites] = useState<Indisponibilite[]>([]);
 
   // `silent` : recharge les données sans basculer la page en état « chargement »
   // (sert au rafraîchissement automatique en arrière-plan, sans clignotement).
@@ -289,26 +326,30 @@ export function useArtisanData(): ArtisanDataResult {
           .order("nom", { ascending: true }),
         supabase
           .from("chantiers")
-          .select("id, libelle, adresse, statut, date_debut, montant, client_id, intervenant_id, clients(nom), created_at")
+          .select("id, libelle, adresse, statut, date_debut, montant, client_id, intervenant_id, note, suivi_token, suivi_actif, message_client, suivi_dernier_email_at, clients(nom), created_at")
           .order("created_at", { ascending: false }),
         supabase
           .from("relances")
           .select("id, canal, statut, date_prevue, message, reprogrammations, escalade_auto, escalade_le, devis_id, devis(numero, client_id, clients(nom))")
           .order("date_prevue", { ascending: true }),
-        supabase.from("etapes_chantier").select("id, chantier_id, libelle, fait").order("id", { ascending: true }),
+        supabase
+          .from("etapes_chantier")
+          .select("id, chantier_id, libelle, fait, photo_url, note_client, visible_client")
+          .order("id", { ascending: true }),
         supabase
           .from("planning_creneaux")
-          .select("id, date, heure, libelle, ville, chantier_id, intervenant_id")
+          .select("id, date, heure, libelle, ville, chantier_id, intervenant_id, statut, note, updated_at")
           .order("date", { ascending: true }),
         supabase
           .from("factures")
-          .select("id, numero, statut, total_ht, total_ttc, date_emission, date_echeance, date_paiement, created_at, devis_id, client_id, lignes")
+          .select("id, numero, statut, total_ht, total_ttc, date_emission, date_echeance, date_paiement, created_at, devis_id, client_id, lignes, efacture_statut, efacture_transmis_le, efacture_motif")
           .order("created_at", { ascending: false }),
       ]);
 
       const envoisRes = await supabase
         .from("envois_email")
         .select("id, facture_id, devis_id, relance_id, type, canal, groupe, mode, destinataire, sujet, created_at")
+        .neq("type", "efacture_etape")
         .order("created_at", { ascending: false });
 
       const journalRes = await supabase
@@ -318,6 +359,16 @@ export function useArtisanData(): ArtisanDataResult {
         .limit(30);
 
       const intervenantsList = await fetchIntervenants();
+
+      // Repère « compte rattaché » : on demande au Backend quelles fiches correspondent à un
+      // compte réellement créé. Un échec ici ne doit pas bloquer le chargement des données :
+      // on considère alors simplement qu'aucun rattachement n'est confirmé.
+      let comptesRattaches = new Set<string>();
+      try {
+        comptesRattaches = await fetchComptesRattaches();
+      } catch {
+        comptesRattaches = new Set<string>();
+      }
 
       // Contrôle explicite de chaque requête : le client Backend ne « lève » pas d'exception sur
       // une colonne ou une table invalide, il renvoie `{ data: null, error }`. Sans ce contrôle,
@@ -364,7 +415,14 @@ export function useArtisanData(): ArtisanDataResult {
       etapeRows.forEach((row) => {
         const cid = toNum(row.chantier_id);
         const list = etapesByChantier.get(cid) ?? [];
-        list.push({ id: toNum(row.id), libelle: toStr(row.libelle) ?? "", fait: Boolean(row.fait) });
+        list.push({
+          id: toNum(row.id),
+          libelle: toStr(row.libelle) ?? "",
+          fait: Boolean(row.fait),
+          photo_url: toStr(row.photo_url),
+          note_client: toStr(row.note_client),
+          visible_client: row.visible_client !== false,
+        });
         etapesByChantier.set(cid, list);
       });
 
@@ -425,6 +483,12 @@ export function useArtisanData(): ArtisanDataResult {
             client_id: toNullableNum(row.client_id),
             clientNom: toStr(firstEmbed(row.clients)?.nom),
             intervenant_id: toNullableNum(row.intervenant_id),
+            note: toStr(row.note),
+            suivi_token: toStr(row.suivi_token),
+            suivi_actif: row.suivi_actif !== false,
+            message_client: toStr(row.message_client),
+            suivi_dernier_email_at: toStr(row.suivi_dernier_email_at),
+            created_at: toStr(row.created_at),
             etapes: etapesByChantier.get(id) ?? [],
           };
         }),
@@ -450,8 +514,25 @@ export function useArtisanData(): ArtisanDataResult {
         }),
       );
 
+      // Les indisponibilités (congés, formations…) vivent dans la même table mais avec un
+      // statut réservé : on les isole pour qu'elles ne comptent jamais comme des interventions.
+      const creneauxReels = creneauRows.filter((row) => !estStatutIndisponible(row.statut));
+      const absences = creneauRows.filter((row) => estStatutIndisponible(row.statut));
+
+      setIndisponibilites(
+        absences.map((row) => ({
+          id: toNum(row.id),
+          date: toStr(row.date) ?? "",
+          motif: toStr(row.libelle) ?? "Indisponible",
+          intervenant_id: toNullableNum(row.intervenant_id),
+          note: toStr(row.note),
+          // La portion de journée (matin / après-midi) est portée par l'heure technique.
+          periode: periodeDepuisHeure(row.heure),
+        })),
+      );
+
       setCreneaux(
-        creneauRows.map((row) => ({
+        creneauxReels.map((row) => ({
           id: toNum(row.id),
           date: toStr(row.date) ?? "",
           heure: toStr(row.heure) ?? "08:00",
@@ -459,10 +540,18 @@ export function useArtisanData(): ArtisanDataResult {
           ville: toStr(row.ville),
           chantier_id: toNullableNum(row.chantier_id),
           intervenant_id: toNullableNum(row.intervenant_id),
+          statut: normaliseStatutCreneau(row.statut),
+          note: toStr(row.note),
+          updated_at: toStr(row.updated_at),
         })),
       );
 
-      setIntervenants(intervenantsList);
+      setIntervenants(
+        intervenantsList.map((i) => ({
+          ...i,
+          compte_rattache: i.compte_email ? comptesRattaches.has(i.compte_email.trim().toLowerCase()) : false,
+        })),
+      );
 
       setFactures(
         factureRows.map((row) => {
@@ -485,6 +574,9 @@ export function useArtisanData(): ArtisanDataResult {
             client_id: clientId,
             clientNom: clientId !== null ? clientNameById.get(clientId) ?? null : null,
             lignes: parseFactureLignes(row.lignes),
+            efacture_statut: normalizeEfStatut(row.efacture_statut),
+            efacture_transmis_le: toStr(row.efacture_transmis_le),
+            efacture_motif: toStr(row.efacture_motif),
           };
         }),
       );
@@ -550,6 +642,7 @@ export function useArtisanData(): ArtisanDataResult {
     chantiers,
     relances,
     creneaux,
+    indisponibilites,
     factures,
     envois,
     escaladeJournal,

@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap');
-
+/* Les polices Google (Bricolage Grotesque + Manrope) sont chargées de façon
+   asynchrone depuis index.html ; on évite ici un second chargement bloquant. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -67,7 +67,7 @@
   --foreground-100: 0.92 0.008 68;
   --foreground-200: 0.85 0.010 66;
   --foreground-300: 0.75 0.012 64;
-  --foreground-400: 0.62 0.014 62;
+  --foreground-400: 0.52 0.014 62;
   --foreground-500: 0.50 0.016 60;
   --foreground-600: 0.40 0.017 58;
   --foreground-700: 0.32 0.018 56;
@@ -93,7 +93,7 @@
   --foreground-100: 0.24 0.016 52;
   --foreground-200: 0.34 0.017 54;
   --foreground-300: 0.45 0.017 56;
-  --foreground-400: 0.58 0.016 58;
+  --foreground-400: 0.64 0.016 58;
   --foreground-500: 0.70 0.014 60;
   --foreground-600: 0.80 0.012 62;
   --foreground-700: 0.88 0.010 64;
@@ -266,4 +266,47 @@ h1, h2, h3, h4, h5 {
 ::selection {
   background-color: oklch(var(--primary-200));
   color: oklch(var(--foreground-950));
+}
+
+/* Lien d'évitement « Aller au contenu » : masqué tant qu'il n'a pas le focus
+   clavier, il apparaît en haut à gauche dès la première pression sur Tab. */
+.lien-evitement {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2147483647;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  background-color: oklch(var(--primary-500));
+  color: oklch(var(--background-50));
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 1rem));
+  transition: transform 0.18s ease-out;
+}
+.lien-evitement:focus {
+  transform: translateY(0);
+  outline: 2px solid oklch(var(--background-50));
+  outline-offset: 2px;
+}
+
+/* Le repère principal reçoit le focus par programme : pas de contour disgracieux. */
+main:focus,
+main:focus-visible,
+section[tabindex="-1"]:focus,
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Navigation au clavier : contour de focus visible et cohérent sur tous les
+   éléments interactifs (liens, boutons, champs, onglets, résumés dépliables). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid oklch(var(--primary-500));
+  outline-offset: 2px;
+  border-radius: 0.25rem;
 }

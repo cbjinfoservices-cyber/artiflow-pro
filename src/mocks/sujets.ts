@@ -15,6 +15,8 @@ export const sujets = [
       "devis-salle-de-bain-structurer",
       "devis-sinistre-assurance-clair",
       "devis-faux-plafond-sans-erreur",
+      "chiffrer-pose-split-climatisation",
+      "acompte-ou-arrhes-devis",
     ],
   },
   {
@@ -27,6 +29,8 @@ export const sujets = [
       "relance-apres-depannage-urgent",
       "messages-relance-devis-electricite",
       "pourquoi-devis-facade-partent-trop-tard",
+      "relancer-devis-pompe-a-chaleur",
+      "contrat-entretien-climatisation",
     ],
   },
   {
@@ -49,6 +53,14 @@ export const sujets = [
     description:
       "Protéger votre espace, c'est protéger vos devis, vos clients et vos factures. Un thème à part, sans jargon, pour choisir un bon mot de passe et garder la main sur votre compte.",
     articleSlugs: ["creer-mot-de-passe-solide"],
+  },
+  {
+    slug: "facturation",
+    name: "Facturation & règlement",
+    icon: "ri-file-code-line",
+    description:
+      "De la facture au règlement : ce qui change avec la facture électronique, les mentions à ne pas oublier et les réflexes qui font rentrer l'argent plus vite.",
+    articleSlugs: ["facture-electronique-ce-qui-change-artisan"],
   },
 ];
 

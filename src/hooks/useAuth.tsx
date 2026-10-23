@@ -3,13 +3,22 @@ import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { estGestionnairePrincipal, normaliseEmail } from "@/lib/roles";
+import { fetchMonIntervenant, type MonIntervenant } from "@/lib/planningIntervenant";
+import { syncEntrepriseAbonnement, creerAbonnementEssaiInitial } from "@/lib/abonnementsApi";
+import { originePublique } from "@/lib/site";
 
 export interface Profile {
   id: string;
   email: string | null;
   metier: string | null;
   entreprise: string | null;
+  /** Forme juridique de l'entreprise (auto-entrepreneur, EI, EURL, SARL, SASU/SAS). */
+  statut_juridique?: string | null;
+  /** Nombre de personnes dans l'entreprise (seul, 2-5, 6-20, plus-20). */
+  taille_entreprise?: string | null;
   telephone: string | null;
+  /** Date de création du profil (ISO) : sert à repérer les comptes fraîchement inscrits. */
+  created_at?: string | null;
   /** Parcours de démarrage guidé terminé (ou passé) pour cet artisan. */
   onboarding_done?: boolean | null;
   logo_url: string | null;
@@ -17,6 +26,28 @@ export interface Profile {
   tva: string | null;
   assurance: string | null;
   penalites_retard: string | null;
+  /** Couleur d'accent des documents PDF (« #C4783A » par défaut). */
+  doc_couleur?: string | null;
+  /** Afficher le logo de l'entreprise sur les documents PDF (vrai par défaut). */
+  doc_afficher_logo?: boolean | null;
+  /** Coordonnées de paiement (IBAN / BIC, conditions) affichées sur les factures. */
+  doc_paiement?: string | null;
+  /** Message de pied de page libre affiché sur les documents (devis & factures). */
+  doc_pied_page?: string | null;
+  /** Modèle de mise en page des documents : « standard » (défaut) ou « compact ». */
+  doc_modele?: string | null;
+  /** Option pour le paiement de la TVA d'après les débits (mention de facturation électronique). */
+  efacture_option_debits?: boolean | null;
+  /** Autoliquidation par le preneur (sous-traitance BTP). */
+  efacture_autoliquidation?: boolean | null;
+  /** Franchise en base de TVA (« TVA non applicable, art. 293 B du CGI »). */
+  efacture_dispense_tva?: boolean | null;
+  /** Escompte pour paiement anticipé, texte libre. */
+  efacture_escompte?: string | null;
+  /** Mentions libres ajoutées aux documents. */
+  efacture_mentions_libres?: string | null;
+  /** Plateforme de dématérialisation utilisée pour la transmission, ou null. */
+  efacture_pdp?: string | null;
   email_sujet_devis: string | null;
   email_corps_devis: string | null;
   email_sujet_facture: string | null;
@@ -161,6 +192,14 @@ export interface Profile {
   taux_alerte_recap_hebdo_heure?: number | null;
   /** Date et heure du dernier récap hebdomadaire des alertes de taux réellement envoyé. */
   taux_alerte_recap_hebdo_dernier_envoi?: string | null;
+  /** Récap hebdomadaire par email des fiches d'intervenants « invitées sans compte » à relancer, activé. */
+  intervenants_recap_actif?: boolean | null;
+  /** Jour de la semaine d'envoi du récap des invitations (1 = lundi … 7 = dimanche). */
+  intervenants_recap_jour?: number | null;
+  /** Heure d'envoi du récap des invitations (0-23, heure de Paris). */
+  intervenants_recap_heure?: number | null;
+  /** Date et heure du dernier récap des invitations réellement envoyé. */
+  intervenants_recap_dernier_envoi?: string | null;
   /** Envoi hebdomadaire du récap d'échecs des rejeux « test à blanc » (CSV) activé. */
   echecs_blanc_recap_hebdo_actif?: boolean | null;
   /** Jour de la semaine d'envoi du récap d'échecs (1 = lundi … 7 = dimanche). */
@@ -267,30 +306,56 @@ export interface SignUpPayload {
   password: string;
   metier: string;
   entreprise: string;
+  statut_juridique: string;
+  taille_entreprise: string;
   telephone: string;
 }
 
 export interface ProfilePayload {
   entreprise: string;
   metier: string;
+  statut_juridique: string;
+  taille_entreprise: string;
   telephone: string;
   logo_url: string | null;
   siret: string;
   tva: string;
   assurance: string;
   penalites_retard: string;
-  email_sujet_devis: string;
-  email_corps_devis: string;
-  email_sujet_facture: string;
-  email_corps_facture: string;
-  email_sujet_relance: string;
-  email_corps_relance: string;
-  email_sujet_recontact: string;
-  email_corps_recontact: string;
-  email_sujet_recontact_auto: string;
-  email_corps_recontact_auto: string;
-  email_sujet_alerte_artisan: string;
-  email_corps_alerte_artisan: string;
+  /** Couleur d'accent des documents PDF. */
+  doc_couleur?: string | null;
+  /** Afficher le logo sur les documents PDF. */
+  doc_afficher_logo?: boolean;
+  /** Coordonnées de paiement affichées sur les factures. */
+  doc_paiement?: string | null;
+  /** Message de pied de page libre affiché sur les documents. */
+  doc_pied_page?: string | null;
+  /** Modèle de mise en page des documents : « standard » (défaut) ou « compact ». */
+  doc_modele?: string | null;
+  /** Option pour le paiement de la TVA d'après les débits (mention de facturation électronique). */
+  efacture_option_debits?: boolean | null;
+  /** Autoliquidation par le preneur (sous-traitance BTP). */
+  efacture_autoliquidation?: boolean | null;
+  /** Franchise en base de TVA (« TVA non applicable, art. 293 B du CGI »). */
+  efacture_dispense_tva?: boolean | null;
+  /** Escompte pour paiement anticipé, texte libre. */
+  efacture_escompte?: string | null;
+  /** Mentions libres ajoutées aux documents. */
+  efacture_mentions_libres?: string | null;
+  /** Plateforme de dématérialisation utilisée pour la transmission, ou null. */
+  efacture_pdp?: string | null;
+  email_sujet_devis: string | null;
+  email_corps_devis: string | null;
+  email_sujet_facture: string | null;
+  email_corps_facture: string | null;
+  email_sujet_relance: string | null;
+  email_corps_relance: string | null;
+  email_sujet_recontact: string | null;
+  email_corps_recontact: string | null;
+  email_sujet_recontact_auto: string | null;
+  email_corps_recontact_auto: string | null;
+  email_sujet_alerte_artisan: string | null;
+  email_corps_alerte_artisan: string | null;
 }
 
 interface AuthResult {
@@ -308,6 +373,14 @@ interface AuthContextValue {
   isGestionnaire: boolean;
   /** Compte gestionnaire principal (seul autorisé à gérer la liste des gestionnaires). */
   isGestionnairePrincipal: boolean;
+  /** Compte reconnu comme intervenant (membre d'équipe) : accès à son seul planning. */
+  isIntervenant: boolean;
+  /** Fiche intervenant liée au compte connecté (par son email), ou null. */
+  monIntervenant: MonIntervenant | null;
+  /** Le chargement de la fiche intervenant est en cours. */
+  intervenantLoading: boolean;
+  /** Recharge la reconnaissance intervenant (après un rattachement de compte, par exemple). */
+  refreshIntervenant: () => void;
   /** Adresses reconnues comme gestionnaires (vide pour un compte artisan). */
   gestionnaires: Gestionnaire[];
   /** Le chargement de la liste des gestionnaires est en cours. */
@@ -348,9 +421,20 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+/**
+ * Un compte est un compte artisan s'il a renseigné son métier ou son entreprise à l'inscription.
+ * Les comptes clients créés depuis l'espace de suivi n'ont jamais ces informations.
+ */
+function metaMetier(user: User): boolean {
+  const meta = (user.user_metadata || {}) as Record<string, unknown>;
+  const metier = typeof meta.metier === "string" ? meta.metier.trim() : "";
+  const entreprise = typeof meta.entreprise === "string" ? meta.entreprise.trim() : "";
+  return Boolean(metier || entreprise);
+}
+
 function computeRedirect(): string {
   const base = (__BASE_PATH__ || "").replace(/\/+$/, "");
-  return `${window.location.origin}${base}/app`;
+  return `${originePublique()}${base}/app`;
 }
 
 async function createProfileFromUser(user: User): Promise<Profile | null> {
@@ -360,10 +444,23 @@ async function createProfileFromUser(user: User): Promise<Profile | null> {
     email: user.email ?? null,
     metier: meta.metier ?? null,
     entreprise: meta.entreprise ?? null,
+    statut_juridique: meta.statut_juridique ?? null,
+    taille_entreprise: meta.taille_entreprise ?? null,
     telephone: meta.telephone ?? null,
   };
   const { data } = await supabase.from("profiles").insert(row).select("*").maybeSingle();
-  return (data as Profile) ?? null;
+  const profile = (data as Profile) ?? null;
+  // À la première inscription d'un artisan, on crée aussi son abonnement d'essai pour que
+  // son compte apparaisse aussitôt dans le back-office « Pros inscrits ».
+  if (profile && !estGestionnairePrincipal(profile.email)) {
+    await creerAbonnementEssaiInitial({
+      artisanId: user.id,
+      entreprise: profile.entreprise ?? row.entreprise,
+      email: profile.email ?? user.email ?? null,
+      metier: profile.metier ?? row.metier,
+    });
+  }
+  return profile;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -375,6 +472,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [gestionnairesLoading, setGestionnairesLoading] = useState(false);
   const [journal, setJournal] = useState<JournalGestionnaire[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
+  const [monIntervenant, setMonIntervenant] = useState<MonIntervenant | null>(null);
+  const [intervenantLoading, setIntervenantLoading] = useState(false);
+  // Incrémenté pour forcer une nouvelle reconnaissance intervenant à la demande.
+  const [intervenantRefreshTick, setIntervenantRefreshTick] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -416,9 +517,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
       if (data) {
         setProfile(data as Profile);
-      } else {
-        // Premier accès : on crée la fiche artisan à partir des infos d'inscription.
+      } else if (metaMetier(user)) {
+        // Premier accès d'un artisan : on crée sa fiche à partir des infos d'inscription.
+        // Les comptes clients (inscrits depuis l'espace de suivi) n'ont pas ces informations :
+        // ils n'ont donc pas de fiche artisan et n'apparaissent pas dans « Pros inscrits ».
         setProfile(await createProfileFromUser(user));
+      } else {
+        setProfile(null);
       }
     } catch {
       /* silencieux : l'espace reste utilisable même si le profil tarde */
@@ -430,6 +535,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  // Période de grâce de suppression de compte : une **reconnexion** annule la demande.
+  // On compare la date de la demande à la dernière connexion réelle. La session ouverte au
+  // moment de la demande ne l'annule donc pas, mais se reconnecter ensuite, si.
+  const userIdSession = session?.user?.id;
+  const derniereConnexion = session?.user?.last_sign_in_at;
+  useEffect(() => {
+    if (!userIdSession) return;
+    let dejaTraite = false;
+    const verifier = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("suppressions_compte")
+          .select("id, demandee_le")
+          .eq("user_id", userIdSession)
+          .eq("statut", "programmee")
+          .order("demandee_le", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error || !data) return;
+        const demande = new Date((data as { demandee_le: string }).demandee_le).getTime();
+        const connexion = derniereConnexion ? new Date(derniereConnexion).getTime() : 0;
+        // Marge de 2 minutes : la vérification du mot de passe lors de la demande met
+        // elle-même à jour `last_sign_in_at`, on ne veut donc pas annuler dans la foulée.
+        if (!Number.isFinite(demande) || !connexion || connexion <= demande + 120000 || dejaTraite) return;
+        dejaTraite = true;
+        await supabase.functions.invoke("annuler-suppression-compte", { body: { motif: "connexion" } });
+      } catch {
+        /* silencieux : l'artisan peut toujours annuler depuis son profil */
+      }
+    };
+    void verifier();
+  }, [userIdSession, derniereConnexion]);
 
   // Liste des adresses gestionnaires. Le Backend ne renvoie des lignes qu'aux comptes
   // gestionnaires (les artisans reçoivent une liste vide) ; l'écriture y est réservée au
@@ -484,6 +622,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadJournal();
   }, [loadJournal]);
+
+  // Fiche intervenant rattachée au compte connecté (reconnaissance par email). Ne renvoie
+  // rien pour le patron propriétaire : il n'est pas un intervenant, il gère toute l'équipe.
+  useEffect(() => {
+    const user = session?.user;
+    const email = user?.email;
+    if (!user || !email) {
+      setMonIntervenant(null);
+      return;
+    }
+    let active = true;
+    setIntervenantLoading(true);
+    fetchMonIntervenant(email, user.id)
+      .then((row) => {
+        if (active) setMonIntervenant(row);
+      })
+      .catch(() => {
+        if (active) setMonIntervenant(null);
+      })
+      .finally(() => {
+        if (active) setIntervenantLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [session, intervenantRefreshTick]);
 
   const ajouterGestionnaire = useCallback(
     async (
@@ -554,6 +718,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data: {
           metier: payload.metier,
           entreprise: payload.entreprise,
+          statut_juridique: payload.statut_juridique,
+          taille_entreprise: payload.taille_entreprise,
           telephone: payload.telephone,
         },
         emailRedirectTo: computeRedirect(),
@@ -586,6 +752,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: user.email ?? null,
         entreprise: payload.entreprise,
         metier: payload.metier,
+        statut_juridique: payload.statut_juridique || null,
+        taille_entreprise: payload.taille_entreprise || null,
         telephone: payload.telephone,
         logo_url: payload.logo_url,
         siret: payload.siret || null,
@@ -604,11 +772,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email_corps_recontact_auto: payload.email_corps_recontact_auto || null,
         email_sujet_alerte_artisan: payload.email_sujet_alerte_artisan || null,
         email_corps_alerte_artisan: payload.email_corps_alerte_artisan || null,
+        doc_couleur: payload.doc_couleur ?? null,
+        doc_afficher_logo: payload.doc_afficher_logo ?? true,
+        doc_paiement: payload.doc_paiement ?? null,
+        doc_pied_page: payload.doc_pied_page ?? null,
+        doc_modele: payload.doc_modele ?? null,
         updated_at: new Date().toISOString(),
       };
       const { data, error } = await supabase.from("profiles").upsert(row).select("*").maybeSingle();
       if (error) return { error: error.message };
       if (data) setProfile(data as Profile);
+      // Répercute la forme juridique et la taille de l'entreprise sur l'abonnement du compte,
+      // afin que le back-office (page « Pros inscrits ») puisse segmenter les pros par type d'entreprise.
+      await syncEntrepriseAbonnement(user.id, payload.statut_juridique || null, payload.taille_entreprise || null);
       return { error: null };
     },
     [session],
@@ -618,9 +794,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isPrincipal = estGestionnairePrincipal(monEmail);
   const estDansListe = gestionnaires.some((g) => normaliseEmail(g.email) === normaliseEmail(monEmail));
   const isGestionnaire = isPrincipal || estDansListe;
+  const isIntervenant = !!monIntervenant;
   const maLigne = gestionnaires.find((g) => normaliseEmail(g.email) === normaliseEmail(monEmail));
   const voirComptabilite = !isGestionnaire ? true : maLigne ? maLigne.voir_comptabilite : true;
   const voirMonAbonnement = !isGestionnaire ? true : maLigne ? maLigne.voir_mon_abonnement : true;
+
+  const refreshIntervenant = useCallback(() => setIntervenantRefreshTick((t) => t + 1), []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -631,6 +810,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       isGestionnaire,
       isGestionnairePrincipal: isPrincipal,
+      isIntervenant,
+      monIntervenant,
+      intervenantLoading,
+      refreshIntervenant,
       gestionnaires,
       gestionnairesLoading,
       journal,
@@ -656,6 +839,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       isGestionnaire,
       isPrincipal,
+      isIntervenant,
+      monIntervenant,
+      intervenantLoading,
+      refreshIntervenant,
       gestionnaires,
       gestionnairesLoading,
       journal,

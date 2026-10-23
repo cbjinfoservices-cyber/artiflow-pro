@@ -1,0 +1,30 @@
+# ArtiFlow-pro
+
+> L'assistant IA des artisans du bâtiment : devis en 2 minutes, relances SMS et WhatsApp automatiques, planning intelligent et suivi de chantier.
+
+ArtiFlow-pro transforme le téléphone de l'artisan en assistant : vous dictez le chantier, l'IA rédige le devis, relance le client et organise votre semaine. Moins de paperasse, plus de chantiers.
+
+## Pages principales
+
+- [Accueil](https://artiflow-pro.fr/) — présentation, bénéfices, démo et simulateur.
+- [Tarifs](https://artiflow-pro.fr/tarifs) — les offres et leurs fonctionnalités.
+- [Métiers](https://artiflow-pro.fr/metiers) — devis adaptés à chaque corps de métier.
+- [Zones d'intervention](https://artiflow-pro.fr/zones-intervention) — accompagnement par ville.
+- [Ressources](https://artiflow-pro.fr/ressources) — guides pratiques, parcours guidés et bibliothèque de modèles.
+- [Contact](https://artiflow-pro.fr/contact) — demander une démo.
+- [À propos](https://artiflow-pro.fr/a-propos) — l'équipe et la mission.
+- [Podcast](https://artiflow-pro.fr/podcast) — les épisodes.
+- [Nouveautés](https://artiflow-pro.fr/nouveautes) — les dernières évolutions du produit.
+
+## L'application
+
+- [Espace artisan](https://app.artiflow-pro.fr) — l'application en ligne.
+
+## Contact et réseaux
+
+- Email : contact@artiflow-pro.fr
+- Téléphone : +33 7 88 94 61 91
+- LinkedIn : https://www.linkedin.com/company/artiflow-pro
+- Facebook : https://www.facebook.com/artiflowpro
+- Instagram : https://www.instagram.com/artiflowpro
+- YouTube : https://www.youtube.com/@artiflowpro

@@ -1,0 +1,136 @@
+# ArtiFlow-pro
+
+> L'assistant IA des artisans du bâtiment : devis en 2 minutes, relances SMS et WhatsApp automatiques, planning intelligent et suivi de chantier.
+
+ArtiFlow-pro transforme le téléphone de l'artisan en assistant : vous dictez le chantier, l'IA rédige le devis, relance le client et organise votre semaine. Moins de paperasse, plus de chantiers.
+
+## Pages principales
+
+- [Accueil](https://artiflow-pro.fr/) — présentation, bénéfices, démo et simulateur.
+- [Tarifs](https://artiflow-pro.fr/tarifs) — les offres et leurs fonctionnalités.
+- [Métiers](https://artiflow-pro.fr/metiers) — devis adaptés à chaque corps de métier.
+- [Zones d'intervention](https://artiflow-pro.fr/zones-intervention) — accompagnement par ville.
+- [Ressources](https://artiflow-pro.fr/ressources) — guides pratiques, parcours guidés et bibliothèque de modèles.
+- [Contact](https://artiflow-pro.fr/contact) — demander une démo.
+- [À propos](https://artiflow-pro.fr/a-propos) — l'équipe et la mission.
+- [Podcast](https://artiflow-pro.fr/podcast) — les épisodes.
+- [Nouveautés](https://artiflow-pro.fr/nouveautes) — les dernières évolutions du produit.
+
+## Métiers
+
+Devis adaptés à chaque corps d'état, avec les bons postes, les bonnes unités et les bons tarifs.
+
+- [Métiers — vue d'ensemble](https://artiflow-pro.fr/metiers) — les corps d'état couverts et le fonctionnement.
+- [Plombier chauffagiste](https://artiflow-pro.fr/metiers/plombier-chauffagiste) — chaudières, sanitaires, dépannages et mises en sécurité.
+- [Électricien](https://artiflow-pro.fr/metiers/electricien) — mises aux normes, tableaux, extensions et rénovations.
+- [Maçon](https://artiflow-pro.fr/metiers/macon) — gros œuvre, dalles, ouvertures et extensions.
+- [Peintre finitions](https://artiflow-pro.fr/metiers/peintre-finitions) — peinture intérieure, façades, enduits et papier peint.
+- [Menuisier](https://artiflow-pro.fr/metiers/menuisier) — fenêtres, portes, placards et ouvrages sur mesure.
+- [Carreleur](https://artiflow-pro.fr/metiers/carreleur) — sols, murs, salles de bain et terrasses.
+- [Couvreur](https://artiflow-pro.fr/metiers/couvreur) — réfections, zinguerie, fenêtres de toit et sinistres.
+- [Plaquiste plâtrier](https://artiflow-pro.fr/metiers/platrier) — cloisons, faux plafonds, doublages et bandes.
+- [Frigoriste climaticien](https://artiflow-pro.fr/metiers/installateur-climatisation) — climatisation, pompes à chaleur, entretien annuel et froid commercial.
+- [Récapitulatif des métiers](https://artiflow-pro.fr/metiers/recapitulatif) — synthèse de tous les corps d'état couverts.
+
+## Zones d'intervention
+
+ArtiFlow-pro est un logiciel en ligne utilisé par les artisans du bâtiment partout en France.
+
+- [Zones d'intervention — vue d'ensemble](https://artiflow-pro.fr/zones-intervention) — les villes couvertes et le fonctionnement.
+- [Paris](https://artiflow-pro.fr/zones-intervention/paris) — Île-de-France.
+- [Lyon](https://artiflow-pro.fr/zones-intervention/lyon) — Auvergne-Rhône-Alpes.
+- [Marseille](https://artiflow-pro.fr/zones-intervention/marseille) — Provence-Alpes-Côte d'Azur.
+- [Toulouse](https://artiflow-pro.fr/zones-intervention/toulouse) — Occitanie.
+- [Bordeaux](https://artiflow-pro.fr/zones-intervention/bordeaux) — Nouvelle-Aquitaine.
+- [Lille](https://artiflow-pro.fr/zones-intervention/lille) — Hauts-de-France.
+- [Nantes](https://artiflow-pro.fr/zones-intervention/nantes) — Pays de la Loire.
+- [Nice](https://artiflow-pro.fr/zones-intervention/nice) — Provence-Alpes-Côte d'Azur.
+- [Strasbourg](https://artiflow-pro.fr/zones-intervention/strasbourg) — Grand Est.
+- [Montpellier](https://artiflow-pro.fr/zones-intervention/montpellier) — Occitanie.
+- [Rennes](https://artiflow-pro.fr/zones-intervention/rennes) — Bretagne.
+- [Grenoble](https://artiflow-pro.fr/zones-intervention/grenoble) — Auvergne-Rhône-Alpes.
+
+## Ressources
+
+Guides pratiques, parcours guidés et bibliothèque de modèles pour les artisans du bâtiment.
+
+- [Ressources — tous les guides](https://artiflow-pro.fr/ressources) — le catalogue complet, classé par thème.
+- [Thèmes de ressources](https://artiflow-pro.fr/ressources/sujets) — chiffrage, relances, planning, sécurité du compte, facturation.
+- [Bibliothèque de modèles](https://artiflow-pro.fr/ressources/bibliotheque) — modèles et lignes types à réutiliser, dont les lignes climatisation (split, gainable, entretien) et facturation électronique.
+
+### Parcours guidés
+
+Des collections ordonnées de guides qui s'enchaînent logiquement.
+
+- [Premiers pas avec ArtiFlow-pro](https://artiflow-pro.fr/ressources/parcours/premiers-pas) — rédiger un devis complet, organiser ses chantiers et relancer au bon moment.
+- [Chiffrer sans perdre de marge](https://artiflow-pro.fr/ressources/parcours/chiffrer-sans-perdre-de-marge) — les postes oubliés et les métrés bâclés.
+- [Devis et paiement](https://artiflow-pro.fr/ressources/parcours/devis-et-paiement) — du chiffrage à l'argent encaissé.
+- [Facturation et relances](https://artiflow-pro.fr/ressources/parcours/facturation-et-relances) — de la signature au règlement.
+- [Relancer et conclure](https://artiflow-pro.fr/ressources/parcours/relancer-et-conclure) — le bon rythme, le bon canal, les bons messages.
+- [Devis climatisation](https://artiflow-pro.fr/ressources/parcours/devis-climatisation) — chiffrer une pose sans poste oublié, puis relancer le devis au bon rythme.
+- [Facturer et transmettre](https://artiflow-pro.fr/ressources/parcours/facturer-et-transmettre) — la facture électronique expliquée sans jargon, l'acompte à la signature, puis le contrat d'entretien annuel qui fait revenir le client.
+
+### Guides pratiques
+
+- [Rédiger un devis de chaudière en 5 minutes, sans rien oublier](https://artiflow-pro.fr/ressources/devis-chaudiere-en-5-minutes) — plomberie et chauffage.
+- [Relancer un client après un dépannage urgent : le bon timing](https://artiflow-pro.fr/ressources/relance-apres-depannage-urgent) — plomberie et chauffage.
+- [Devis de mise aux normes : les 6 postes qu'on oublie tout le temps](https://artiflow-pro.fr/ressources/devis-mise-aux-normes-postes-oublies) — électricité.
+- [3 messages de relance qui font signer vos devis électricité](https://artiflow-pro.fr/ressources/messages-relance-devis-electricite) — électricité.
+- [Chiffrer une extension sans se tromper sur les métrés](https://artiflow-pro.fr/ressources/chiffrer-extension-sans-erreur-metres) — maçonnerie.
+- [Organiser ses chantiers par zone pour couper les trajets](https://artiflow-pro.fr/ressources/organiser-chantiers-par-zone) — maçonnerie et organisation.
+- [Devis peinture au m² : la méthode simple qui évite les pertes](https://artiflow-pro.fr/ressources/devis-peinture-au-m2-methode-simple) — peinture et finitions.
+- [Pourquoi vos devis de façade partent toujours trop tard](https://artiflow-pro.fr/ressources/pourquoi-devis-facade-partent-trop-tard) — peinture et finitions.
+- [Présenter plusieurs variantes de matériaux dans un seul devis](https://artiflow-pro.fr/ressources/variantes-materiaux-dans-un-seul-devis) — menuiserie.
+- [Du devis à la pose : suivre une commande sur mesure sans rien perdre](https://artiflow-pro.fr/ressources/suivre-commande-sur-mesure-du-devis-a-la-pose) — menuiserie.
+- [Calculer la réserve de chutes au carrelage (et arrêter d'en manquer)](https://artiflow-pro.fr/ressources/calculer-reserve-chutes-carrelage) — carrelage.
+- [Devis de salle de bain : structurer faïence, sol et plinthes](https://artiflow-pro.fr/ressources/devis-salle-de-bain-structurer) — carrelage.
+- [Après un orage : prioriser les urgences de toiture sans stress](https://artiflow-pro.fr/ressources/apres-orage-prioriser-urgences-toiture) — couverture.
+- [Devis de sinistre pour l'assurance : être clair et complet](https://artiflow-pro.fr/ressources/devis-sinistre-assurance-clair) — couverture.
+- [Devis de faux plafond : additionner murs et plafonds sans erreur](https://artiflow-pro.fr/ressources/devis-faux-plafond-sans-erreur) — plâtrerie.
+- [Rénovation d'appartement : chiffrer pièce par pièce](https://artiflow-pro.fr/ressources/renovation-appartement-piece-par-piece) — plâtrerie.
+- [Chiffrer une pose de split sans oublier de poste](https://artiflow-pro.fr/ressources/chiffrer-pose-split-climatisation) — climatisation et pompes à chaleur.
+- [Relancer un devis de pompe à chaleur sans laisser filer le chantier](https://artiflow-pro.fr/ressources/relancer-devis-pompe-a-chaleur) — climatisation et relances.
+- [Vendre un contrat d'entretien climatisation sans le brader](https://artiflow-pro.fr/ressources/contrat-entretien-climatisation) — climatisation et revenus récurrents.
+- [Facture électronique : ce qui change concrètement pour un artisan](https://artiflow-pro.fr/ressources/facture-electronique-ce-qui-change-artisan) — facturation et règlement.
+- [Acompte ou arrhes : quelle différence et combien demander ?](https://artiflow-pro.fr/ressources/acompte-ou-arrhes-devis) — gestion du devis.
+- [Créer un mot de passe solide](https://artiflow-pro.fr/guide/mot-de-passe-solide) — sécurité du compte.
+
+## Entreprise et médias
+
+- [Contact](https://artiflow-pro.fr/contact) — demander une démo ou poser une question.
+- [À propos](https://artiflow-pro.fr/a-propos) — l'équipe, la mission et l'histoire du produit.
+- [Nous rejoindre](https://artiflow-pro.fr/nous-rejoindre) — les postes ouverts.
+- [Podcast](https://artiflow-pro.fr/podcast) — les épisodes et les interventions.
+- [Nouveautés](https://artiflow-pro.fr/nouveautes) — les dernières évolutions du produit.
+- [Personnalisation des documents](https://artiflow-pro.fr/nouveautes/personnalisation-documents) — logo, couleur d'accent et mentions sur les devis et factures.
+- [Plan du site](https://artiflow-pro.fr/plan-du-site) — toutes les pages publiques.
+
+## Équipe
+
+- [Léa Marchand](https://artiflow-pro.fr/auteurs/lea-marchand) — cofondatrice et directrice générale.
+- [Karim Benali](https://artiflow-pro.fr/auteurs/karim-benali) — cofondateur et directeur technique.
+- [Sophie Renard](https://artiflow-pro.fr/auteurs/sophie-renard) — responsable produit.
+- [Antoine Lefèvre](https://artiflow-pro.fr/auteurs/antoine-lefevre) — responsable relation artisans.
+- [Camille Dufour](https://artiflow-pro.fr/auteurs/camille-dufour) — lead data et IA.
+- [Julien Barbier](https://artiflow-pro.fr/auteurs/julien-barbier) — responsable croissance.
+
+## Pages légales
+
+- [Mentions légales](https://artiflow-pro.fr/mentions-legales)
+- [RGPD](https://artiflow-pro.fr/rgpd)
+- [Conditions générales de vente](https://artiflow-pro.fr/cgv)
+- [Cookies](https://artiflow-pro.fr/cookies)
+- [Accessibilité](https://artiflow-pro.fr/accessibilite)
+
+## L'application
+
+- [Espace artisan](https://app.artiflow-pro.fr) — l'application en ligne : devis, factures, clients, chantiers, planning et relances.
+
+## Contact et réseaux
+
+- Email : contact@artiflow-pro.fr
+- Téléphone : +33 7 88 94 61 91
+- LinkedIn : https://www.linkedin.com/company/artiflow-pro
+- Facebook : https://www.facebook.com/artiflowpro
+- Instagram : https://www.instagram.com/artiflowpro
+- YouTube : https://www.youtube.com/@artiflowpro

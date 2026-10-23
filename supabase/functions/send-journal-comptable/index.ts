@@ -24,6 +24,99 @@ function escapeHtml(value: unknown): string {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
+ * Expédie un email en essayant Brevo, puis bascule automatiquement sur Resend si Brevo
+ * refuse l'envoi ou ne répond pas. Le PDF du journal comptable suit dans les deux cas.
+ * Chaque tentative est tracée pour la carte « Suivi des envois ».
+ */
+async function envoyerEmailAvecRepli(
+  fonction: string,
+  opts: {
+    nom: string;
+    to: string[];
+    subject: string;
+    html: string;
+    attachments?: Array<{ filename: string; content: string }>;
+  },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+): Promise<{ ok: boolean; fournisseur: string; repli: boolean; error?: string }> {
+  const tracer = async (fournisseur: string, statut: string, repli: boolean, message?: string) => {
+    if (!admin) return;
+    try {
+      await admin
+        .from("envoi_fournisseur_historique")
+        .insert({ fonction, fournisseur, statut, repli, message: message ?? null });
+    } catch {
+      /* la trace ne doit jamais bloquer un envoi */
+    }
+  };
+
+  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.fr";
+  let erreurBrevo = "";
+
+  if (brevoKey) {
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: { "api-key": brevoKey, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          sender: { name: opts.nom, email: brevoFrom },
+          to: opts.to.map((email) => ({ email })),
+          subject: opts.subject,
+          htmlContent: opts.html,
+          attachment: opts.attachments && opts.attachments.length
+            ? opts.attachments.map((a) => ({ name: a.filename, content: a.content }))
+            : undefined,
+        }),
+      });
+      if (res.ok) {
+        await tracer("brevo", "succes", false);
+        return { ok: true, fournisseur: "brevo", repli: false };
+      }
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      erreurBrevo = data?.message || `Brevo a refusé l'envoi (code ${res.status}).`;
+      await tracer("brevo", "echec", false, erreurBrevo);
+    } catch (e) {
+      erreurBrevo = e instanceof Error ? e.message : "Brevo est injoignable.";
+      await tracer("brevo", "echec", false, erreurBrevo);
+    }
+  }
+
+  const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+  const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+  if (resendKey && fromDomain) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: `${opts.nom} <noreply@${fromDomain}>`,
+          to: opts.to,
+          subject: opts.subject,
+          html: opts.html,
+          attachments: opts.attachments && opts.attachments.length ? opts.attachments : undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      if (res.ok) {
+        await tracer("resend", "succes", false);
+        return { ok: true, fournisseur: "resend", repli: false };
+      }
+      const erreur = data?.message || `Resend a refusé l'envoi (code ${res.status}).`;
+      await tracer("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    } catch (e) {
+      const erreur = e instanceof Error ? e.message : "Resend est injoignable.";
+      await tracer("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    }
+  }
+
+  return { ok: false, fournisseur: "aucun", repli: false, error: "Aucun service d'envoi configuré (Resend non paramétré)." };
+}
+
+/**
  * Envoie à son comptable le journal comptable consolidé d'une période (devis, factures
  * et paiements), avec le PDF complet en pièce jointe. Déclenché depuis la page
  * Comptabilité. L'authentification et la clé Resend restent côté serveur.
@@ -35,13 +128,13 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
+    const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+    const repliConfigure = Boolean(Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_DOMAIN"));
 
     if (!supabaseUrl || !anonKey || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
-    if (!resendKey || !fromDomain) {
+    if (!brevoKey && !repliConfigure) {
       return json(
-        { ok: false, error: "L'envoi d'email n'est pas encore configuré. Activez Resend (clé API + domaine) pour l'utiliser." },
+        { ok: false, error: "L'envoi d'email n'est pas encore configuré. Paramétrez Resend pour l'utiliser." },
         400,
       );
     }
@@ -114,23 +207,19 @@ Deno.serve(async (req) => {
   </div>
 </body></html>`;
 
-    const body: Record<string, unknown> = {
-      from: `${emetteurNom} <noreply@${fromDomain}>`,
-      to: [to],
-      subject,
-      html,
-    };
-    if (pdfBase64) {
-      body.attachments = [{ filename, content: pdfBase64 }];
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const resendData = (await res.json().catch(() => null)) as { message?: string } | null;
-    if (!res.ok) return json({ ok: false, error: resendData?.message || "L'envoi de l'email a échoué." }, 502);
+    // Envoi Brevo d'abord, repli automatique sur Resend si Brevo refuse ou ne répond pas.
+    const envoi = await envoyerEmailAvecRepli(
+      "send-journal-comptable",
+      {
+        nom: emetteurNom,
+        to: [to],
+        subject,
+        html,
+        attachments: pdfBase64 ? [{ filename, content: pdfBase64 }] : undefined,
+      },
+      admin,
+    );
+    if (!envoi.ok) return json({ ok: false, error: envoi.error || "L'envoi de l'email a échoué." }, 502);
 
     await admin.from("envois_email").insert({
       user_id: user.id,

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useMenuClavier } from "@/hooks/useMenuClavier";
 import { useStatutEnvoiEmails } from "@/hooks/useStatutEnvoiEmails";
 import { envoyerEmailTest } from "@/lib/diagnosticEmail";
 import ChangerMotDePasseModal from "@/components/feature/ChangerMotDePasseModal";
@@ -25,6 +26,9 @@ export default function MenuCompte({ backOfficeOnly }: { backOfficeOnly: boolean
   const [testNotice, setTestNotice] = useState("");
   const [testErreur, setTestErreur] = useState("");
   const ref = useRef<HTMLDivElement | null>(null);
+  // Le focus clavier du menu est piloté par le bouton (ouverture) et le panneau (navigation).
+  const boutonRef = useRef<HTMLButtonElement | null>(null);
+  const panneauRef = useRef<HTMLDivElement | null>(null);
 
   // Envoie un email de test à l'adresse du compte, puis affiche le retour dans le menu.
   const envoyerTest = async () => {
@@ -62,6 +66,15 @@ export default function MenuCompte({ backOfficeOnly }: { backOfficeOnly: boolean
     };
   }, [ouvert]);
 
+  // Navigation clavier du menu du compte : flèches haut/bas, Début/Fin, Échap.
+  const { onTriggerKeyDown, onPanelKeyDown } = useMenuClavier({
+    ouvert,
+    ouvrir: () => setOuvert(true),
+    fermer: () => setOuvert(false),
+    panelRef: panneauRef,
+    triggerRef: boutonRef,
+  });
+
   if (!user) return null;
 
   const displayName = backOfficeOnly
@@ -85,10 +98,13 @@ export default function MenuCompte({ backOfficeOnly }: { backOfficeOnly: boolean
   return (
     <div ref={ref} className="relative">
       <button
+        ref={boutonRef}
         type="button"
         onClick={() => setOuvert((v) => !v)}
+        onKeyDown={onTriggerKeyDown}
         aria-haspopup="menu"
         aria-expanded={ouvert}
+        aria-label="Menu du compte"
         title="Menu du compte"
         className="inline-flex items-center gap-2 h-10 pl-1.5 pr-2.5 rounded-md bg-background-100 border border-background-200 text-left cursor-pointer hover:border-primary-300 transition-colors"
       >
@@ -110,7 +126,10 @@ export default function MenuCompte({ backOfficeOnly }: { backOfficeOnly: boolean
 
       {ouvert && (
         <div
+          ref={panneauRef}
           role="menu"
+          aria-label="Menu du compte"
+          onKeyDown={onPanelKeyDown}
           className="absolute right-0 top-full mt-2 z-50 w-64 p-2 rounded-lg bg-background-50 border border-background-200 animate-fade-in"
         >
           <div className="flex items-center gap-2.5 p-2">

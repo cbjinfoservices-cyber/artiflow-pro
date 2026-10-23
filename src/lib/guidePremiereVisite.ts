@@ -24,6 +24,8 @@ export const PAGES_GUIDE: { cle: string; label: string }[] = [
   { cle: "relances", label: "Relances" },
   { cle: "chantiers", label: "Chantiers" },
   { cle: "planning", label: "Planning" },
+  { cle: "mon-planning", label: "Mon planning" },
+  { cle: "mon-planning-tiers", label: "Planning d'un intervenant (responsable)" },
   { cle: "comptabilite", label: "Comptabilité" },
   { cle: "envois-automatiques", label: "Envois automatiques" },
   { cle: "profil", label: "Mon profil" },

@@ -3,6 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { buildDocumentPdf } from "@/lib/pdf";
 import { fetchDevisLignes } from "@/lib/artisanApi";
 import { fetchDevisSignature } from "@/lib/signature";
+import { statutJuridiqueLabel } from "@/lib/entreprise";
+import { styleDocumentsDepuisProfil } from "@/lib/documentStyle";
+import { mentionsEfactureProfil } from "@/lib/factureElectronique";
 import { formatShortDate } from "@/lib/dates";
 
 function toNum(value: unknown): number {
@@ -44,7 +47,7 @@ export async function buildFacturePdfById(factureId: number): Promise<FacturePdf
       : Promise.resolve({ data: null }),
     supabase
       .from("profiles")
-      .select("entreprise, metier, telephone, email, logo_url, siret, tva, assurance")
+      .select("entreprise, metier, telephone, email, logo_url, siret, tva, assurance, statut_juridique, doc_couleur, doc_afficher_logo, doc_paiement, doc_pied_page, efacture_escompte, efacture_option_debits, efacture_autoliquidation, efacture_dispense_tva, efacture_mentions_libres")
       .eq("id", facture.user_id)
       .maybeSingle(),
     devisId
@@ -65,6 +68,16 @@ export async function buildFacturePdfById(factureId: number): Promise<FacturePdf
         siret?: string | null;
         tva?: string | null;
         assurance?: string | null;
+        statut_juridique?: string | null;
+        doc_couleur?: string | null;
+        doc_afficher_logo?: boolean | null;
+        doc_paiement?: string | null;
+        doc_pied_page?: string | null;
+        efacture_escompte?: string | null;
+        efacture_option_debits?: boolean | null;
+        efacture_autoliquidation?: boolean | null;
+        efacture_dispense_tva?: boolean | null;
+        efacture_mentions_libres?: string | null;
       }
     | null;
   const devis = devisRes.data as { numero?: string; objet?: string } | null;
@@ -84,9 +97,11 @@ export async function buildFacturePdfById(factureId: number): Promise<FacturePdf
       telephone: profile?.telephone ?? "",
       email: profile?.email ?? "",
       logo: profile?.logo_url ?? null,
+      formeJuridique: statutJuridiqueLabel(profile?.statut_juridique) || null,
       siret: profile?.siret ?? null,
       tva: profile?.tva ?? null,
       assurance: profile?.assurance ?? null,
+      escompte: profile?.efacture_escompte ?? null,
     },
     client: client
       ? { nom: client.nom ?? "", adresse: client.adresse, telephone: client.telephone, email: client.email }
@@ -96,6 +111,11 @@ export async function buildFacturePdfById(factureId: number): Promise<FacturePdf
     totalTTC: toNum(facture.total_ttc),
     echeanceLabel: facture.date_echeance ? formatShortDate(toStr(facture.date_echeance)) : undefined,
     reference: devis?.numero ?? undefined,
+    style: {
+      ...styleDocumentsDepuisProfil(profile),
+      mentionElectronique: true,
+      mentionsSupplementaires: mentionsEfactureProfil(profile),
+    },
     signature: signatureInfo?.signed_at
       ? {
           nom: signatureInfo.signataire_nom ?? client?.nom ?? "Client",

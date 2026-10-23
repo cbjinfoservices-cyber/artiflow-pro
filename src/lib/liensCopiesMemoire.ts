@@ -1,3 +1,6 @@
+import { normaliserCheminVue } from "@/lib/vuesFavoritesMemoire";
+import { originePublique } from "@/lib/site";
+
 /** Un lien déjà copié, conservé localement pour le retrouver sans recopier. */
 export interface LienCopie {
   /** Identifiant stable (l'URL) pour dédoublonner et clé-ifier la liste. */
@@ -16,16 +19,52 @@ const MAX = 6;
 /** Événement diffusé après chaque modification, pour rafraîchir le tableau de bord à chaud. */
 export const LIENS_COPIES_EVENT = "artiflow-liens-copies";
 
-/** Relit l'historique des liens copiés (du plus récent au plus ancien). */
+/** Reconstruit une adresse complète (origine + préfixe de publication) depuis un chemin interne. */
+function urlDepuisChemin(chemin: string): string {
+  const base = (__BASE_PATH__ || "").replace(/\/+$/, "");
+  return `${originePublique()}${base}${chemin}`;
+}
+
+/** Écrit la liste sans diffuser d'événement (migration silencieuse des anciennes adresses). */
+function persisterSansEvenement(liens: LienCopie[]): void {
+  try {
+    localStorage.setItem(CLE, JSON.stringify(liens));
+  } catch {
+    /* stockage indisponible : la migration sera retentée à la prochaine lecture */
+  }
+}
+
+/**
+ * Relit l'historique des liens copiés (du plus récent au plus ancien).
+ * Les liens qui pointent encore vers l'ancienne page « Professionnels » sont ramenés vers la
+ * vue actuelle du carnet (/app/clients?type=Professionnels) puis réécrits silencieusement,
+ * avec dédoublonnage s'il existait déjà un lien vers la nouvelle adresse.
+ */
 export function lireLiensCopies(): LienCopie[] {
   try {
     const raw = localStorage.getItem(CLE);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter((l): l is LienCopie => Boolean(l && typeof l.url === "string" && typeof l.label === "string"))
-      .slice(0, MAX);
+    const liens: LienCopie[] = [];
+    let migre = false;
+    parsed.forEach((l) => {
+      if (!(l && typeof l.url === "string" && typeof l.label === "string")) return;
+      const lien = l as LienCopie;
+      const cheminActuel = cheminInterneDepuisUrl(lien.url);
+      const chemin = normaliserCheminVue(cheminActuel);
+      const url = chemin === cheminActuel ? lien.url : urlDepuisChemin(chemin);
+      if (url !== lien.url) migre = true;
+      // Deux liens peuvent désormais désigner la même vue : on garde le premier (le plus récent).
+      if (liens.some((x) => x.url === url)) {
+        migre = true;
+        return;
+      }
+      liens.push({ ...lien, id: url, url });
+    });
+    const sortie = liens.slice(0, MAX);
+    if (migre) persisterSansEvenement(sortie);
+    return sortie;
   } catch {
     return [];
   }
@@ -104,7 +143,7 @@ export function cheminInterneDepuisUrl(url: string): string {
   } catch {
     /* on garde la chaîne telle quelle */
   }
-  if (path.startsWith(window.location.origin)) path = path.slice(window.location.origin.length);
+  if (path.startsWith(originePublique())) path = path.slice(originePublique().length);
   const base = (__BASE_PATH__ || "").replace(/\/+$/, "");
   if (base && path.startsWith(base)) path = path.slice(base.length);
   return path.startsWith("/") ? path : `/${path}`;

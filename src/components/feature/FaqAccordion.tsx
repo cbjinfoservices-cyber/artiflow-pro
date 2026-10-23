@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { originePublique } from "@/lib/site";
 
 export type FaqItem = { question: string; answer: string };
 
@@ -86,7 +87,7 @@ export default function FaqAccordion({ items, idPrefix }: FaqAccordionProps) {
   };
 
   const copyLink = async (id: string) => {
-    const url = `${window.location.origin}${window.location.pathname}#${id}`;
+    const url = `${originePublique()}${window.location.pathname}#${id}`;
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);

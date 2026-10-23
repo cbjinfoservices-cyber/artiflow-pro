@@ -7,9 +7,47 @@
     <description>Le journal des nouveautés d'ArtiFlow-pro : nouvelles fonctions, améliorations et correctifs, livrés en toute transparence pour les artisans du bâtiment. Devis, relances, planning, chantiers, comptabilité et offres.</description>
     <language>fr-FR</language>
     <copyright>ArtiFlow-pro</copyright>
-    <lastBuildDate>Fri, 09 Oct 2026 09:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 23 Oct 2026 09:00:00 +0200</lastBuildDate>
     <generator>ArtiFlow-pro</generator>
     <atom:link href="https://artiflow-pro.readdy.co/nouveautes/rss.xml" rel="self" type="application/rss+xml" />
+
+    <item>
+      <title>[Nouveau] 3.4 — Renvoyer dans 24 h, sans y repenser</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes/suivi-emails-clients</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-3-4</guid>
+      <pubDate>Fri, 23 Oct 2026 09:00:00 +0200</pubDate>
+      <category>Nouveau</category>
+      <category>Fiche client &amp; emails</category>
+      <description>Un email refusé peut désormais être reprogrammé depuis la cloche. Un décompte en direct indique quand la relance partira, elle s'annule d'un clic ou d'un coup, et elle s'annule d'elle-même si la fiche client a été corrigée entre-temps. L'annonce dédiée au suivi des emails détaille le refus expliqué, la vérification d'adresse et le renvoi différé, captures et mode d'emploi à l'appui.</description>
+    </item>
+
+    <item>
+      <title>3.3 — Plus de renvoi vers une adresse invalide</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes/suivi-emails-clients</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-3-3</guid>
+      <pubDate>Wed, 21 Oct 2026 09:00:00 +0200</pubDate>
+      <category>Fiche client &amp; emails</category>
+      <description>Le formulaire client contrôle l'adresse avant tout envoi : format puis domaine. Tant que l'adresse reste douteuse, aucun email ne part — et la correction relance automatiquement la relance.</description>
+    </item>
+
+    <item>
+      <title>3.2 — Le refus d'email s'explique enfin</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes/suivi-emails-clients</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-3-2</guid>
+      <pubDate>Mon, 19 Oct 2026 09:00:00 +0200</pubDate>
+      <category>Fiche client &amp; emails</category>
+      <description>Sur la fiche client, le dernier email refusé s'affiche avec sa date, l'adresse tentée et la raison exacte, à côté de la liste datée des emails réellement partis (objet et destinataire) et du compteur d'envois réussis.</description>
+    </item>
+
+    <item>
+      <title>[Nouveau] 3.1 — Des documents à votre image, partout</title>
+      <link>https://artiflow-pro.readdy.co/nouveautes/personnalisation-documents</link>
+      <guid isPermaLink="false">artiflow-pro/nouveaute-3-1</guid>
+      <pubDate>Fri, 16 Oct 2026 09:00:00 +0200</pubDate>
+      <category>Nouveau</category>
+      <category>Devis &amp; factures</category>
+      <description>Couleur d'accent, logo, coordonnées de paiement et message de pied de page repris sur vos devis, factures, emails clients et pages de signature : une identité unifiée du premier PDF jusqu'à la signature du client.</description>
+    </item>
 
     <item>
       <title>3.0 — Journal des nouveautés public et flux RSS</title>

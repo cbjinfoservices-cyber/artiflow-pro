@@ -60,6 +60,18 @@ export const TACHES_PLANIFIEES: TachePlanifiee[] = [
     cron: "0 * * * *",
   },
   {
+    slug: "rappel-conges-semaine",
+    nom: "Rappel hebdo des congés à venir",
+    role: "Prévient le responsable, chaque lundi, des congés qui démarrent la semaine suivante",
+    cron: "0 * * * *",
+  },
+  {
+    slug: "rappel-conflits-conge-veille",
+    nom: "Rappel des conflits de congé la veille",
+    role: "Envoie la liste des conflits (CSV joint) au responsable la veille de la réunion d'équipe, à l'heure choisie (7 h par défaut)",
+    cron: "0 * * * *",
+  },
+  {
     slug: "recap-hebdo-envois-auto",
     nom: "Récap hebdo des envois auto",
     role: "Synthèse hebdo des envois automatiques",
@@ -87,6 +99,12 @@ export const TACHES_PLANIFIEES: TachePlanifiee[] = [
     slug: "recap-hebdo-alertes-stripe-non-traitees",
     nom: "Récap hebdo des alertes Stripe non traitées",
     role: "Rappel hebdo aux gestionnaires des alertes de configuration Stripe encore à traiter",
+    cron: "0 * * * *",
+  },
+  {
+    slug: "recap-invitations-intervenants",
+    nom: "Récap invitations intervenants",
+    role: "Récap hebdo des fiches invitées sans compte à relancer",
     cron: "0 * * * *",
   },
   {
@@ -135,6 +153,18 @@ export const TACHES_PLANIFIEES: TachePlanifiee[] = [
     slug: "export-csv-mensuel",
     nom: "Export CSV mensuel par email",
     role: "Envoie par email les exports CSV (réessais + journal d'escalade)",
+    cron: "0 * * * *",
+  },
+  {
+    slug: "envoi-bienvenue-nouveaux-pros",
+    nom: "Email de bienvenue aux nouveaux pros",
+    role: "Accueille automatiquement chaque nouvelle inscription (une seule fois par pro)",
+    cron: "0 * * * *",
+  },
+  {
+    slug: "alerte-taux-brevo",
+    nom: "Alerte taux de réussite des emails",
+    role: "Prévient les gestionnaires si les envois Resend passent sous 95 % de réussite sur 24 h (une alerte par 24 h)",
     cron: "0 * * * *",
   },
 ];

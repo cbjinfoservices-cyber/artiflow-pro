@@ -11,11 +11,16 @@ export type Nouveaute = {
   icon: string;
   niveau: NiveauNouveaute;
   points: string[];
+  /** Lien vers une page d'annonce dédiée (facultatif). */
+  lien?: string;
+  /** Libellé du lien d'annonce dédiée (facultatif). */
+  lienLabel?: string;
 };
 
 export const categoriesNouveautes: { key: string; label: string; icon: string }[] = [
   { key: "toutes", label: "Tout", icon: "ri-apps-2-line" },
   { key: "devis", label: "Devis & factures", icon: "ri-file-text-line" },
+  { key: "clients", label: "Fiche client & emails", icon: "ri-mail-line" },
   { key: "relances", label: "Relances", icon: "ri-notification-3-line" },
   { key: "planning", label: "Planning & chantiers", icon: "ri-calendar-line" },
   { key: "comptabilite", label: "Comptabilité", icon: "ri-calculator-line" },
@@ -31,6 +36,83 @@ export const niveauLabels: Record<NiveauNouveaute, string> = {
 };
 
 export const nouveautes: Nouveaute[] = [
+  {
+    id: "renvois-programmes",
+    version: "3.4",
+    dateIso: "2026-10-23",
+    dateLabel: "23 octobre 2026",
+    title: "Renvoyer dans 24 h, sans y repenser",
+    summary:
+      "Un email refusé peut désormais être reprogrammé depuis la cloche. Un décompte en direct indique quand la relance partira, et tout s'annule d'un clic — y compris si vous corrigez la fiche entre-temps.",
+    categorie: "clients",
+    icon: "ri-time-line",
+    niveau: "majeur",
+    lien: "/nouveautes/suivi-emails-clients",
+    lienLabel: "Voir l'annonce et le mode d'emploi",
+    points: [
+      "Programmation d'un renvoi à 24 h depuis la liste des échecs",
+      "Décompte en direct avant chaque départ prévu",
+      "Annulation ligne par ligne ou groupée en un clic",
+      "Annulation automatique si l'adresse est corrigée avant l'échéance",
+    ],
+  },
+  {
+    id: "verification-adresse",
+    version: "3.3",
+    dateIso: "2026-10-21",
+    dateLabel: "21 octobre 2026",
+    title: "Plus de renvoi vers une adresse invalide",
+    summary:
+      "Le formulaire client contrôle l'adresse avant tout envoi : format puis domaine. Tant que l'adresse reste douteuse, aucun email ne part — et la correction relance automatiquement la relance.",
+    categorie: "clients",
+    icon: "ri-shield-check-line",
+    niveau: "amelioration",
+    points: [
+      "Bouton « Vérifier l'adresse » : format et domaine",
+      "Suggestion d'adresse corrigée pour les fautes de frappe courantes",
+      "Renvoi bloqué tant que l'adresse est invalide",
+      "Renvoi automatique dès que l'adresse est corrigée",
+    ],
+  },
+  {
+    id: "suivi-emails-clients",
+    version: "3.2",
+    dateIso: "2026-10-19",
+    dateLabel: "19 octobre 2026",
+    title: "Le refus d'email s'explique enfin",
+    summary:
+      "Sur la fiche client, vous voyez le dernier email refusé avec sa date, l'adresse tentée et la raison exacte, à côté de la liste datée des emails réellement partis.",
+    categorie: "clients",
+    icon: "ri-mail-check-line",
+    niveau: "majeur",
+    lien: "/nouveautes/suivi-emails-clients",
+    lienLabel: "Lire l'annonce complète",
+    points: [
+      "Dernier refus affiché avec date, adresse et raison",
+      "Liste datée des emails partis : objet et destinataire",
+      "Compteur d'envois réussis par client",
+      "Bouton « Vérifier et renvoyer » en une seule action",
+    ],
+  },
+  {
+    id: "personnalisation-documents",
+    version: "3.1",
+    dateIso: "2026-10-16",
+    dateLabel: "16 octobre 2026",
+    title: "Des documents à votre image, partout",
+    summary:
+      "Couleur d'accent, logo, coordonnées de paiement et message de pied de page : vos devis, factures, emails clients et pages de signature portent désormais la même identité, du premier PDF jusqu'à la signature du client.",
+    categorie: "devis",
+    icon: "ri-palette-line",
+    niveau: "majeur",
+    lien: "/nouveautes/personnalisation-documents",
+    lienLabel: "Lire l'annonce complète",
+    points: [
+      "Couleur d'accent et logo sur vos devis et factures",
+      "Même identité dans les emails clients et les relances",
+      "Page de signature en ligne à vos couleurs",
+    ],
+  },
   {
     id: "v3-0",
     version: "3.0",

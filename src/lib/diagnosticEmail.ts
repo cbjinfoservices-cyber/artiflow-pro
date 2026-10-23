@@ -11,6 +11,48 @@ export interface ResendDomaine {
   region?: string;
 }
 
+/** Un enregistrement DNS attendu par Resend, avec son verdict lu dans le DNS réel. */
+export interface VerifEnregistrementDns {
+  /** Identifiant technique stable de la ligne. */
+  cle: string;
+  /** Libellé humain de l'enregistrement. */
+  libelle: string;
+  /** Type d'enregistrement à créer (TXT, CNAME). */
+  type: string;
+  /** Nom / hôte exact à saisir chez l'hébergeur DNS. */
+  nom: string;
+  /** Valeur attendue, telle que fournie par Resend. */
+  attendu: string;
+  /** Valeur réellement publiée, ou null si rien n'est trouvé. */
+  trouve: string | null;
+  /** Vrai si l'enregistrement est publié et conforme. */
+  ok: boolean;
+  /** Vrai si l'enregistrement existe mais avec une valeur différente. */
+  divergent?: boolean;
+  /** Explication courte destinée à l'utilisateur. */
+  detail: string;
+}
+
+/** Résultat complet de la vérification DNS d'un domaine d'envoi. */
+export interface VerificationDnsEmail {
+  /** Domaine analysé. */
+  domaine: string;
+  /** Serveurs de noms autoritatifs du domaine. */
+  serveursNoms: string[];
+  /** Hébergeur DNS déduit des serveurs de noms. */
+  hebergeur: string;
+  /** État du SPF (plusieurs SPF = délivrabilité cassée). */
+  spf: { present: boolean; valeurs: string[]; doublon: boolean; resendInclus: boolean };
+  /** État du DMARC (plusieurs DMARC = validation cassée). */
+  dmarc: { present: boolean; valeurs: string[]; doublon: boolean };
+  /** Les enregistrements à publier, ligne par ligne. */
+  enregistrements: VerifEnregistrementDns[];
+  /** Avertissements explicites à afficher dans la carte. */
+  avertissements: string[];
+  /** Vrai si tous les enregistrements obligatoires sont publiés. */
+  complet: boolean;
+}
+
 /** Résultat du diagnostic de configuration des emails d'envoi. */
 export interface StatutEmail {
   /** Une clé API Resend est présente côté Backend. */
@@ -29,10 +71,22 @@ export interface StatutEmail {
   domainStatus: string | null;
   /** Liste des domaines déclarés dans Resend. */
   domains: ResendDomaine[];
+  /**
+   * Champs historiques de la validation d'expéditeur. Le diagnostic Resend ne les renseigne
+   * plus (Resend valide le domaine, pas chaque adresse) : ils restent vides.
+   */
+  expediteurs?: Array<{ email: string; actif: boolean }>;
+  /**
+   * État historique de l'adresse d'expédition chez l'ancien fournisseur.
+   * Toujours `null` avec Resend, qui valide le domaine et non chaque adresse.
+   */
+  expediteur?: { email: string; present: boolean; actif: boolean } | null;
   /** Un enregistrement DMARC (_dmarc.domaine) est présent. */
   dmarcPresent: boolean;
   /** Valeur de l'enregistrement DMARC détecté, ou null. */
   dmarcValue: string | null;
+  /** Vérification DNS des enregistrements Resend (null si aucun domaine configuré). */
+  dns: VerificationDnsEmail | null;
   /** Vrai si la clé, le domaine ET la vérification sont tous bons. */
   ready: boolean;
   /** Horodatage de la vérification. */
@@ -63,7 +117,7 @@ export interface EmailTestEntree {
   created_at: string;
 }
 
-/** Libellé humain d'un statut de domaine Resend. */
+/** Libellé humain d'un statut d'expéditeur email. */
 export function libelleStatutDomaine(status: string | null): string {
   if (!status) return "Inconnu";
   const map: Record<string, string> = {
@@ -71,7 +125,8 @@ export function libelleStatutDomaine(status: string | null): string {
     pending: "En attente de vérification",
     not_started: "Non démarré",
     failed: "Échec de vérification",
-    not_found: "Introuvable dans Resend",
+    temporary_failure: "Vérification momentanément indisponible",
+    not_found: "Domaine absent de Resend",
   };
   return map[status] ?? status;
 }

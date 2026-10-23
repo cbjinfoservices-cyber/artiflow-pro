@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { recordRecontact } from "@/lib/abonnementsApi";
 import type { PaiementEchecItem } from "@/lib/paiementsEchecsApi";
+import { originePublique } from "@/lib/site";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -8,7 +9,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function urlTarifs(): string {
   const basePath = (__BASE_PATH__ || "").split("/").filter(Boolean).join("/");
   const prefix = basePath ? `/${basePath}` : "";
-  return `${window.location.origin}${prefix}/tarifs`;
+  return `${originePublique()}${prefix}/tarifs`;
 }
 
 /** Objet par défaut de l'email de relance après un échec de paiement. */

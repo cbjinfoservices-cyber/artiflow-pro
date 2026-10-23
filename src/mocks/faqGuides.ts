@@ -279,7 +279,99 @@ export const faqGuides: Record<string, FaqGuide[]> = {
         "Cela permet de phaser les travaux : commencer par les pièces de vie et repousser les chambres, ce qui garde le chantier même si le budget initial était limité.",
     },
   ],
+  "chiffrer-pose-split-climatisation": [
+    {
+      question: "Quels postes oublie-t-on le plus souvent sur un devis de climatisation ?",
+      answer:
+        "Le support mural, le perçage et le rebouchage du mur, les mètres de liaison frigorifique au-delà du kit, l'évacuation des condensats, l'alimentation électrique dédiée et la reprise de l'ancien appareil.",
+    },
+    {
+      question: "Faut-il facturer la mise en service séparément ?",
+      answer:
+        "Oui, elle mérite sa propre ligne : contrôle d'étanchéité, tirage au vide, charge complémentaire, essais de fonctionnement et vérification des débits. Noyée dans le prix de la machine, elle finit par être considérée comme gratuite.",
+    },
+    {
+      question: "Comment chiffrer plusieurs types de pose sans recalculer à chaque fois ?",
+      answer:
+        "En partant d'un modèle par type de pose : mono-split, multi-split et gainable. Les postes sont déjà présents avec vos prix, il ne reste qu'à saisir la puissance retenue et les particularités du logement.",
+    },
+  ],
+  "relancer-devis-pompe-a-chaleur": [
+    {
+      question: "Pourquoi un devis de pompe à chaleur reste-t-il sans réponse ?",
+      answer:
+        "Rarement parce qu'il est trop cher : le dossier est en attente d'un arbitrage (budget, délai, comparaison) ou d'une question que le client n'a pas osé poser. Sans relance, il se perd.",
+    },
+    {
+      question: "À quel moment faut-il relancer ?",
+      answer:
+        "Une première relance deux à trois jours après l'envoi, une deuxième à une semaine, puis une troisième plus tard avec une alternative chiffrée plutôt qu'un rappel du prix.",
+    },
+    {
+      question: "Faut-il relancer par SMS ou par email ?",
+      answer:
+        "Le SMS court pour rouvrir la conversation et proposer une date, l'email pour ce qui doit rester : le devis, les options chiffrées et les documents techniques.",
+    },
+  ],
+  "contrat-entretien-climatisation": [
+    {
+      question: "Un contrat d'entretien est-il obligatoire pour un particulier ?",
+      answer:
+        "Aucun texte n'oblige un particulier à signer un contrat avec un professionnel. En revanche, une installation doit être entretenue régulièrement pour rester performante, et certains fabricants conditionnent la garantie au respect de visites d'entretien : vérifiez les conditions de chaque constructeur.",
+    },
+    {
+      question: "Combien facturer un contrat d'entretien climatisation ?",
+      answer:
+        "Le montant dépend du nombre d'appareils et du déplacement. Sur un mono-split résidentiel, la fourchette courante va de 150 à 200 € par an. L'important est que le forfait couvre le temps sur place et le suivi, plutôt que d'être offert pour emporter la pose.",
+    },
+    {
+      question: "Pourquoi les contrats ne sont-ils pas renouvelés ?",
+      answer:
+        "Presque toujours par oubli : la date anniversaire passe sans qu'aucune relance ne parte. Une relance automatique deux mois avant l'échéance, par SMS puis par email, suffit à éviter la majorité des sorties.",
+    },
+  ],
 };
+
+faqGuides["acompte-ou-arrhes-devis"] = [
+  {
+    question: "Un acompte est-il obligatoire sur un devis ?",
+    answer:
+      "Non. Rien n'oblige un artisan à demander un acompte : c'est une clause du devis, pas une formalité imposée. Si vous en demandez un, il doit figurer par écrit sur le devis, avec son montant et la date à laquelle il est attendu.",
+  },
+  {
+    question: "L'acompte est-il remboursable si le client annule ?",
+    answer:
+      "Tout dépend de ce que prévoit votre devis et des circonstances de l'annulation. Un acompte engage les deux parties, mais les conséquences d'un retrait ne sont pas les mêmes selon l'avancement du chantier et les commandes déjà passées. Pour trancher un cas précis, faites valider votre clause par un professionnel du droit ou votre comptable.",
+  },
+  {
+    question: "Quelle différence entre un acompte et une facture d'avance ?",
+    answer:
+      "L'acompte est la somme versée avant les travaux. La facture d'avance est le document qui constate ce versement et le rattache à la prestation. Autrement dit, l'acompte est le paiement, la facture d'avance est la pièce comptable qui l'accompagne.",
+  },
+  {
+    question: "Peut-on demander un acompte sans devis signé ?",
+    answer:
+      "C'est risqué. Sans devis signé, il n'existe aucune trace de ce que la somme couvre ni du prix total, et le client peut contester le montant. La signature, papier ou électronique, est ce qui rend l'acompte défendable.",
+  },
+];
+
+faqGuides["facture-electronique-ce-qui-change-artisan"] = [
+  {
+    question: "Un PDF envoyé par email suffit-il encore pour une facture ?",
+    answer:
+      "Pour une facture entre deux professionnels, non : il faut un fichier structuré (Factur-X, UBL ou CII) transmis par une plateforme de dématérialisation. Le PDF reste utile comme version lisible par le client, mais il ne constitue plus à lui seul la facture électronique attendue.",
+  },
+  {
+    question: "Faut-il payer une plateforme pour émettre ses factures électroniques ?",
+    answer:
+      "Tout dépend de la taille de votre activité et de l'offre choisie : certaines plateformes sont payantes, d'autres proposent une formule gratuite pour les petites structures. Le bon réflexe est de comparer en demandant l'avis de votre comptable, puisque c'est lui qui récupérera ensuite les fichiers.",
+  },
+  {
+    question: "Que faire quand une facture électronique est rejetée ?",
+    answer:
+      "Un rejet signale presque toujours une donnée à corriger : SIRET du client incomplet, taux de TVA incohérent, montant qui ne correspond pas aux lignes. Corrigez la facture, notez le motif pour ne pas le reproduire, puis retransmettez-la. Un rejet n'annule pas la facture, il bloque seulement sa transmission.",
+  },
+];
 
 /** FAQ d'un guide, ou tableau vide si le guide n'en a pas. */
 export function getFaqGuide(slug?: string): FaqGuide[] {

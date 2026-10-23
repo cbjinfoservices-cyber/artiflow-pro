@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
         : Promise.resolve({ data: null }),
       supabase
         .from("profiles")
-        .select("entreprise, metier, telephone, email, logo_url, siret, tva, assurance")
+        .select("entreprise, metier, telephone, email, logo_url, siret, tva, assurance, doc_couleur, doc_afficher_logo, doc_pied_page")
         .eq("id", devis.user_id)
         .maybeSingle(),
     ]);

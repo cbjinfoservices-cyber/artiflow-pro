@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useEcheancesDuJour } from "@/hooks/useEcheancesDuJour";
 import { useArtisanData } from "@/hooks/useArtisanData";
 import { useAuth } from "@/hooks/useAuth";
 import { useRelancesAuto } from "@/hooks/useRelancesAuto";
@@ -20,6 +21,7 @@ import DevisFormModal from "@/pages/app/devis/components/DevisFormModal";
 import ModelesRapidesPanel from "@/pages/app/dashboard/components/ModelesRapidesPanel";
 import EditerModeleModal from "@/pages/app/dashboard/components/EditerModeleModal";
 import KpiGrid from "@/pages/app/dashboard/components/KpiGrid";
+import EncaissementDuJourCard from "@/pages/app/dashboard/components/EncaissementDuJourCard";
 import BandeauEnvoisAuto from "@/pages/app/dashboard/components/BandeauEnvoisAuto";
 import AlerteAbonnement from "@/pages/app/dashboard/components/AlerteAbonnement";
 import AlerteAncienneteMotDePasse from "@/pages/app/dashboard/components/AlerteAncienneteMotDePasse";
@@ -27,6 +29,7 @@ import RecapEchecsEnvoiCard from "@/pages/app/components/RecapEchecsEnvoi";
 import VerificationTachesSilencieuse from "@/pages/app/dashboard/components/VerificationTachesSilencieuse";
 import SanteCompteCard from "@/pages/app/dashboard/components/SanteCompteCard";
 import ReprendreDemarrageCard from "@/pages/app/dashboard/components/ReprendreDemarrageCard";
+import RappelParcoursCard from "@/pages/app/dashboard/components/RappelParcoursCard";
 import ReprendreDevisCard from "@/pages/app/dashboard/components/ReprendreDevisCard";
 import VueFiltreeDevisCard from "@/pages/app/dashboard/components/VueFiltreeDevisCard";
 import HistoriqueLiensCard from "@/pages/app/dashboard/components/HistoriqueLiensCard";
@@ -50,17 +53,22 @@ import DevisToRelance from "@/pages/app/dashboard/components/DevisToRelance";
 import ClientsASuivre from "@/pages/app/dashboard/components/ClientsASuivre";
 import RelancesProgrammees from "@/pages/app/dashboard/components/RelancesProgrammees";
 import FacturationWidget from "@/pages/app/dashboard/components/FacturationWidget";
+import FacturesEfMoisCard from "@/pages/app/dashboard/components/FacturesEfMoisCard";
 import ReglementsDuMois from "@/pages/app/dashboard/components/ReglementsDuMois";
 import RecentEnvois from "@/pages/app/dashboard/components/RecentEnvois";
 import EnvoiActivityChart from "@/pages/app/dashboard/components/EnvoiActivityChart";
 import RecapSmsWhatsApp from "@/pages/app/dashboard/components/RecapSmsWhatsApp";
 import RelanceEnvoyeesJour from "@/pages/app/dashboard/components/RelanceEnvoyeesJour";
 import RemplacementsMoisCard from "@/pages/app/dashboard/components/RemplacementsMoisCard";
+import MiniCalendrierMois from "@/pages/app/dashboard/components/MiniCalendrierMois";
 import RelancesEnvoyeesJourModal from "@/pages/app/dashboard/components/RelancesEnvoyeesJourModal";
 import EncaissementsChart from "@/pages/app/dashboard/components/EncaissementsChart";
 import FactureEncaisseChart from "@/pages/app/dashboard/components/FactureEncaisseChart";
 import RecapHebdoRecentesCard from "@/pages/app/dashboard/components/RecapHebdoRecentesCard";
 import AlerteOubliesRecap from "@/pages/app/dashboard/components/AlerteOubliesRecap";
+import AlerteChantiersSilencieux from "@/pages/app/dashboard/components/AlerteChantiersSilencieux";
+import AlerteEchecEnvoiAuto from "@/pages/app/dashboard/components/AlerteEchecEnvoiAuto";
+import RelancesGroupeesMoisCard from "@/pages/app/dashboard/components/RelancesGroupeesMoisCard";
 import GuidePremiereVisite from "@/components/base/GuidePremiereVisite";
 import RappelExportMensuel from "@/pages/app/dashboard/components/RappelExportMensuel";
 import BandeauVerifConfigEmail from "@/pages/app/dashboard/components/BandeauVerifConfigEmail";
@@ -71,8 +79,12 @@ import { guidePremiereVisiteVu, marquerGuidePremiereVisiteVu } from "@/lib/guide
 export default function AppDashboard() {
   usePageMeta("Tableau de bord · ArtiFlow-pro", "Votre activité d'artisan en un coup d'œil.");
   const navigate = useNavigate();
-  const { loading, error, devis, clients, chantiers, factures, envois, relances, escaladeJournal, reload, refresh } = useArtisanData();
+  const { loading, error, devis, clients, chantiers, factures, envois, relances, escaladeJournal, creneaux, intervenants, indisponibilites, reload, refresh } = useArtisanData();
   const { user } = useAuth();
+
+  // Montant à encaisser aujourd'hui (factures échues ou arrivant à échéance), affiché en tête
+  // du tableau de bord et cliquable vers la liste filtrée de la page Factures.
+  const echeancesJour = useEcheancesDuJour();
 
   // Ouvre le détail des relances envoyées aujourd'hui (compteur « effet du jour J » cliquable).
   const [showEnvoyeesJour, setShowEnvoyeesJour] = useState(false);
@@ -665,6 +677,12 @@ export default function AppDashboard() {
 
       <RappelExportMensuel />
 
+      <AlerteChantiersSilencieux />
+
+      <AlerteEchecEnvoiAuto />
+
+      <RelancesGroupeesMoisCard chantiers={chantiers} />
+
       {paiementIndisponible && !encartPaiementMasque ? (
         <EncartPaiementIndisponible
           motif={diagnosticPaiement?.motif}
@@ -678,7 +696,11 @@ export default function AppDashboard() {
 
       <BandeauVerifConfigEmail />
 
+      <EncaissementDuJourCard echeances={echeancesJour} />
+
       <KpiGrid kpis={kpis} />
+
+      <MiniCalendrierMois creneaux={creneaux} indisponibilites={indisponibilites} intervenants={intervenants} />
 
       <BandeauEnvoisAuto />
 
@@ -703,6 +725,8 @@ export default function AppDashboard() {
       <RecapHebdoRecentesCard />
 
       <ReprendreDemarrageCard />
+
+      <RappelParcoursCard />
 
       <SanteCompteCard clients={clients} escaladeJournal={escaladeJournal} onClientsChanged={reload} />
 
@@ -785,6 +809,8 @@ export default function AppDashboard() {
       <DernierBilanCard />
 
       <FacturationWidget factures={factures} />
+
+      <FacturesEfMoisCard factures={factures} />
 
       <ReglementsDuMois factures={factures} />
 

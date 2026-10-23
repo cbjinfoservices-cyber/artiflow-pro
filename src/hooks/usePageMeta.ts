@@ -38,9 +38,16 @@ const DESCRIPTION_SITE =
 const MOTS_CLES_SITE =
   "devis artisan, logiciel IA artisan, relance client automatique, planning artisan, SaaS bâtiment, gestion chantier";
 
-/** Image de partage de repli du site (reprise de la balise partagée de index.html). */
+/**
+ * Image de partage de repli du site.
+ *
+ * C'est exactement le visuel choisi dans les Réglages SEO du projet (l'image
+ * servie par la plateforme) : le code et l'aperçu réel des liens pointent donc
+ * vers le même fichier, au lieu de deux visuels différents selon qui lit la
+ * page. Une seule source de vérité, reprise aussi par index.html et le sitemap.
+ */
 export const IMAGE_PARTAGE_SITE =
-  "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20with%20warm%20amber%20orange%20and%20deep%20teal%20green%20geometric%20shapes%2C%20blueprint%20line%20patterns%20and%20artisan%20tool%20silhouettes%20floating%20over%20a%20deep%20charcoal%20background%2C%20cinematic%20soft%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-2&orientation=landscape&nocache=true";
+  "https://public.readdy.ai/ai/img_res/8e3ba55f81d58fbfb413ad69b5686b01.webp";
 
 /** Balises de lecteur à nettoyer quand la page courante n'est plus un contenu audio. */
 const BALISES_LECTEUR = [
@@ -144,8 +151,12 @@ export function usePageMeta(title: string, description?: string, options?: PageM
     setMeta("name", "twitter:image", shareImage);
     setMeta("name", "twitter:image:alt", imageAlt);
 
-    // URL courante (partage social + canonique)
-    const url = `${getSiteOrigin()}${window.location.pathname}`;
+    // URL courante (partage social + canonique).
+    // On retire le slash final pour que « /a-propos » et « /a-propos/ » pointent
+    // vers une seule adresse canonique et ne soient pas vus comme du contenu
+    // dupliqué. La racine « / » est conservée telle quelle.
+    const chemin = window.location.pathname.replace(/\/+$/, "") || "/";
+    const url = `${getSiteOrigin()}${chemin}`;
     setMeta("property", "og:url", url);
 
     let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');

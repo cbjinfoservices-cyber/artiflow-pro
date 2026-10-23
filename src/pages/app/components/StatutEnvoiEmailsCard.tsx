@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import DiagnosticDnsEmail from "@/pages/app/components/DiagnosticDnsEmail";
 import {
   chargerHistoriqueEmailsTest,
   chargerStatutEmail,
@@ -220,7 +221,7 @@ export default function StatutEnvoiEmailsCard() {
             <Ligne
               ok={statut?.keyPresent === true}
               icone="ri-key-2-line"
-              libelle="Clé API Resend"
+              libelle="Clé API d'envoi (Resend)"
               detail={
                 statut?.keyPresent
                   ? "Présente dans les secrets du Backend."
@@ -241,8 +242,12 @@ export default function StatutEnvoiEmailsCard() {
               ok={statut?.domainStatus === "verified"}
               attente={statut?.domainStatus != null && statut?.domainStatus !== "verified"}
               icone="ri-verified-badge-line"
-              libelle="Vérification du domaine"
-              detail={`Statut Resend : ${libelleStatutDomaine(statut?.domainStatus ?? null)}`}
+              libelle="Domaine vérifié (Resend)"
+              detail={
+                statut?.domainStatus === "verified"
+                  ? `${statut?.domainName ?? "Votre domaine"} est vérifié chez Resend : l'envoi depuis cette adresse est autorisé.`
+                  : `Statut du domaine chez Resend : ${libelleStatutDomaine(statut?.domainStatus ?? null)}. Tant qu'il n'est pas vérifié, les emails peuvent être refusés.`
+              }
             />
             <Ligne
               ok={Boolean(statut?.fromAddress)}
@@ -255,7 +260,7 @@ export default function StatutEnvoiEmailsCard() {
           {!pret && (
             <p className="mt-3 text-[11px] text-foreground-500 flex items-center gap-1.5">
               <i className="ri-information-line"></i>
-              La clé et le domaine se configurent depuis le panneau Resend. Une fois les deux validés, cette
+              La clé et le domaine d'envoi se configurent depuis le panneau Resend. Une fois les deux validés, cette
               carte passera à « Prêt à envoyer ».
             </p>
           )}
@@ -266,6 +271,8 @@ export default function StatutEnvoiEmailsCard() {
               {statut.apiError}
             </p>
           )}
+
+          <DiagnosticDnsEmail dns={statut?.dns ?? null} />
 
           <p className="mt-3 pt-3 border-t border-background-200 text-[11px] text-foreground-400 flex items-center gap-1.5">
             <i className="ri-time-line"></i>

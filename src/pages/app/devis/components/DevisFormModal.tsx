@@ -15,6 +15,8 @@ import { useCategoriesEnregistrement } from "@/hooks/useCategoriesEnregistrement
 import { useLignesBibliotheque } from "@/hooks/useLignesBibliotheque";
 import EnregistrerLigneMenu from "@/pages/app/components/EnregistrerLigneMenu";
 import DejaBibliothequeBadge from "@/pages/app/components/DejaBibliothequeBadge";
+import ApercuDocumentHtml from "@/components/feature/ApercuDocumentHtml";
+import { ACCENT_DEFAUT } from "@/lib/documentStyle";
 import { genererLignesDevis } from "@/lib/devisIa";
 
 interface LigneDraft {
@@ -47,7 +49,7 @@ export default function DevisFormModal({
   initialObjet?: string;
   initialLignes?: LigneInput[];
 }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { enregistrer } = useEnregistrerLigneBibliotheque();
   const categoriesEnregistrement = useCategoriesEnregistrement(user?.id ?? null);
   const { lignes: biblioLignes, reload: reloadBiblio } = useLignesBibliotheque(user?.id ?? null);
@@ -78,6 +80,8 @@ export default function DevisFormModal({
   const [iaBusy, setIaBusy] = useState(false);
   const [iaError, setIaError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; tone: "ok" | "error" } | null>(null);
+  // Aperçu visuel (HTML) du document, mis à jour en direct pendant la saisie des lignes.
+  const [apercu, setApercu] = useState(false);
 
   const allClients = useMemo(() => {
     const map = new Map<number, ClientItem>();
@@ -231,6 +235,19 @@ export default function DevisFormModal({
 
   const inputCls = "h-10 px-3 rounded-md bg-background-100 border border-background-200 text-sm outline-none focus:border-primary-400";
 
+  // Données de l'aperçu en direct : elles suivent l'état courant du formulaire (objet, client, lignes, totaux).
+  const clientApercu = allClients.find((c) => String(c.id) === clientId) ?? null;
+  const lignesApercu = lignes
+    .filter((l) => l.designation.trim() || Number(l.prix) > 0)
+    .map((l) => ({
+      designation: l.designation.trim() || "—",
+      unite: l.unite.trim() || "u",
+      quantite: Number(l.quantite) || 0,
+      prix_unitaire: Number(l.prix) || 0,
+      taux_tva: normalizeTvaRate(l.taux),
+    }));
+  const dateApercu = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+
   return (
     <>
       <Modal
@@ -238,6 +255,7 @@ export default function DevisFormModal({
         subtitle="Composez les lignes du devis, le total se calcule automatiquement."
         onClose={onClose}
         wide
+        taille={apercu ? "xl" : undefined}
         footer={
           <>
             <button
@@ -259,7 +277,30 @@ export default function DevisFormModal({
           </>
         }
       >
-        <div className="flex flex-col gap-4">
+        <div className={`flex flex-col gap-4 ${apercu ? "lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6" : ""}`}>
+          {/* Bandeau d'aperçu : affiche le document tel qu'il sera imprimé, mis à jour en direct. */}
+          <div className={`${apercu ? "lg:col-span-2" : ""} flex items-center justify-between gap-2 flex-wrap`}>
+            <p className="text-[11px] text-foreground-500">
+              {apercu
+                ? "L'aperçu se met à jour en direct pendant la saisie des lignes."
+                : "Composez les lignes du devis, le total se calcule automatiquement."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setApercu((v) => !v)}
+              title="Afficher / masquer l'aperçu visuel du document"
+              className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                apercu
+                  ? "bg-primary-500 text-background-50"
+                  : "bg-background-100 border border-background-200 text-foreground-600 hover:bg-background-200"
+              }`}
+            >
+              <i className={apercu ? "ri-eye-off-line" : "ri-eye-line"}></i>
+              {apercu ? "Masquer l'aperçu" : "Aperçu du document"}
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-4 min-w-0">
           <div className="rounded-lg border border-primary-200 bg-primary-50/70 p-3.5">
             {!iaOpen ? (
               <button
@@ -473,6 +514,50 @@ export default function DevisFormModal({
           </div>
 
           {error && <p className="text-xs text-red-600">{error}</p>}
+          </div>
+
+          {apercu && (
+            <div className="min-w-0 lg:sticky lg:top-2">
+              <p className="text-[11px] font-semibold text-foreground-500 uppercase tracking-wide mb-2">
+                Aperçu du document
+              </p>
+              <ApercuDocumentHtml
+                type="devis"
+                numero="D-2026-014"
+                dateLabel={dateApercu}
+                statut={statut}
+                objet={objet}
+                emetteur={{
+                  entreprise: profile?.entreprise ?? "",
+                  metier: profile?.metier ?? "",
+                  telephone: profile?.telephone ?? "",
+                  email: profile?.email ?? user?.email ?? "",
+                  logo: profile?.logo_url ?? null,
+                  siret: profile?.siret ?? null,
+                  tva: profile?.tva ?? null,
+                  assurance: profile?.assurance ?? null,
+                }}
+                client={
+                  clientApercu
+                    ? {
+                        nom: clientApercu.nom,
+                        adresse: clientApercu.adresse,
+                        telephone: clientApercu.telephone,
+                        email: clientApercu.email,
+                      }
+                    : null
+                }
+                lignes={lignesApercu}
+                totalHT={totaux.ht}
+                totalTTC={totaux.ttc}
+                accent={profile?.doc_couleur ?? ACCENT_DEFAUT}
+                afficherLogo={profile?.doc_afficher_logo !== false}
+                paiement={profile?.doc_paiement ?? null}
+                piedPage={profile?.doc_pied_page ?? null}
+                modele={profile?.doc_modele === "compact" ? "compact" : "standard"}
+              />
+            </div>
+          )}
         </div>
       </Modal>
 

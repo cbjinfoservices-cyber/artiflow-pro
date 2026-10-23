@@ -286,6 +286,8 @@ CREATE TABLE intervenants (
   id bigint NOT NULL,
   user_id uuid NOT NULL,
   nom text NOT NULL,
+  email text,
+  compte_id uuid,
   couleur text,
   metier text,
   telephone text,
@@ -884,6 +886,7 @@ ALTER TABLE product_custom_values   ADD CONSTRAINT product_custom_values_product
 -- ---------------------------------------------------------------------
 
 ALTER TABLE profiles              ADD CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id);
+ALTER TABLE intervenants           ADD CONSTRAINT intervenants_compte_id_fkey FOREIGN KEY (compte_id) REFERENCES auth.users (id);
 ALTER TABLE clients               ADD CONSTRAINT clients_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id);
 ALTER TABLE chantiers             ADD CONSTRAINT chantiers_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id);
 ALTER TABLE chantiers             ADD CONSTRAINT chantiers_client_id_fkey FOREIGN KEY (client_id) REFERENCES clients (id);

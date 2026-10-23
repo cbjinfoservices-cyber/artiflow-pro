@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { viderCacheDiagnosticPaiement } from "@/lib/diagnosticPaiementCache";
+import { originePublique } from "@/lib/site";
 
 export type Facturation = "mensuel" | "annuel";
 
@@ -33,7 +34,7 @@ export function economieAnnuelle(offre: string): number {
 function urlRetour(chemin: string): string {
   const basePath = (__BASE_PATH__ || "").split("/").filter(Boolean).join("/");
   const prefix = basePath ? `/${basePath}` : "";
-  return `${window.location.origin}${prefix}${chemin}`;
+  return `${originePublique()}${prefix}${chemin}`;
 }
 
 /** URL de retour vers le suivi d'abonnement (onglet du profil), utilisée par le portail client Stripe. */
@@ -265,7 +266,7 @@ export interface TestPaiementBlanc {
 export async function testerPaiementBlanc(): Promise<TestPaiementBlanc> {
   const basePath = (__BASE_PATH__ || "").split("/").filter(Boolean).join("/");
   const prefix = basePath ? `/${basePath}` : "";
-  const origine = window.location.origin;
+  const origine = originePublique();
   const { data, error } = await supabase.functions.invoke("tester-paiement-blanc", {
     body: {
       successUrl: `${origine}${prefix}/app/back-office?test-paiement=ok`,

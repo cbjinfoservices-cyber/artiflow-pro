@@ -139,7 +139,7 @@ export const LEXIQUE: EntreeLexique[] = [
   {
     terme: "Guide de première visite",
     definition:
-      "La petite carte d'accueil qui apparaît la première fois que vous ouvrez une page : elle explique, pas à pas, comment s'en servir. Vous pouvez la revoir avec le bouton « Revoir le guide » sur la page concernée, ou toutes les réafficher d'un coup depuis le bouton « Aide », en bas à droite, avec « Revoir tous les guides ».",
+      "La petite carte d'accueil qui apparaît la première fois que vous ouvrez une page : elle explique, pas à pas, comment s'en servir. Vous pouvez la revoir avec le bouton « Revoir le guide » sur la page concernée, ou toutes les réafficher d'un coup depuis le bouton « Aide », en haut de l'écran, avec « Revoir tous les guides ».",
   },
   {
     terme: "Récapitulatif (récap)",

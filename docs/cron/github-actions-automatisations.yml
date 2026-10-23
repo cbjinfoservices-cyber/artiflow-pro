@@ -5,7 +5,7 @@
 #   2. Le domaine du Backend est déjà renseigné ci-dessous (variable BACKEND_HOST).
 #      Si tu changes de Backend, remplace-le par ton domaine réel (visible dans
 #      l'écran des fonctions Backend).
-#   3. Pousse le fichier. GitHub appellera les 21 fonctions chaque heure.
+#   3. Pousse le fichier. GitHub appellera les 25 fonctions chaque heure.
 #
 # Pourquoi « toutes les heures » pour tout ?
 #   Chaque fonction vérifie elle-même le jour/l'heure de ses réglages (et son anti-doublon)
@@ -46,6 +46,7 @@ jobs:
           - recap-hebdo-echecs-blanc
           - recap-hebdo-echecs-paiement
           - recap-hebdo-alertes-stripe-non-traitees
+          - recap-invitations-intervenants
           - envoi-bilan-annuel
           - alerte-mot-de-passe-ancien
           - recap-mensuel-mot-de-passe
@@ -54,6 +55,9 @@ jobs:
           - envoi-comparatif-cadence-annuel
           - envoi-recap-echecs-annuel
           - export-csv-mensuel
+          - envoi-bienvenue-nouveaux-pros
+          - rappeler-suppressions-prochaines
+          - purger-comptes-supprimes
     steps:
       - name: Appeler ${{ matrix.fonction }}
         run: |

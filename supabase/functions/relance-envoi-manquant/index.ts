@@ -30,6 +30,31 @@ function escapeHtml(value: unknown): string {
     .replace(/"/g, "&quot;");
 }
 
+interface DocIdentite {
+  accent: string;
+  logoHtml: string;
+  piedHtml: string;
+}
+
+/**
+ * Identité visuelle des documents reprise du profil de l'artisan : couleur d'accent,
+ * logo (optionnel) et message de pied de page. Reprise ici pour une identité cohérente
+ * avec les PDF et les autres emails automatiques.
+ */
+function docIdentite(p: Record<string, unknown>): DocIdentite {
+  const nom = String(p?.entreprise ?? p?.metier ?? "Votre artisan");
+  const accent = /^#[0-9a-fA-F]{6}$/.test(String(p?.doc_couleur ?? "")) ? String(p?.doc_couleur) : "#C4783A";
+  const logoUrl = p?.doc_afficher_logo !== false ? String(p?.logo_url ?? "").trim() : "";
+  const logoHtml = logoUrl
+    ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(nom)}" style="max-height:44px;max-width:180px;display:block;margin:0 0 10px;">`
+    : "";
+  const pied = String(p?.doc_pied_page ?? "").trim();
+  const piedHtml = pied
+    ? `<p style="margin:10px 0 0;font-size:11px;color:#a1a1aa;">${escapeHtml(pied).replace(/\n/g, "<br>")}</p>`
+    : "";
+  return { accent, logoHtml, piedHtml };
+}
+
 /** Jour / mois / année courants à Paris (l'envoi automatique est calé sur cette zone). */
 function parisParts(): { day: number; hour: number; year: number; month: number } {
   const fmt = new Intl.DateTimeFormat("fr-FR", {
@@ -82,8 +107,9 @@ function buildAlerteHtml(params: {
   appUrl: string;
   /** Nombre total de mois manquants (pour le bouton de renvoi groupé). */
   manquantsCount: number;
+  identite: DocIdentite;
 }): string {
-  const { emetteurNom, moisLabel, moisCle, jourChoisi, delai, appUrl, manquantsCount } = params;
+  const { emetteurNom, moisLabel, moisCle, jourChoisi, delai, appUrl, manquantsCount, identite } = params;
   const link = appUrl ? `${appUrl}/app/comptabilite` : "";
   // Lien pré-rempli : ouvre l'Espace comptable déjà filtré sur le mois manquant,
   // pour renvoyer ce mois en un clic sans avoir à le rechercher dans l'historique.
@@ -123,7 +149,9 @@ function buildAlerteHtml(params: {
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
       <div style="padding:24px;border-bottom:1px solid #eee;">
+        ${identite.logoHtml}
         <p style="margin:0;font-size:18px;font-weight:700;">Journal comptable : un mois reste sans envoi</p>
         <p style="margin:6px 0 0;font-size:13px;color:#71717a;">${escapeHtml(emetteurNom)}</p>
       </div>
@@ -150,7 +178,8 @@ function buildAlerteHtml(params: {
         </p>
       </div>
       <div style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#a1a1aa;text-align:center;">
-        Email automatique envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.
+        <p style="margin:0;">Email automatique envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.</p>
+        ${identite.piedHtml}
       </div>
     </div>
   </div>
@@ -187,7 +216,7 @@ Deno.serve(async (req) => {
     let query = admin
       .from("profiles")
       .select(
-        "id, entreprise, metier, email, comptable_auto_actif, comptable_auto_jour, comptable_auto_dernier_mois, comptable_relance_manquante_actif, comptable_relance_delai, comptable_relance_dernier_cle, comptable_app_url",
+        "id, entreprise, metier, email, logo_url, doc_couleur, doc_afficher_logo, doc_pied_page, comptable_auto_actif, comptable_auto_jour, comptable_auto_dernier_mois, comptable_relance_manquante_actif, comptable_relance_delai, comptable_relance_dernier_cle, comptable_app_url",
       );
     if (scopeUserId) {
       // En mode test, on cible uniquement cet artisan sans exiger que ses interrupteurs soient actifs.
@@ -302,6 +331,7 @@ Deno.serve(async (req) => {
         delai,
         appUrl,
         manquantsCount,
+        identite: docIdentite(p),
       });
       try {
         const res = await fetch("https://api.resend.com/emails", {

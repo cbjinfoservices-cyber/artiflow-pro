@@ -83,7 +83,7 @@ export const testimonials = [
     quote:
       "Avant je faisais mes devis le dimanche. Maintenant je les dicte entre deux interventions. J'ai gagné 6 h par semaine.",
     rating: 5,
-    avatar: "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20smiling%20North%20African%20man%20in%20his%20forties%20wearing%20a%20work%20shirt%2C%20warm%20neutral%20studio%20background%2C%20natural%20soft%20lighting%2C%20friendly%20confident%20expression%2C%20high%20detail%20professional%20headshot&width=200&height=200&seq=artiflow-avatar-karim&orientation=squarish",
+    avatar: "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20smiling%20North%20African%20man%20in%20his%20forties%20wearing%20a%20work%20shirt%2C%20warm%20neutral%20studio%20background%2C%20natural%20soft%20lighting%2C%20friendly%20confident%20expression%2C%20high%20detail%20professional%20headshot&width=128&height=128&seq=artiflow-avatar-karim&orientation=squarish",
   },
   {
     name: "Sandrine Lefèvre",
@@ -91,7 +91,7 @@ export const testimonials = [
     quote:
       "Les relances automatiques m'ont fait signer trois devis que j'allais laisser tomber. C'est de l'argent que je ne perdais plus.",
     rating: 5,
-    avatar: "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20confident%20French%20woman%20in%20her%20thirties%20with%20short%20hair%20wearing%20a%20work%20vest%2C%20warm%20neutral%20studio%20background%2C%20soft%20natural%20lighting%2C%20professional%20friendly%20headshot%2C%20high%20detail&width=200&height=200&seq=artiflow-avatar-sandrine&orientation=squarish",
+    avatar: "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20confident%20French%20woman%20in%20her%20thirties%20with%20short%20hair%20wearing%20a%20work%20vest%2C%20warm%20neutral%20studio%20background%2C%20soft%20natural%20lighting%2C%20professional%20friendly%20headshot%2C%20high%20detail&width=128&height=128&seq=artiflow-avatar-sandrine&orientation=squarish",
   },
   {
     name: "Thomas Girard",
@@ -99,7 +99,7 @@ export const testimonials = [
     quote:
       "Le planning intelligent m'évite de traverser la ville trois fois par jour. Je perds beaucoup moins de temps dans les trajets.",
     rating: 5,
-    avatar: "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20rugged%20French%20man%20in%20his%20forties%20wearing%20a%20dusty%20work%20jacket%2C%20warm%20neutral%20studio%20background%2C%20soft%20natural%20lighting%2C%20honest%20smile%2C%20high%20detail%20professional%20headshot&width=200&height=200&seq=artiflow-avatar-thomas&orientation=squarish",
+    avatar: "https://readdy.ai/api/search-image?query=Portrait%20photography%20of%20a%20rugged%20French%20man%20in%20his%20forties%20wearing%20a%20dusty%20work%20jacket%2C%20warm%20neutral%20studio%20background%2C%20soft%20natural%20lighting%2C%20honest%20smile%2C%20high%20detail%20professional%20headshot&width=128&height=128&seq=artiflow-avatar-thomas&orientation=squarish",
   },
 ];
 
@@ -115,6 +115,7 @@ export const plans = [
       "Modèles par corps de métier",
       "1 utilisateur",
       "Relances email automatiques",
+      "Documents à votre image (couleur, logo, paiement)",
       "Application mobile",
       "Support par email",
     ],
@@ -130,8 +131,9 @@ export const plans = [
       "Tout l'Essentiel, plus :",
       "Relances SMS & WhatsApp",
       "Planning intelligent & trajets",
-      "Suivi de chantier + photos",
-      "Signature électronique",
+      "Suivi de chantier, photos & notes de consignes",
+      "Modèles de devis et de factures réutilisables",
+      "Signature électronique à votre image",
       "Support prioritaire",
     ],
     cta: "Essayer 14 jours",
@@ -147,6 +149,7 @@ export const plans = [
       "Multi-utilisateurs & rôles",
       "Paiement en ligne des clients",
       "Export comptable automatique",
+      "Identité de marque partout (documents, emails, signature)",
       "IA avancée & prévisions",
       "Accompagnement dédié",
     ],

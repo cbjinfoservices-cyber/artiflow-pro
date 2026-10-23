@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useRobotsMeta } from "@/hooks/useRobotsMeta";
 import { useAuth } from "@/hooks/useAuth";
 import AuthBrandPanel from "@/pages/app/auth/components/AuthBrandPanel";
@@ -10,7 +10,13 @@ import ForgotPasswordForm from "@/pages/app/auth/components/ForgotPasswordForm";
 export default function AuthPage() {
   useRobotsMeta("noindex, nofollow");
   const { session, loading } = useAuth();
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [searchParams] = useSearchParams();
+  // Permet d'arriver directement sur le formulaire d'inscription depuis un CTA
+  // « Essai gratuit » : /app/auth?mode=inscription
+  const modeDemande = searchParams.get("mode");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(
+    modeDemande === "inscription" || modeDemande === "signup" ? "signup" : "login"
+  );
 
   if (!loading && session) {
     return <Navigate to="/app" replace />;

@@ -38,7 +38,9 @@ import {
   type JournalRelanceAnnuelEntree,
 } from "@/lib/recapEchecsAnnuel";
 import { lirePeriodeMoisDelai, ecrirePeriodeMoisDelai, lireMoyenneMobileVisible } from "@/lib/delaiPeriodeMemoire";
-import { buildDelaiMoyenAnnuelPdf, savePdf } from "@/lib/pdf";
+import { buildDelaiMoyenAnnuelPdf } from "@/lib/pdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 import CcAdressesField from "@/pages/app/envois-automatiques/components/CcAdressesField";
 import { formatHorodatage } from "@/lib/diagnosticUi";
 
@@ -119,6 +121,7 @@ export default function RecapHebdoEchecsBlancCard() {
   const [apercuRelanceJours, setApercuRelanceJours] = useState<number | null>(null);
   const [testEtat, setTestEtat] = useState<EtatAction>("idle");
   const [testMessage, setTestMessage] = useState<string | null>(null);
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
 
   // Journal des récaps envoyés (manuel + automatique) : alimente le compteur du mois.
   const [journal, setJournal] = useState<JournalRecapsEchecsEntree[]>([]);
@@ -479,15 +482,20 @@ export default function RecapHebdoEchecsBlancCard() {
       return;
     }
     try {
-      const doc = buildDelaiMoyenAnnuelPdf({
-        points: serieDelais,
-        jour: jourAnnuel,
-        heure: heureAnnuel,
-        afficherMoyenneMobile: lireMoyenneMobileVisible(),
-        tendance: tendanceDelai.sens,
+      ouvrirApercuPdf({
+        title: "Aperçu · Évolution du délai moyen avant relance",
+        filename: `evolution-delai-moyen-relance-${new Date().toISOString().slice(0, 10)}.pdf`,
+        note: `${serieDelais.length} exercice${serieDelais.length > 1 ? "s" : ""} · fenêtre ${periodeMoisDelai} mois`,
+        build: async () =>
+          buildDelaiMoyenAnnuelPdf({
+            points: serieDelais,
+            jour: jourAnnuel,
+            heure: heureAnnuel,
+            afficherMoyenneMobile: lireMoyenneMobileVisible(),
+            tendance: tendanceDelai.sens,
+          }),
       });
-      savePdf(doc, `evolution-delai-moyen-relance-${new Date().toISOString().slice(0, 10)}.pdf`);
-      setExportCourbe({ etat: "ok", message: "PDF « évolution du délai moyen » téléchargé." });
+      setExportCourbe({ etat: "ok", message: "Aperçu prêt : vérifiez la courbe puis téléchargez." });
     } catch (e) {
       setExportCourbe({
         etat: "erreur",
@@ -1137,6 +1145,17 @@ export default function RecapHebdoEchecsBlancCard() {
           <i className="ri-notification-off-line"></i>
           Récap coupé : vous ne recevrez pas la synthèse hebdomadaire des échecs de rejeux.
         </p>
+      )}
+
+      {apercuPdf && (
+        <ApercuPdfModal
+          title={apercuPdf.title}
+          subtitle={apercuPdf.subtitle}
+          filename={apercuPdf.filename}
+          docBuilder={apercuPdf.build}
+          note={apercuPdf.note}
+          onClose={fermerApercuPdf}
+        />
       )}
     </div>
   );

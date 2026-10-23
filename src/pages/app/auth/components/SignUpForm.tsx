@@ -7,6 +7,7 @@ import { Feedback, Field, inputClass, inputIconClass } from "@/pages/app/auth/co
 import IndicateurForceMotDePasse from "@/components/base/IndicateurForceMotDePasse";
 import { validerMotDePasseFort } from "@/lib/motDePasse";
 import { METIERS } from "@/lib/metiers";
+import { STATUTS_JURIDIQUES, TAILLES_ENTREPRISE } from "@/lib/entreprise";
 
 export default function SignUpForm({ onDone }: { onDone: () => void }) {
   const { signUp } = useAuth();
@@ -16,6 +17,8 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
 
   const [entreprise, setEntreprise] = useState("");
   const [metier, setMetier] = useState("");
+  const [statutJuridique, setStatutJuridique] = useState("");
+  const [tailleEntreprise, setTailleEntreprise] = useState("");
   const [telephone, setTelephone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +34,10 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
       setError("Complétez les champs obligatoires : entreprise, métier, email et mot de passe.");
       return;
     }
+    if (!statutJuridique || !tailleEntreprise) {
+      setError("Précisez le statut juridique et la taille de votre entreprise.");
+      return;
+    }
     const erreurMdp = validerMotDePasseFort(password);
     if (erreurMdp) {
       setError(erreurMdp);
@@ -42,6 +49,8 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
       password,
       metier,
       entreprise: entreprise.trim(),
+      statut_juridique: statutJuridique,
+      taille_entreprise: tailleEntreprise,
       telephone: telephone.trim(),
     });
     setBusy(false);
@@ -114,6 +123,40 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
         </select>
       </Field>
 
+      <Field label="Statut juridique *" htmlFor="signup-statut-juridique">
+        <select
+          id="signup-statut-juridique"
+          name="statut_juridique"
+          value={statutJuridique}
+          onChange={(e) => setStatutJuridique(e.target.value)}
+          className={`${inputClass} cursor-pointer`}
+        >
+          <option value="">Sélectionnez votre statut juridique</option>
+          {STATUTS_JURIDIQUES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Taille de l'entreprise *" htmlFor="signup-taille-entreprise">
+        <select
+          id="signup-taille-entreprise"
+          name="taille_entreprise"
+          value={tailleEntreprise}
+          onChange={(e) => setTailleEntreprise(e.target.value)}
+          className={`${inputClass} cursor-pointer`}
+        >
+          <option value="">Combien de personnes travaillent avec vous ?</option>
+          {TAILLES_ENTREPRISE.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
       <Field label="Téléphone" htmlFor="signup-telephone">
         <input
           id="signup-telephone"
@@ -141,6 +184,15 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
           />
         </div>
       </Field>
+
+      <p className="-mt-2 text-[11px] text-foreground-500 inline-flex items-start gap-1.5">
+        <i className="ri-information-line mt-0.5"></i>
+        <span>
+          Invité(e) par une entreprise ? Saisissez l'adresse <strong className="text-foreground-800">exacte</strong>{" "}
+          indiquée dans votre email d'invitation — c'est elle qui relie votre compte à votre fiche. Sinon, après connexion,
+          vous pourrez rattacher votre compte à votre fiche avec le code d'invitation reçu par email.
+        </span>
+      </p>
 
       <Field label="Mot de passe *" htmlFor="signup-password">
         <div className="relative">

@@ -33,6 +33,127 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+type EnvoiEmailOptions = {
+  nom: string;
+  to: string[];
+  cc?: string[];
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; content: string }>;
+};
+
+type ResultatEnvoiEmail = {
+  ok: boolean;
+  fournisseur: "brevo" | "resend" | "aucun";
+  repli: boolean;
+  id?: string;
+  error?: string;
+};
+
+/**
+ * Expédie un email en essayant Brevo, puis bascule automatiquement sur Resend si Brevo
+ * refuse l'envoi ou ne répond pas : un récap de recontact, une auto-relance ou une alerte
+ * n'est jamais perdu à cause d'un seul fournisseur. Chaque tentative est tracée pour la
+ * carte « Suivi des envois » du back-office.
+ * `simulerEchecBrevo` force un échec Brevo (bouton « Tester le repli ») sans appeler Brevo.
+ */
+async function envoyerEmailAvecRepli(
+  fonction: string,
+  opts: EnvoiEmailOptions,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  options?: { simulerEchecBrevo?: boolean },
+): Promise<ResultatEnvoiEmail> {
+  const tracer = async (fournisseur: string, statut: string, repli: boolean, message?: string) => {
+    if (!admin) return;
+    try {
+      await admin
+        .from("envoi_fournisseur_historique")
+        .insert({ fonction, fournisseur, statut, repli, message: message ?? null });
+    } catch {
+      /* la trace ne doit jamais bloquer un envoi */
+    }
+  };
+
+  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.fr";
+  let erreurBrevo = "";
+
+  if (options?.simulerEchecBrevo) {
+    erreurBrevo = "Test du repli : échec Brevo simulé volontairement.";
+    await tracer("brevo", "echec", false, erreurBrevo);
+  } else if (brevoKey) {
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: { "api-key": brevoKey, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          sender: { name: opts.nom, email: brevoFrom },
+          to: opts.to.map((email) => ({ email })),
+          cc: opts.cc && opts.cc.length ? opts.cc.map((email) => ({ email })) : undefined,
+          subject: opts.subject,
+          htmlContent: opts.html,
+          attachment:
+            opts.attachments && opts.attachments.length
+              ? opts.attachments.map((a) => ({ name: a.filename, content: a.content }))
+              : undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as { messageId?: string; message?: string } | null;
+      if (res.ok) {
+        await tracer("brevo", "succes", false);
+        return { ok: true, fournisseur: "brevo", repli: false, id: data?.messageId };
+      }
+      erreurBrevo = data?.message || `Brevo a refusé l'envoi (code ${res.status}).`;
+      await tracer("brevo", "echec", false, erreurBrevo);
+    } catch (e) {
+      erreurBrevo = e instanceof Error ? e.message : "Brevo est injoignable.";
+      await tracer("brevo", "echec", false, erreurBrevo);
+    }
+  } else {
+    erreurBrevo = "Clé API Brevo absente.";
+  }
+
+  const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+  const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+
+  if (resendKey && fromDomain) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: `${opts.nom} <noreply@${fromDomain}>`,
+          to: opts.to,
+          cc: opts.cc && opts.cc.length ? opts.cc : undefined,
+          subject: opts.subject,
+          html: opts.html,
+          attachments: opts.attachments && opts.attachments.length ? opts.attachments : undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as { id?: string; message?: string } | null;
+      if (res.ok) {
+        await tracer("resend", "succes", false);
+        return { ok: true, fournisseur: "resend", repli: true, id: data?.id };
+      }
+      const erreur = data?.message || `Resend a refusé l'envoi (code ${res.status}).`;
+      await tracer("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    } catch (e) {
+      const erreur = e instanceof Error ? e.message : "Resend est injoignable.";
+      await tracer("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    }
+  }
+
+  return {
+    ok: false,
+    fournisseur: "aucun",
+    repli: true,
+    error: "Aucun service d'envoi configuré (Resend non paramétré).",
+  };
+}
+
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -230,6 +351,7 @@ Deno.serve(async (req) => {
 
     const parsed = req.method === "POST" ? await req.json().catch(() => null) : null;
     const body = (parsed ?? Object.create(null)) as Record<string, unknown>;
+    const simulerEchecBrevo = body?.simulerEchecBrevo === true;
     const scopeUserId = typeof body?.userId === "string" && body.userId ? String(body.userId) : null;
     const force = body?.force === true;
     const preview = body?.preview === true;
@@ -315,7 +437,7 @@ Deno.serve(async (req) => {
 
     const now = Date.now();
     const today = todayISO();
-    const canSend = Boolean(resendKey && fromDomain);
+    const canSend = Boolean((Deno.env.get("BREVO_API_KEY") ?? "").trim() || (resendKey && fromDomain));
 
     // Aperçu de l'email d'alerte artisan : rendu exact (objet/message personnalisés de l'artisan),
     // sans aucun envoi. Les comptes d'une alerte passée sont réutilisés quand l'id est fourni,
@@ -392,7 +514,7 @@ Deno.serve(async (req) => {
           configured: canSend,
           sent: false,
           count: comptes.length,
-          reason: !emailArtisan ? "Email de l'artisan manquant." : "Resend non configuré.",
+          reason: !emailArtisan ? "Email de l'artisan manquant." : "Aucun service d'envoi configuré.",
         });
       }
       try {
@@ -401,17 +523,18 @@ Deno.serve(async (req) => {
           entreprise: nomProfil,
           nombre: String(comptes.length),
         }).trim();
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from: `ArtiFlow-pro <noreply@${fromDomain}>`,
+        const envoi = await envoyerEmailAvecRepli(
+          "recap-recontact-volatils",
+          {
+            nom: "ArtiFlow-pro",
             to: [emailArtisan],
             subject: `Rappel — ${sujetAlerte}`,
             html: buildAlerteAutoRelanceHtml(nomProfil, comptes, corpsAlerte),
-          }),
-        });
-        return json({ ok: true, replay: true, configured: true, sent: res.ok, count: comptes.length });
+          },
+          admin,
+          { simulerEchecBrevo },
+        );
+        return json({ ok: true, replay: true, configured: true, sent: envoi.ok, count: comptes.length });
       } catch {
         return json({ ok: true, replay: true, configured: true, sent: false, count: comptes.length, reason: "Erreur d'envoi." });
       }
@@ -512,17 +635,13 @@ Deno.serve(async (req) => {
       if (isTest) {
         if (canSend && email) {
           try {
-            const res = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `${nom} <noreply@${fromDomain}>`,
-                to: [email],
-                subject: sujet,
-                html: buildHtml(nom, delai, lignes, corps),
-              }),
-            });
-            if (res.ok) sent += 1;
+            const envoi = await envoyerEmailAvecRepli(
+              "recap-recontact-volatils",
+              { nom, to: [email], subject: sujet, html: buildHtml(nom, delai, lignes, corps) },
+              admin,
+              { simulerEchecBrevo },
+            );
+            if (envoi.ok) sent += 1;
           } catch {
             /* on journalise quand même le test pour le voir dans l'historique */
           }
@@ -539,7 +658,7 @@ Deno.serve(async (req) => {
           userId,
           count: lignes.length,
           sent: canSend && !!email,
-          reason: canSend ? undefined : "Resend non configuré.",
+          reason: canSend ? undefined : "Aucun service d'envoi configuré.",
         });
         continue;
       }
@@ -554,7 +673,7 @@ Deno.serve(async (req) => {
 
       if (!canSend || !email) {
         skipped += 1;
-        details.push({ userId, count: lignes.length, sent: false, reason: !email ? "Email manquant." : "Resend non configuré." });
+        details.push({ userId, count: lignes.length, sent: false, reason: !email ? "Email manquant." : "Aucun service d'envoi configuré." });
         continue;
       }
 
@@ -568,17 +687,13 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from: `${nom} <noreply@${fromDomain}>`,
-            to: [email],
-            subject: sujet,
-            html: buildHtml(nom, delai, lignes, corps),
-          }),
-        });
-        if (res.ok) {
+        const envoi = await envoyerEmailAvecRepli(
+          "recap-recontact-volatils",
+          { nom, to: [email], subject: sujet, html: buildHtml(nom, delai, lignes, corps) },
+          admin,
+          { simulerEchecBrevo },
+        );
+        if (envoi.ok) {
           sent += 1;
           // Journal d'historique : une ligne par envoi réussi (date + nombre de comptes).
           await admin
@@ -600,7 +715,7 @@ Deno.serve(async (req) => {
           details.push({ userId, count: lignes.length, sent: true });
         } else {
           skipped += 1;
-          details.push({ userId, count: lignes.length, sent: false, reason: "Refus de Resend." });
+          details.push({ userId, count: lignes.length, sent: false, reason: envoi.error || "Envoi refusé par les fournisseurs." });
         }
       } catch {
         skipped += 1;
@@ -705,18 +820,19 @@ Deno.serve(async (req) => {
           let ok = false;
           let erreur: string | null = null;
           try {
-            const res = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `${nomProfil} <noreply@${fromDomain}>`,
+            const envoi = await envoyerEmailAvecRepli(
+              "recap-recontact-volatils",
+              {
+                nom: nomProfil,
                 to: [compte.email],
                 subject: sujetAuto,
                 html: buildRecontactHtml(corpsAuto, compte.entreprise),
-              }),
-            });
-            ok = res.ok;
-            if (!ok) erreur = "Refus de Resend.";
+              },
+              admin,
+              { simulerEchecBrevo },
+            );
+            ok = envoi.ok;
+            if (!ok) erreur = envoi.error || "Envoi refusé par les fournisseurs.";
           } catch {
             erreur = "Erreur d'envoi.";
           }
@@ -755,17 +871,18 @@ Deno.serve(async (req) => {
               entreprise: nomProfil,
               nombre: String(relancesOk.length),
             }).trim();
-            const res = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `ArtiFlow-pro <noreply@${fromDomain}>`,
+            const envoiAlerte = await envoyerEmailAvecRepli(
+              "recap-recontact-volatils",
+              {
+                nom: "ArtiFlow-pro",
                 to: [emailArtisan],
                 subject: sujetAlerte,
                 html: buildAlerteAutoRelanceHtml(nomProfil, relancesOk, corpsAlerte),
-              }),
-            });
-            if (res.ok) {
+              },
+              admin,
+              { simulerEchecBrevo },
+            );
+            if (envoiAlerte.ok) {
               alertesAuto += 1;
               // Trace conservée de l'alerte réellement expédiée (date + comptes concernés).
               await admin.from("recap_alertes_artisan").insert({
@@ -791,7 +908,7 @@ Deno.serve(async (req) => {
       autoRelances,
       autoEchecs,
       alertesAuto,
-      reason: canSend ? undefined : "Resend non configuré (clé API + domaine d'envoi).",
+      reason: canSend ? undefined : "Aucun service d'envoi configuré (clé API + domaine).",
       subject: preview ? previewSubject : undefined,
       count: preview ? previewCount : undefined,
       html: previewHtml ?? undefined,

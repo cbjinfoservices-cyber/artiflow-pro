@@ -6,6 +6,7 @@ export const METIERS = [
   { value: "menuisier", label: "Menuisier" },
   { value: "carreleur", label: "Carreleur" },
   { value: "couvreur", label: "Couvreur" },
+  { value: "installateur-climatisation", label: "Frigoriste / climaticien" },
   { value: "autre", label: "Autre métier" },
 ] as const;
 

@@ -7,6 +7,22 @@ export const kpiCards = [
 
 export const devisList = [
   {
+    id: "DV-2421",
+    client: "M. Bertrand",
+    objet: "Pose split 3,5 kW + mise en service",
+    montant: "1 940 €",
+    statut: "Envoyé",
+    statusTone: "primary",
+  },
+  {
+    id: "DV-2420",
+    client: "Cabinet vétérinaire des Halles",
+    objet: "Gainable 4 pièces + contrat d'entretien",
+    montant: "7 890 €",
+    statut: "À relancer",
+    statusTone: "secondary",
+  },
+  {
     id: "DV-2418",
     client: "Mme Dupont",
     objet: "Rénovation salle de bain",

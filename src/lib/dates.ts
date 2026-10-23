@@ -26,6 +26,16 @@ export function formatShortDate(value: string | null | undefined): string {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/** Formate un horodatage en date + heure courtes (« 2 oct. 2026 à 14:30 »). */
+export function formatDateHeureCourte(value: string | null | undefined): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const jour = d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+  const heure = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return `${jour} à ${heure}`;
+}
+
 /**
  * Formate une date ISO (YYYY-MM-DD) en français long (« 2 octobre 2026 »).
  * On force le fuseau UTC car une date « 2026-10-02 » est interprétée à minuit
@@ -64,6 +74,18 @@ export function joursDepuis(dateISO: string): number {
 /** Vrai si la date est récente (par défaut : moins de 30 jours). */
 export function estNouveau(dateISO: string, jours = 30): boolean {
   return joursDepuis(dateISO) <= jours;
+}
+
+/**
+ * Libellé de fraîcheur en français (« aujourd'hui », « hier », « il y a 5 jours »).
+ * Renvoie une chaîne vide si la date est invalide.
+ */
+export function libelleFraicheur(dateISO: string): string {
+  const jours = joursDepuis(dateISO);
+  if (!Number.isFinite(jours)) return "";
+  if (jours <= 0) return "aujourd'hui";
+  if (jours === 1) return "hier";
+  return `il y a ${jours} jours`;
 }
 
 export function todayISO(): string {

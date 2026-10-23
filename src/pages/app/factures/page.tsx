@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from "@/hooks/useAuth";
 import { useArtisanData, type FactureItem } from "@/hooks/useArtisanData";
-import { createAvoirFromFacture, createFactureFromDevis, createRelance, deleteFacture, duplicateFacture, fetchDevisLignes, updateFactureDatePaiement, updateFactureStatut } from "@/lib/artisanApi";
+import { createAvoirFromFacture, createFactureFromDevis, createFactureFromModele, createFactureModeleFromFacture, createRelance, deleteFacture, deleteFactureModele, duplicateFacture, fetchDevisLignes, setFactureModeleArchive, updateFactureDatePaiement, updateFactureModele, updateFactureStatut, type FactureModele } from "@/lib/artisanApi";
 import { FACTURE_STATUTS, FACTURE_STATUTS_FORM, canalIcon, factureIsAvoir, factureStatusTone } from "@/lib/statuts";
 import { formatEuros } from "@/lib/format";
 import { formatShortDate, todayISO } from "@/lib/dates";
@@ -11,7 +11,11 @@ import { toCsv, downloadCsv } from "@/lib/csv";
 import { type TriFacture, parseTriFacture, triFactureLabel } from "@/lib/facturesTri";
 import { lireFiltresFactures, memoriserFiltresFactures, effacerFiltresFactures } from "@/lib/facturesFiltresMemoire";
 import { ajouterLienCopie } from "@/lib/liensCopiesMemoire";
-import { buildDocumentPdf, pdfToBase64, savePdf } from "@/lib/pdf";
+import { buildDocumentPdf, pdfToBase64 } from "@/lib/pdf";
+import { statutJuridiqueLabel } from "@/lib/entreprise";
+import { styleDocumentsDepuisProfil } from "@/lib/documentStyle";
+import { mentionsEfactureProfil } from "@/lib/factureElectronique";
+import { updateEfactureStatut } from "@/lib/factureElectroniqueApi";
 import { sendFactureEmail, sendRelanceEmail } from "@/lib/email";
 import { fetchDevisSignature } from "@/lib/signature";
 import DataState from "@/pages/app/components/DataState";
@@ -20,6 +24,9 @@ import SampleDataButton from "@/pages/app/components/SampleDataButton";
 import Modal from "@/pages/app/components/Modal";
 import StatutBadge from "@/pages/app/components/StatutBadge";
 import GenererFactureModal from "@/pages/app/factures/components/GenererFactureModal";
+import GenererFactureModeleModal from "@/pages/app/factures/components/GenererFactureModeleModal";
+import EnregistrerFactureModeleModal from "@/pages/app/factures/components/EnregistrerFactureModeleModal";
+import { useFactureModeles } from "@/hooks/useFactureModeles";
 import FactureLignesModal from "@/pages/app/factures/components/FactureLignesModal";
 import FacturesSortBar from "@/pages/app/factures/components/FacturesSortBar";
 import BadgeVuePartagee from "@/pages/app/components/BadgeVuePartagee";
@@ -27,10 +34,13 @@ import BoutonEpinglerVue from "@/pages/app/components/BoutonEpinglerVue";
 import BoutonPartager from "@/pages/app/components/BoutonPartager";
 import MenuVuesPartageesRecentes from "@/pages/app/components/MenuVuesPartageesRecentes";
 import RechercheRepliable from "@/components/feature/RechercheRepliable";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
 import Infobulle from "@/components/base/Infobulle";
 import EncartAide from "@/components/base/EncartAide";
 import GuidePremiereVisite from "@/components/base/GuidePremiereVisite";
+import RappelAstucePage from "@/components/base/RappelAstucePage";
 import { guidePremiereVisiteVu, marquerGuidePremiereVisiteVu } from "@/lib/guidePremiereVisite";
+import { originePublique } from "@/lib/site";
 
 const PERIODES = ["Tout", "Ce mois", "Ce trimestre", "Cette année", "Personnalisé"] as const;
 const DOC_TYPES = ["Factures", "Avoirs", "Tous"] as const;
@@ -86,13 +96,17 @@ export default function AppFactures() {
   const [searchParams, setSearchParams] = useSearchParams();
   // Indicateur « vue partagée » : vrai quand l'adresse contient des filtres (vue reçue via un lien partagé).
   const aFiltresUrl = useMemo(
-    () => ["statut", "type", "periode", "debut", "fin", "tri"].some((k) => searchParams.has(k)),
+    () => ["statut", "type", "periode", "debut", "fin", "tri", "encaisser"].some((k) => searchParams.has(k)),
     [searchParams],
   );
   // Dernière vue mémorisée (statut, type, période, tri) : valeur par défaut quand l'URL ne porte aucun filtre.
   const memoFiltres = useMemo(lireFiltresFactures, []);
   const [statut, setStatut] = useState(() => {
-    const s = searchParams.get("statut") ?? memoFiltres.statut;
+    // Arrivée depuis la pastille d'échéances : on repart de « Toutes », sinon un statut mémorisé
+    // (ex. « Payée ») viderait la liste des factures à encaisser.
+    const s =
+      searchParams.get("statut") ??
+      (searchParams.get("encaisser") === "jour" ? "Toutes" : memoFiltres.statut);
     return s && ["Toutes", ...FACTURE_STATUTS].includes(s) ? s : "Toutes";
   });
   const [docType, setDocType] = useState<string>(() => {
@@ -106,16 +120,25 @@ export default function AppFactures() {
   const [customStart, setCustomStart] = useState(() => searchParams.get("debut") ?? "");
   const [customEnd, setCustomEnd] = useState(() => searchParams.get("fin") ?? "");
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  // Filtre « à encaisser » : posé par la pastille d'échéances du jour de la barre latérale.
+  // Il ne garde que les factures impayées dont l'échéance est aujourd'hui ou déjà dépassée.
+  const [encaisserJour, setEncaisserJour] = useState(() => searchParams.get("encaisser") === "jour");
   const [tri, setTri] = useState<TriFacture>(() => {
     // L'URL (lien partagé) prime ; sinon on restaure le tri de la dernière vue.
     const fromUrl = parseTriFacture(searchParams.get("tri"));
-    return fromUrl || parseTriFacture(memoFiltres.tri ?? null);
+    if (fromUrl) return fromUrl;
+    // Arrivée par la pastille « À encaisser aujourd'hui » : on propose d'emblée la facture
+    // dont l'échéance est la plus ancienne, c'est celle qui appelle un règlement en premier.
+    if (searchParams.get("encaisser") === "jour") return "echeance-asc";
+    return parseTriFacture(memoFiltres.tri ?? null);
   });
   const [genOpen, setGenOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [previewFacture, setPreviewFacture] = useState<FactureItem | null>(null);
   const [emailingId, setEmailingId] = useState<number | null>(null);
   const [relancingId, setRelancingId] = useState<number | null>(null);
+  // Facture électronique en cours de repassage en « Prête à transmettre » après correction.
+  const [efBusyId, setEfBusyId] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<FactureItem | null>(null);
@@ -123,6 +146,14 @@ export default function AppFactures() {
   const [lignesFacture, setLignesFacture] = useState<FactureItem | null>(null);
   const [duplicateTarget, setDuplicateTarget] = useState<FactureItem | null>(null);
   const [duplicating, setDuplicating] = useState(false);
+  // Modèles de factures réutilisables (trames) : génération depuis un modèle + enregistrement.
+  const { modeles: modelesFacture, loading: loadingModelesFacture, reload: reloadModelesFacture } = useFactureModeles(
+    user?.id ?? null,
+  );
+  const [genModeleOpen, setGenModeleOpen] = useState(false);
+  const [modeleSaveTarget, setModeleSaveTarget] = useState<FactureItem | null>(null);
+  const [savingModele, setSavingModele] = useState(false);
+  const [modeleError, setModeleError] = useState<string | null>(null);
 
   // Guide de première visite : ouvert au premier passage sur la page Factures, puis
   // mémorisé une fois fermé par l'artisan. Réouvrable à tout moment via « Revoir le guide ».
@@ -145,6 +176,9 @@ export default function AppFactures() {
       const matchStatut = statut === "Toutes" || f.statut === statut;
       const isAvoir = factureIsAvoir(f.numero);
       const matchType = docType === "Tous" || (docType === "Avoirs" ? isAvoir : !isAvoir);
+      const matchEncaisser =
+        !encaisserJour ||
+        (f.statut !== "Payée" && Boolean(f.date_echeance) && String(f.date_echeance) <= todayISO());
       let matchPeriode = true;
       if (periode === "Personnalisé") {
         const d = new Date(f.date_emission ?? f.created_at);
@@ -162,9 +196,9 @@ export default function AppFactures() {
         (f.clientNom ?? "").toLowerCase().includes(q) ||
         (f.devisNumero ?? "").toLowerCase().includes(q) ||
         (f.objet ?? "").toLowerCase().includes(q);
-      return matchStatut && matchType && matchPeriode && matchQuery;
+      return matchStatut && matchType && matchPeriode && matchQuery && matchEncaisser;
     });
-  }, [factures, statut, docType, query, periode, customStart, customEnd]);
+  }, [factures, statut, docType, query, periode, customStart, customEnd, encaisserJour]);
 
   // Liste affichée : même contenu que `filtered`, mais réordonné selon le tri actif (date, montant, client, échéance).
   const facturesAffichees = useMemo(() => {
@@ -192,6 +226,13 @@ export default function AppFactures() {
     }
     return arr;
   }, [filtered, tri]);
+
+  // Factures rejetées présentes dans la vue courante : on les remonte en tête de page
+  // pour que le motif à corriger soit visible sans quitter la liste.
+  const facturesRejeteesAffichees = useMemo(
+    () => facturesAffichees.filter((f) => f.efacture_statut === "rejetee"),
+    [facturesAffichees],
+  );
 
   const stats = useMemo(() => {
     const total = factures.reduce((sum, f) => sum + Number(f.total_ttc || 0), 0);
@@ -224,6 +265,18 @@ export default function AppFactures() {
     setQuery((prev) => (prev === qUrl ? prev : qUrl));
   }, [searchParams]);
 
+  // Le paramètre ?encaisser=jour peut être posé sans remonter la page : c'est le cas de l'onglet
+  // Factures de la barre mobile, qui pointe directement vers la liste filtrée. On aligne donc
+  // l'état dès que l'URL change, en gardant un tri déjà choisi exprès par l'artisan.
+  const encaisserUrl = searchParams.get("encaisser") === "jour";
+  useEffect(() => {
+    setEncaisserJour(encaisserUrl);
+    if (encaisserUrl) {
+      setStatut("Toutes");
+      setTri((prev) => prev || "echeance-asc");
+    }
+  }, [encaisserUrl]);
+
   // Mémorise la vue courante (statut, type, période, tri) pour la restaurer automatiquement au retour sur la page.
   useEffect(() => {
     memoriserFiltresFactures({ statut, type: docType, periode, tri });
@@ -239,6 +292,7 @@ export default function AppFactures() {
       q: string;
       debut: string;
       fin: string;
+      encaisser: string;
     }> = {},
   ) => {
     const s = override.statut ?? statut;
@@ -248,6 +302,7 @@ export default function AppFactures() {
     const q = override.q ?? query;
     const debut = override.debut ?? customStart;
     const fin = override.fin ?? customEnd;
+    const enc = override.encaisser ?? (encaisserJour ? "jour" : "");
     const p = new URLSearchParams();
     if (s && s !== "Toutes") p.set("statut", s);
     if (ty && ty !== "Factures") p.set("type", ty);
@@ -260,6 +315,7 @@ export default function AppFactures() {
     }
     if (t) p.set("tri", t);
     if (q.trim()) p.set("q", q);
+    if (enc) p.set("encaisser", enc);
     return p;
   };
 
@@ -276,7 +332,7 @@ export default function AppFactures() {
   // Construit et copie un lien partageable de la vue filtrée (statut + type + période + tri + recherche).
   const copyFacturesLink = async () => {
     const qs = buildParams().toString();
-    const url = `${window.location.origin}${window.location.pathname}${qs ? `?${qs}` : ""}`;
+    const url = `${originePublique()}${window.location.pathname}${qs ? `?${qs}` : ""}`;
     try {
       await navigator.clipboard.writeText(url);
       ajouterLienCopie("Vue filtrée · factures", url);
@@ -294,9 +350,19 @@ export default function AppFactures() {
     setCustomStart("");
     setCustomEnd("");
     setTri("");
-    setSearchParams(buildParams({ statut: "Toutes", type: "Factures", periode: "Tout", tri: "", debut: "", fin: "" }), {
-      replace: true,
-    });
+    setEncaisserJour(false);
+    setSearchParams(
+      buildParams({
+        statut: "Toutes",
+        type: "Factures",
+        periode: "Tout",
+        tri: "",
+        debut: "",
+        fin: "",
+        encaisser: "",
+      }),
+      { replace: true },
+    );
     setActionNotice("Filtres réinitialisés.");
   };
 
@@ -311,9 +377,19 @@ export default function AppFactures() {
     setCustomStart("");
     setCustomEnd("");
     setTri("");
-    setSearchParams(buildParams({ statut: "Toutes", type: "Factures", periode: "Tout", tri: "", debut: "", fin: "" }), {
-      replace: true,
-    });
+    setEncaisserJour(false);
+    setSearchParams(
+      buildParams({
+        statut: "Toutes",
+        type: "Factures",
+        periode: "Tout",
+        tri: "",
+        debut: "",
+        fin: "",
+        encaisser: "",
+      }),
+      { replace: true },
+    );
     setActionNotice("Dernière vue des factures oubliée : les filtres par défaut seront rechargés au prochain retour.");
   };
 
@@ -351,6 +427,28 @@ export default function AppFactures() {
       await reload();
     } catch {
       setActionError("La mise à jour du statut a échoué.");
+    }
+  };
+
+  /**
+   * Repasse une facture rejetée en « Prête à transmettre » d'un seul clic, une fois ses
+   * données corrigées. Le motif de rejet est effacé par la mise à jour elle-même : plus
+   * besoin de repasser par le menu de statut du registre.
+   */
+  const handleRepasserPrete = async (f: FactureItem) => {
+    setActionError(null);
+    setActionNotice(null);
+    setEfBusyId(f.id);
+    try {
+      await updateEfactureStatut(f.id, "preparee");
+      await reload();
+      setActionNotice(
+        `${f.numero} repassée en « Prête à transmettre » : le motif de rejet est effacé, il ne reste plus qu'à la transmettre depuis le registre.`,
+      );
+    } catch {
+      setActionError("La mise à jour de l'étape électronique a échoué.");
+    } finally {
+      setEfBusyId(null);
     }
   };
 
@@ -476,10 +574,12 @@ export default function AppFactures() {
         telephone: profile?.telephone ?? "",
         email: profile?.email ?? user?.email ?? "",
         logo: profile?.logo_url ?? null,
+        formeJuridique: statutJuridiqueLabel(profile?.statut_juridique) || null,
         siret: profile?.siret ?? null,
         tva: profile?.tva ?? null,
         assurance: profile?.assurance ?? null,
         penalitesRetard: profile?.penalites_retard ?? null,
+        escompte: profile?.efacture_escompte ?? null,
       },
       client: client
         ? { nom: client.nom, adresse: client.adresse, telephone: client.telephone, email: client.email }
@@ -491,6 +591,11 @@ export default function AppFactures() {
       totalTTC: f.total_ttc,
       echeanceLabel: f.date_echeance ? formatShortDate(f.date_echeance) : undefined,
       reference: f.devisNumero ?? undefined,
+      style: {
+        ...styleDocumentsDepuisProfil(profile),
+        mentionElectronique: true,
+        mentionsSupplementaires: mentionsEfactureProfil(profile),
+      },
       signature: signatureInfo?.signed_at
         ? {
             nom: signatureInfo.signataire_nom ?? client?.nom ?? "Client",
@@ -501,17 +606,11 @@ export default function AppFactures() {
     });
   };
 
-  const handleDownload = async (f: FactureItem) => {
+  const handleDownload = (f: FactureItem) => {
+    // Ouvre l'aperçu AVANT téléchargement : on repère ainsi un souci de mise en page
+    // (largeur de colonne, texte coupé…) directement à l'écran, puis on enregistre depuis l'aperçu.
     setActionError(null);
-    setDownloadingId(f.id);
-    try {
-      const doc = await buildFacturePdf(f);
-      savePdf(doc, `${f.numero}.pdf`);
-    } catch {
-      setActionError("Le téléchargement du PDF a échoué.");
-    } finally {
-      setDownloadingId(null);
-    }
+    setPreviewFacture(f);
   };
 
   const handleEmail = async (f: FactureItem) => {
@@ -563,6 +662,70 @@ export default function AppFactures() {
       setActionError(mode === "avoir" ? "La création de l'avoir a échoué." : "La duplication de la facture a échoué.");
     } finally {
       setDuplicating(false);
+    }
+  };
+
+  // Enregistre une facture comme modèle de facture réutilisable.
+  const handleSaveFactureModele = async (nom: string) => {
+    if (!user || !modeleSaveTarget) return;
+    setSavingModele(true);
+    setModeleError(null);
+    try {
+      await createFactureModeleFromFacture(user.id, modeleSaveTarget.id, nom);
+      setModeleSaveTarget(null);
+      setActionNotice(`Modèle « ${nom} » enregistré. Réutilisez-le pour vos prochaines factures.`);
+      await reloadModelesFacture();
+    } catch {
+      setModeleError("L'enregistrement du modèle a échoué. Réessayez.");
+    } finally {
+      setSavingModele(false);
+    }
+  };
+
+  // Génère une facture à partir d'un modèle de facture.
+  const handleGenerateFromModele = async (modele: FactureModele, clientId: number | null, echeanceJours: number) => {
+    if (!user) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await createFactureFromModele(user.id, { objet: modele.objet, lignes: modele.lignes }, clientId, echeanceJours);
+      setGenModeleOpen(false);
+      setActionNotice(`Facture générée depuis le modèle « ${modele.nom} ».`);
+      await reload();
+    } catch {
+      setActionError("La génération de la facture à partir du modèle a échoué. Réessayez.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteModele = async (modele: FactureModele) => {
+    setModeleError(null);
+    try {
+      await deleteFactureModele(modele.id);
+      await reloadModelesFacture();
+    } catch {
+      setActionError("La suppression du modèle a échoué.");
+    }
+  };
+
+  const handleArchiveModele = async (modele: FactureModele, archive: boolean) => {
+    setModeleError(null);
+    try {
+      await setFactureModeleArchive(modele.id, archive);
+      await reloadModelesFacture();
+    } catch {
+      setActionError("La mise à jour du modèle a échoué.");
+    }
+  };
+
+  const handleRenommerModele = async (modele: FactureModele, nom: string) => {
+    setModeleError(null);
+    try {
+      await updateFactureModele(modele.id, { nom, objet: modele.objet, lignes: modele.lignes });
+      await reloadModelesFacture();
+    } catch {
+      setActionError("Le renommage du modèle a échoué.");
     }
   };
 
@@ -647,6 +810,62 @@ export default function AppFactures() {
             <i className="ri-question-line"></i>
             Revoir le guide des factures
           </button>
+        )}
+
+        <Link
+          to="/app/facturation-electronique"
+          className="self-start inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-primary-100 border border-primary-200 text-primary-800 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-200 transition-colors"
+        >
+          <i className="ri-file-code-line"></i>
+          Facturation électronique : préparer et suivre mes factures
+        </Link>
+
+        {facturesRejeteesAffichees.length > 0 && (
+          <div className="flex flex-col gap-2 p-4 rounded-lg bg-accent-50 border border-accent-200 animate-fade-in">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-semibold text-accent-900 inline-flex items-center gap-1.5">
+                <i className="ri-error-warning-line"></i>
+                {facturesRejeteesAffichees.length} facture{facturesRejeteesAffichees.length > 1 ? "s" : ""} rejetée
+                {facturesRejeteesAffichees.length > 1 ? "s" : ""} dans cette vue : corrigez les données puis retransmettez.
+              </p>
+              <Link
+                to="/app/facturation-electronique?statut=rejetee"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-secondary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap hover:bg-secondary-600 transition-colors"
+              >
+                <i className="ri-send-plane-line"></i>
+                Retransmettre
+              </Link>
+            </div>
+            <ul className="flex flex-col gap-1">
+              {facturesRejeteesAffichees.map((f) => (
+                <li
+                  key={f.id}
+                  className="text-[11px] text-foreground-700 flex flex-wrap items-center gap-1.5"
+                >
+                  <span className="font-semibold text-foreground-950">{f.numero}</span>
+                  <span className="text-foreground-500">{f.clientNom ?? "Sans client"}</span>
+                  <span className="text-foreground-400">·</span>
+                  <span className="break-words min-w-0">
+                    {f.efacture_motif ? `Motif : ${f.efacture_motif}` : "Aucun motif enregistré"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRepasserPrete(f)}
+                    disabled={efBusyId === f.id}
+                    title="La facture repasse directement en « Prête à transmettre » et le motif de rejet est effacé."
+                    className="ml-auto inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md bg-background-50 border border-accent-300 text-accent-900 text-[10px] font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-100 transition-colors disabled:opacity-60"
+                  >
+                    {efBusyId === f.id ? (
+                      <i className="ri-loader-4-line animate-spin"></i>
+                    ) : (
+                      <i className="ri-check-double-line"></i>
+                    )}
+                    Repasser prête
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -735,6 +954,28 @@ export default function AppFactures() {
               Générer une facture
             </button>
           </Infobulle>
+          <Infobulle
+            contenu="Générer une facture à partir d'un modèle réutilisable (une trame que vous avez enregistrée depuis une facture)."
+            position="bas"
+            largeur={280}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setModeleError(null);
+                setGenModeleOpen(true);
+              }}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-secondary-100 text-secondary-800 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-secondary-200 transition-colors"
+            >
+              <i className="ri-bookmark-line"></i>
+              Depuis un modèle
+              {modelesFacture.filter((m) => !m.archive).length > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-secondary-500 text-background-50 text-[10px] font-bold">
+                  {modelesFacture.filter((m) => !m.archive).length}
+                </span>
+              )}
+            </button>
+          </Infobulle>
         </div>
 
         {actionError && (
@@ -820,6 +1061,35 @@ export default function AppFactures() {
               {s}
             </button>
           ))}
+          <span className="w-px self-stretch bg-background-200 mx-1" aria-hidden="true"></span>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !encaisserJour;
+              setEncaisserJour(next);
+              if (next) setStatut("Toutes");
+              // À l'activation du filtre, on trie d'emblée par échéance la plus ancienne
+              // (sauf si un tri a déjà été choisi exprès par l'artisan).
+              const nextTri = next && !tri ? "echeance-asc" : tri;
+              if (next && !tri) setTri("echeance-asc");
+              setSearchParams(
+                buildParams({
+                  encaisser: next ? "jour" : "",
+                  statut: next ? "Toutes" : statut,
+                  tri: nextTri,
+                }),
+                { replace: true },
+              );
+            }}
+            aria-pressed={encaisserJour}
+            title="N'afficher que les factures encore impayées dont l'échéance est aujourd'hui ou déjà dépassée"
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap cursor-pointer transition-colors ${
+              encaisserJour ? "bg-accent-500 text-background-50" : "text-foreground-600 hover:bg-background-200"
+            }`}
+          >
+            <i className="ri-money-euro-circle-line"></i>
+            À encaisser aujourd'hui
+          </button>
           </div>
         </div>
 
@@ -936,7 +1206,7 @@ export default function AppFactures() {
 
         <FacturesSortBar tri={tri} onSort={applyTri} />
 
-        {(statut !== "Toutes" || docType !== "Factures" || periode !== "Tout" || tri) && (
+        {(statut !== "Toutes" || docType !== "Factures" || periode !== "Tout" || tri || encaisserJour) && (
           <div className="flex flex-wrap items-center gap-2 px-4 py-3 rounded-lg bg-accent-50 border border-accent-200 animate-fade-in">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent-800 whitespace-nowrap">
               <i className="ri-filter-3-line"></i>
@@ -971,6 +1241,12 @@ export default function AppFactures() {
               <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-background-50 border border-accent-200 text-[11px] font-semibold text-foreground-700 whitespace-nowrap">
                 <i className="ri-sort-asc text-accent-600"></i>
                 <span className="capitalize">{triFactureLabel(tri)}</span>
+              </span>
+            )}
+            {encaisserJour && (
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-background-50 border border-accent-200 text-[11px] font-semibold text-foreground-700 whitespace-nowrap">
+                <i className="ri-money-euro-circle-line text-accent-600"></i>
+                À encaisser (échéance du jour ou dépassée)
               </span>
             )}
             <span className="text-[11px] text-foreground-500 whitespace-nowrap">
@@ -1019,9 +1295,11 @@ export default function AppFactures() {
           </div>
           {filtered.length === 0 ? (
             <p className="p-8 text-center text-sm text-foreground-500">
-              {docType === "Avoirs"
-                ? "Aucun avoir ne correspond à votre recherche."
-                : "Aucune facture ne correspond à votre recherche."}
+              {encaisserJour
+                ? "Aucune facture impayée n'arrive à échéance aujourd'hui ou n'est déjà en retard. Tout est encaissé, bravo."
+                : docType === "Avoirs"
+                  ? "Aucun avoir ne correspond à votre recherche."
+                  : "Aucune facture ne correspond à votre recherche."}
             </p>
           ) : (
             facturesAffichees.map((f) => (
@@ -1199,12 +1477,24 @@ export default function AppFactures() {
                   <button
                     type="button"
                     onClick={() => handleDownload(f)}
-                    disabled={downloadingId === f.id}
-                    className="w-9 h-9 flex items-center justify-center rounded-md text-foreground-400 hover:bg-background-200 hover:text-primary-700 cursor-pointer disabled:opacity-60"
-                    aria-label="Télécharger la facture en PDF"
-                    title="Télécharger en PDF"
+                    className="w-9 h-9 flex items-center justify-center rounded-md text-foreground-400 hover:bg-background-200 hover:text-primary-700 cursor-pointer"
+                    aria-label="Aperçu puis téléchargement de la facture en PDF"
+                    title="Aperçu du PDF avant téléchargement"
                   >
-                    <i className={downloadingId === f.id ? "ri-loader-4-line animate-spin" : "ri-file-download-line"}></i>
+                    <i className="ri-eye-line"></i>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActionNotice(null);
+                      setModeleError(null);
+                      setModeleSaveTarget(f);
+                    }}
+                    className="w-9 h-9 flex items-center justify-center rounded-md text-foreground-400 hover:bg-background-200 hover:text-accent-700 cursor-pointer"
+                    aria-label="Enregistrer comme modèle de facture"
+                    title="Enregistrer comme modèle réutilisable"
+                  >
+                    <i className="ri-bookmark-line"></i>
                   </button>
                   <button
                     type="button"
@@ -1222,6 +1512,19 @@ export default function AppFactures() {
 
         {genOpen && (
           <GenererFactureModal devis={generatable} busy={busy} onGenerate={handleGenerate} onClose={() => setGenOpen(false)} />
+        )}
+
+        {/* Rappel discret en bas d'écran : les astuces de cet écran vivent dans le panneau Aide. */}
+        <RappelAstucePage />
+
+        {previewFacture && (
+          <ApercuPdfModal
+            title={`Aperçu · ${previewFacture.numero}`}
+            filename={`${previewFacture.numero}.pdf`}
+            docBuilder={() => buildFacturePdf(previewFacture)}
+            note="Le document reprend votre logo, vos mentions légales et la signature du client si le devis est signé."
+            onClose={() => setPreviewFacture(null)}
+          />
         )}
 
         {pendingDelete && (
@@ -1297,6 +1600,32 @@ export default function AppFactures() {
         )}
         {lignesFacture && (
           <FactureLignesModal facture={lignesFacture} userId={user?.id ?? null} onClose={() => setLignesFacture(null)} />
+        )}
+        {genModeleOpen && (
+          <GenererFactureModeleModal
+            modeles={modelesFacture}
+            clients={clients}
+            loading={loadingModelesFacture}
+            busy={busy}
+            error={modeleError}
+            onClose={() => setGenModeleOpen(false)}
+            onGenerate={handleGenerateFromModele}
+            onDelete={handleDeleteModele}
+            onArchive={handleArchiveModele}
+            onRenommer={handleRenommerModele}
+          />
+        )}
+        {modeleSaveTarget && (
+          <EnregistrerFactureModeleModal
+            defaultNom={modeleSaveTarget.objet?.trim() || modeleSaveTarget.numero}
+            busy={savingModele}
+            error={modeleError}
+            onClose={() => {
+              setModeleSaveTarget(null);
+              setModeleError(null);
+            }}
+            onSubmit={handleSaveFactureModele}
+          />
         )}
         {duplicateTarget && (
           <Modal

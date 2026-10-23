@@ -1,0 +1,237 @@
+⏰ Automatisations ArtiFlow-pro — à créer sur cron-job.org
+====================================================================
+
+Mode d'emploi (gratuit) :
+  1. Créer un compte sur https://cron-job.org
+  2. Pour chaque tâche ci-dessous : « Create cronjob » puis saisir les valeurs indiquées.
+  3. Onglet « Advanced » → Headers : ajouter  Content-Type: application/json
+  4. Enregistrer, puis « Test run » : la réponse doit être 200.
+
+Astuce : crée d'abord la première, teste-la, puis duplique la méthode pour les autres.
+Toutes les fonctions revérifient l'heure avant d'envoyer : une cadence horaire suffit
+(« 0 * * * * ») ; les cadences « une fois par jour » ci-dessous sont une simple optimisation.
+
+Domaine du Backend (host) : vbje6pqzh6ug1flwt901.helloreaddy.com
+
+--------------------------------------------------------------------
+Les 27 tâches à créer
+--------------------------------------------------------------------
+
+1. Récap quotidien
+   Titre       : Récap quotidien
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-quotidien
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Récapitulatif quotidien à l'artisan
+
+2. Journal comptable mensuel
+   Titre       : Journal comptable mensuel
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/envoi-journal-mensuel
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Journal du mois + régularité au comptable
+
+3. Alerte mois sans envoi
+   Titre       : Alerte mois sans envoi
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/relance-envoi-manquant
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 8 * * *   Prévient si un mois attendu reste sans envoi
+
+4. Relances factures en retard
+   Titre       : Relances factures en retard
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/relancer-factures-retard
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 9 * * *   Relance groupée des factures en retard
+
+5. Escalade des relances
+   Titre       : Escalade des relances
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/escalade-relances
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 9 * * *   Escalade des relances clients sans réponse
+
+6. Rappel de prélèvement (J-3)
+   Titre       : Rappel de prélèvement (J-3)
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/rappel-prelevement-abonnement
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 10 * * *   Rappel J-3 avant prélèvement Stripe
+
+7. Rappel fin de période (paiement unique)
+   Titre       : Rappel fin de période (paiement unique)
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/rappel-echeance-paiement-unique
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 10 * * *   Rappel J-7 avant la fin d'une période payée en paiement unique
+
+8. Récap hebdo des recontacts
+   Titre       : Récap hebdo des recontacts
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-recontact-volatils
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Récap des comptes à recontacter
+
+9. Récap hebdo des envois auto
+   Titre       : Récap hebdo des envois auto
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-hebdo-envois-auto
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Synthèse hebdo des envois automatiques
+
+10. Récap hebdo des alertes de taux
+   Titre       : Récap hebdo des alertes de taux
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-hebdo-alertes-taux
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Synthèse hebdo des alertes de taux de réussite
+
+11. Récap hebdo des échecs test à blanc
+   Titre       : Récap hebdo des échecs test à blanc
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-hebdo-echecs-blanc
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Envoi hebdo du récap d'échecs des rejeux à blanc (CSV)
+
+12. Récap hebdo des échecs de paiement
+   Titre       : Récap hebdo des échecs de paiement
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-hebdo-echecs-paiement
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Synthèse hebdo des échecs de paiement Stripe aux gestionnaires
+
+13. Récap hebdo des alertes Stripe non traitées
+   Titre       : Récap hebdo des alertes Stripe non traitées
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-hebdo-alertes-stripe-non-traitees
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Rappel hebdo des alertes de configuration Stripe encore à traiter
+
+14. Récap invitations intervenants
+   Titre       : Récap invitations intervenants
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-invitations-intervenants
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Récap hebdo des fiches invitées sans compte à relancer
+
+15. Bilan d'archivage annuel
+   Titre       : Bilan d'archivage annuel
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/envoi-bilan-annuel
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 7 * * *   Bilan annuel d'archivage au comptable
+
+16. Alerte mot de passe ancien
+   Titre       : Alerte mot de passe ancien
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/alerte-mot-de-passe-ancien
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 8 * * *   Prévient l'artisan quand son mot de passe dépasse 6 mois
+
+17. Récap mensuel alertes mot de passe
+   Titre       : Récap mensuel alertes mot de passe
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-mensuel-mot-de-passe
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Récap mensuel du nombre d'alertes mot de passe envoyées
+
+18. Récap trimestriel alertes mot de passe
+   Titre       : Récap trimestriel alertes mot de passe
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-trimestriel-mot-de-passe
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Listing trimestriel des récaps mensuels au comptable
+
+19. Historique annuel des récaps mot de passe
+   Titre       : Historique annuel des récaps mot de passe
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/envoi-recap-mensuel-annuel
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 7 * * *   Envoi annuel du PDF d'historique des récaps au comptable
+
+20. Comparatif de cadence annuel
+   Titre       : Comparatif de cadence annuel
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/envoi-comparatif-cadence-annuel
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 7 * * *   Envoi annuel du comparatif de cadence des récaps au comptable
+
+21. Régularité annuelle d'archivage des échecs
+   Titre       : Régularité annuelle d'archivage des échecs
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/envoi-recap-echecs-annuel
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Envoi annuel du PDF de régularité d'archivage des récaps d'échecs
+
+22. Export CSV mensuel par email
+   Titre       : Export CSV mensuel par email
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/export-csv-mensuel
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Envoie par email les exports CSV (réessais + journal d'escalade)
+
+23. Email de bienvenue aux nouveaux pros
+   Titre       : Email de bienvenue aux nouveaux pros
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/envoi-bienvenue-nouveaux-pros
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Accueille automatiquement chaque nouvelle inscription (une seule fois par pro)
+
+24. Rappels avant suppression (J-7 et J-1)
+   Titre       : Rappels avant suppression (J-7 et J-1)
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/rappeler-suppressions-prochaines
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Prévient l'artisan à J-7 puis à J-1 avant la suppression réelle
+
+25. Purge des comptes supprimés
+   Titre       : Purge des comptes supprimés
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/purger-comptes-supprimes
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Efface réellement les comptes arrivés au terme des 30 jours de grâce
+
+26. Rappel des conflits de congé la veille
+   Titre       : Rappel conflits congé (veille de réunion)
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/rappel-conflits-conge-veille
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   Liste des conflits (CSV joint) la veille de la réunion d'équipe, à l'heure réglée par chaque compte (7 h par défaut)
+
+27. Récap mensuel des envois groupés au comptable
+   Titre       : Récap mensuel envois groupés
+   URL         : https://vbje6pqzh6ug1flwt901.helloreaddy.com/functions/v1/recap-envois-groupees-mensuel
+   Méthode     : POST
+   Header      : Content-Type: application/json
+   Corps       : (vide)
+   Cadence     : 0 * * * *   PDF du récap du mois écoulé au comptable, au jour et à l'heure réglés par chaque artisan (le mode « archive » ne consomme pas cette tâche)
+
+--------------------------------------------------------------------
+Une fois les 27 tâches au vert, les automatisations sont actives.

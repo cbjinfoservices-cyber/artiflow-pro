@@ -9,6 +9,7 @@ import DataState from "@/pages/app/components/DataState";
 import EmptyState from "@/pages/app/components/EmptyState";
 import SampleDataButton from "@/pages/app/components/SampleDataButton";
 import RechercheRepliable from "@/components/feature/RechercheRepliable";
+import RappelAstucePage from "@/components/base/RappelAstucePage";
 
 const CANAUX = ["Tous", "Email", "SMS", "WhatsApp"] as const;
 const TYPES = ["Tous", "Devis", "Facture", "Relance"] as const;
@@ -885,6 +886,9 @@ export default function AppEnvois() {
             </div>
           </div>
         )}
+
+        {/* Rappel discret en bas d'écran : les astuces de cet écran vivent dans le panneau Aide. */}
+        <RappelAstucePage />
       </div>
     </DataState>
   );

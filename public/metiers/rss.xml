@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ArtiFlow-pro — Fiches métiers du bâtiment</title>
+    <link>https://artiflow-pro.fr/metiers</link>
+    <description>Les fiches métiers d'ArtiFlow-pro : plombier chauffagiste, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste et frigoriste climaticien. Devis, relances et suivi de chantier adaptés à chaque corps d'état.</description>
+    <language>fr-FR</language>
+    <copyright>ArtiFlow-pro</copyright>
+    <lastBuildDate>Thu, 22 Oct 2026 09:00:00 +0200</lastBuildDate>
+    <generator>ArtiFlow-pro</generator>
+    <atom:link href="https://artiflow-pro.fr/metiers/rss.xml" rel="self" type="application/rss+xml" />
+
+    <item>
+      <title>Plombier chauffagiste — Devis plomberie &amp; chauffage</title>
+      <link>https://artiflow-pro.fr/metiers/plombier-chauffagiste</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/plombier-chauffagiste</guid>
+      <category>Métier</category>
+      <description>Devis plomberie et chauffage dictés depuis le chantier : chaudières, sanitaires, dépannages. ArtiFlow-pro relance vos clients jusqu'à la signature.</description>
+    </item>
+
+    <item>
+      <title>Électricien — Devis électricité clairs et rapides</title>
+      <link>https://artiflow-pro.fr/metiers/electricien</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/electricien</guid>
+      <category>Métier</category>
+      <description>Devis électricité détaillés et conformes : mise aux normes, tableaux, extensions. Générez, envoyez et relancez sans repasser au bureau le soir.</description>
+    </item>
+
+    <item>
+      <title>Maçon — Devis maçonnerie &amp; planning chantier</title>
+      <link>https://artiflow-pro.fr/metiers/macon</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/macon</guid>
+      <category>Métier</category>
+      <description>Devis maçonnerie chiffrés au métré : gros œuvre, dalles, ouvertures, extensions. Planifiez vos chantiers et suivez chaque étape avec photos.</description>
+    </item>
+
+    <item>
+      <title>Peintre finitions — Devis peinture au m²</title>
+      <link>https://artiflow-pro.fr/metiers/peintre-finitions</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/peintre-finitions</guid>
+      <category>Métier</category>
+      <description>Devis peinture calculés au m² par pièce : intérieur, façades, finitions. ArtiFlow-pro déduit les ouvertures et relance le client pour vous.</description>
+    </item>
+
+    <item>
+      <title>Menuisier — Devis menuiserie sur mesure</title>
+      <link>https://artiflow-pro.fr/metiers/menuisier</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/menuisier</guid>
+      <category>Métier</category>
+      <description>Devis menuiserie sur mesure avec variantes de matériaux : fenêtres, portes, placards. Proposez chaque option chiffrée dans un seul devis clair.</description>
+    </item>
+
+    <item>
+      <title>Carreleur — Devis carrelage au m²</title>
+      <link>https://artiflow-pro.fr/metiers/carreleur</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/carreleur</guid>
+      <category>Métier</category>
+      <description>Devis carrelage au m² avec estimation des chutes : sols, murs, salles de bain, terrasses. Fourniture et pose détaillées, relance automatique.</description>
+    </item>
+
+    <item>
+      <title>Couvreur — Devis couverture &amp; toiture rapides</title>
+      <link>https://artiflow-pro.fr/metiers/couvreur</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/couvreur</guid>
+      <category>Métier</category>
+      <description>Devis couverture et toiture rapides : réfections, zinguerie, démoussage. Priorisez les urgences et transmettez un devis clair à l'assurance.</description>
+    </item>
+
+    <item>
+      <title>Plaquiste plâtrier — Devis plâtrerie &amp; cloisons</title>
+      <link>https://artiflow-pro.fr/metiers/platrier</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/platrier</guid>
+      <category>Métier</category>
+      <description>Devis plâtrerie détaillés pièce par pièce : cloisons, faux plafonds, doublages, bandes. Ossature, isolant et enduit chiffrés sans oubli.</description>
+    </item>
+
+    <item>
+      <title>Frigoriste climaticien — Devis climatisation &amp; pompe à chaleur</title>
+      <link>https://artiflow-pro.fr/metiers/installateur-climatisation</link>
+      <guid isPermaLink="true">https://artiflow-pro.fr/metiers/installateur-climatisation</guid>
+      <category>Métier</category>
+      <description>Devis climatisation et pompe à chaleur détaillés : splits, gainables, entretien annuel. Chiffrez la pose, la mise en service et les relances sans repasser au bureau.</description>
+    </item>
+  </channel>
+</rss>

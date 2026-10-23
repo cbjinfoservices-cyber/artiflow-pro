@@ -70,8 +70,17 @@ export default function SignatureDevisPage() {
     }
   };
 
+  // Identité visuelle de l'artisan : couleur d'accent + logo repris du profil.
+  const accent =
+    data && /^#[0-9a-fA-F]{6}$/.test(String(data.emetteur?.doc_couleur ?? ""))
+      ? String(data.emetteur?.doc_couleur)
+      : "#C4783A";
+  const afficherLogo = data?.emetteur?.doc_afficher_logo !== false;
+  const piedPage = (data?.emetteur?.doc_pied_page ?? "").trim();
+
   return (
     <div className="min-h-screen bg-background-50">
+      <div className="h-1.5 w-full" style={{ backgroundColor: accent }} />
       <header className="h-16 flex items-center px-4 md:px-6 border-b border-background-200">
         <div className="flex items-center gap-2.5">
           <span className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary-500 text-background-50">
@@ -105,15 +114,15 @@ export default function SignatureDevisPage() {
             <div className="p-5 rounded-lg bg-background-100 border border-background-200">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-3 min-w-0">
-                  {data.emetteur?.logo_url ? (
+                  {afficherLogo && data.emetteur?.logo_url ? (
                     <span className="w-14 h-14 shrink-0 rounded-md bg-background-50 border border-background-200 flex items-center justify-center overflow-hidden">
                       <img src={data.emetteur.logo_url} alt={data.emetteur.entreprise ?? "Logo"} className="w-full h-full object-contain" />
                     </span>
-                  ) : (
-                    <span className="w-14 h-14 shrink-0 rounded-md bg-primary-100 text-primary-700 flex items-center justify-center text-xl">
+                  ) : afficherLogo ? (
+                    <span className="w-14 h-14 shrink-0 rounded-md text-background-50 flex items-center justify-center text-xl" style={{ backgroundColor: accent }}>
                       <i className="ri-tools-fill"></i>
                     </span>
-                  )}
+                  ) : null}
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-lg text-foreground-950 truncate">
                       {data.emetteur?.entreprise || "Votre artisan"}
@@ -237,7 +246,8 @@ export default function SignatureDevisPage() {
                   type="button"
                   onClick={handleSign}
                   disabled={busy}
-                  className="mt-4 inline-flex items-center gap-2 h-12 px-6 rounded-md bg-primary-500 text-background-50 text-sm font-semibold cursor-pointer hover:bg-primary-600 whitespace-nowrap transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: accent }}
+                  className="mt-4 inline-flex items-center gap-2 h-12 px-6 rounded-md text-background-50 text-sm font-semibold cursor-pointer hover:opacity-90 whitespace-nowrap transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {busy ? <i className="ri-loader-4-line animate-spin"></i> : <i className="ri-quill-pen-line"></i>}
                   Accepter et signer
@@ -252,6 +262,10 @@ export default function SignatureDevisPage() {
                 {data.emetteur?.tva && <p>N° TVA intracommunautaire : {data.emetteur.tva}</p>}
                 {data.emetteur?.assurance && <p>Assurance : {data.emetteur.assurance}</p>}
               </div>
+            )}
+
+            {piedPage && (
+              <p className="text-center text-xs text-foreground-500 whitespace-pre-line">{piedPage}</p>
             )}
           </div>
         )}

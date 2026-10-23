@@ -7,8 +7,10 @@ import ApercuRecapArtisanModal from "@/pages/app/comptabilite/components/ApercuR
 import { buildManquantsGroupedRows, computeMoisManquants, groupRowsByYear } from "@/lib/comptableRegularite";
 import { buildEnvoisChartImageDataUrl, exportEnvoisChartImage, type EnvoisChartDatum } from "@/lib/envoisChartImage";
 import { buildComptableHistoriquePdf } from "@/lib/comptabilitePdf";
-import { savePdf, pdfToBase64 } from "@/lib/pdf";
+import { pdfToBase64 } from "@/lib/pdf";
 import BilanArchivageBloc from "@/pages/app/comptabilite/components/BilanArchivageBloc";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 import Infobulle from "@/components/base/Infobulle";
 
 interface EnvoiAutoCarteProps {
@@ -272,6 +274,8 @@ export default function EnvoiAutoCarte({
   const [relanceTestNotice, setRelanceTestNotice] = useState<string | null>(null);
   const [relanceTestError, setRelanceTestError] = useState<string | null>(null);
   // Bilan d'archivage annuel : historique complet transmis au comptable en fin d'année.
+  // Aperçu avant téléchargement des PDF d'historique et de bilan (même fenêtre que les devis/factures).
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
 
   useEffect(() => {
     setActif(defaultActif);
@@ -524,8 +528,16 @@ export default function EnvoiAutoCarte({
       const doc = buildComptableHistoriquePdf({ emetteur, filtreLabel: pdfFiltreLabel, lignes });
       const suffixe = filtre === "tous" ? "" : `-${filtre}`;
       const suffixeMois = filtreMoisActif ? `-${filtreMois}` : "";
-      savePdf(doc, `historique-envois-comptable-${todayISO()}${suffixe}${suffixeMois}.pdf`);
-      setRapportNotice(`Historique exporté en PDF (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}).`);
+      ouvrirApercuPdf({
+        title: "Aperçu · Historique des envois",
+        subtitle: "Vérifiez le périmètre filtré et la colonne « Vers (moi / comptable) » avant de télécharger.",
+        filename: `historique-envois-comptable-${todayISO()}${suffixe}${suffixeMois}.pdf`,
+        build: async () => doc,
+        note: "Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF ».",
+      });
+      setRapportNotice(
+        `Aperçu de l'historique ouvert (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}) : vérifiez la mise en page puis téléchargez.`,
+      );
     } catch {
       setRapportError("L'export PDF de l'historique a échoué. Réessayez.");
     }
@@ -545,8 +557,16 @@ export default function EnvoiAutoCarte({
         filtreLabel: "Historique complet (tous les mois)",
         lignes,
       });
-      savePdf(doc, `historique-complet-envois-comptable-${todayISO()}.pdf`);
-      setRapportNotice(`Historique complet exporté en PDF (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}).`);
+      ouvrirApercuPdf({
+        title: "Aperçu · Historique complet des envois",
+        subtitle: "Vérifiez toutes les lignes de l'historique (tous mois) avant de télécharger l'archive.",
+        filename: `historique-complet-envois-comptable-${todayISO()}.pdf`,
+        build: async () => doc,
+        note: "Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF ».",
+      });
+      setRapportNotice(
+        `Aperçu de l'historique complet ouvert (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}) : vérifiez puis téléchargez.`,
+      );
     } catch {
       setRapportError("L'export PDF complet de l'historique a échoué. Réessayez.");
     }
@@ -574,9 +594,15 @@ export default function EnvoiAutoCarte({
         sousTitre: "Historique des envois comptables de l'exercice",
         piedLabel: "Bilan d'archivage généré avec ArtiFlow-pro",
       });
-      savePdf(doc, `bilan-archivage-envois-comptable-${annee || todayISO()}.pdf`);
+      ouvrirApercuPdf({
+        title: `Aperçu · Bilan d'archivage${annee ? ` ${annee}` : ""}`,
+        subtitle: "Vérifiez l'exercice, la synthèse et le détail des envois avant de télécharger le PDF.",
+        filename: `bilan-archivage-envois-comptable-${annee || todayISO()}.pdf`,
+        build: async () => doc,
+        note: "Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF ».",
+      });
       setRapportNotice(
-        `Bilan d'archivage${annee ? ` de l'exercice ${annee}` : ""} exporté en PDF (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}).`,
+        `Aperçu du bilan d'archivage${annee ? ` de l'exercice ${annee}` : ""} ouvert (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}) : vérifiez puis téléchargez.`,
       );
     } catch {
       setRapportError("L'export du bilan d'archivage a échoué. Réessayez.");
@@ -606,9 +632,15 @@ export default function EnvoiAutoCarte({
         sousTitre: "Historique des envois comptables de l'exercice",
         piedLabel: "Bilan d'archivage généré avec ArtiFlow-pro",
       });
-      savePdf(doc, `bilan-archivage-envois-comptable-${annee || todayISO()}.pdf`);
+      ouvrirApercuPdf({
+        title: `Aperçu · Bilan d'archivage${annee ? ` ${annee}` : ""}`,
+        subtitle: "Vérifiez le bilan de cet exercice avant de le télécharger pour vos archives.",
+        filename: `bilan-archivage-envois-comptable-${annee || todayISO()}.pdf`,
+        build: async () => doc,
+        note: "Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF ».",
+      });
       setRapportNotice(
-        `Bilan d'archivage${annee ? ` de l'exercice ${annee}` : ""} téléchargé (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}).`,
+        `Aperçu du bilan d'archivage${annee ? ` de l'exercice ${annee}` : ""} ouvert (${lignes.length} ligne${lignes.length > 1 ? "s" : ""}) : vérifiez puis téléchargez.`,
       );
     } catch {
       setRapportError("Le téléchargement du bilan d'archivage a échoué. Réessayez.");
@@ -2035,6 +2067,17 @@ export default function EnvoiAutoCarte({
           </ul>
         )}
       </div>
+
+      {apercuPdf && (
+        <ApercuPdfModal
+          title={apercuPdf.title}
+          subtitle={apercuPdf.subtitle}
+          filename={apercuPdf.filename}
+          docBuilder={apercuPdf.build}
+          note={apercuPdf.note}
+          onClose={fermerApercuPdf}
+        />
+      )}
 
       <ApercuRecapArtisanModal open={apercuRecapOpen} onClose={() => setApercuRecapOpen(false)} audience={apercuRecapAudience} />
     </div>

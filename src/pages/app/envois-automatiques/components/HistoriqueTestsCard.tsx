@@ -15,7 +15,8 @@ import {
 } from "@/lib/envoisAutomatiquesHistorique";
 import { buildHistoriqueTestsPdf } from "@/lib/envoisAutomatiquesHistoriquePdf";
 import { journaliserDepuisErreur } from "@/lib/journalErreursChargement";
-import { savePdf } from "@/lib/pdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 import { toCsv, downloadCsv } from "@/lib/csv";
 import { envoyerCsvParEmail } from "@/lib/diagnosticEmail";
 
@@ -88,6 +89,7 @@ export default function HistoriqueTestsCard({ userId, refreshKey, limite = 20 }:
   const [actionEnCours, setActionEnCours] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
 
   // Période effective dérivée du filtre : jours glissants OU plage personnalisée (bornes ISO).
   const periode = useMemo<PeriodeHistorique | null>(() => {
@@ -277,23 +279,29 @@ export default function HistoriqueTestsCard({ userId, refreshKey, limite = 20 }:
         setExportError("Rien à exporter pour ce filtre.");
         return;
       }
-      const doc = await buildHistoriqueTestsPdf({
-        emetteur,
-        rows: toutes.map((r) => ({
-          dateLabel: formatDateHeure(r.created_at),
-          automatisationNom: r.automatisation_nom,
-          resultat: r.resultat,
-          message: r.message,
-        })),
-        stats: {
-          total: statsPdf.total,
-          succes: statsPdf.succes,
-          tauxSucces: statsPdf.tauxSucces,
-          dernierLabel: formatDateHeure(statsPdf.dernier),
-        },
-        filtreLabel: libelleFiltres(),
+      const filename = `historique-tests${slugFiltres()}-${new Date().toISOString().slice(0, 10)}.pdf`;
+      ouvrirApercuPdf({
+        title: "Aperçu · Historique des tests",
+        filename,
+        note: `${toutes.length} test${toutes.length > 1 ? "s" : ""} · ${libelleFiltres()}`,
+        build: () =>
+          buildHistoriqueTestsPdf({
+            emetteur,
+            rows: toutes.map((r) => ({
+              dateLabel: formatDateHeure(r.created_at),
+              automatisationNom: r.automatisation_nom,
+              resultat: r.resultat,
+              message: r.message,
+            })),
+            stats: {
+              total: statsPdf.total,
+              succes: statsPdf.succes,
+              tauxSucces: statsPdf.tauxSucces,
+              dernierLabel: formatDateHeure(statsPdf.dernier),
+            },
+            filtreLabel: libelleFiltres(),
+          }),
       });
-      savePdf(doc, `historique-tests${slugFiltres()}-${new Date().toISOString().slice(0, 10)}.pdf`);
     } catch {
       setExportError("L'export PDF de l'historique a échoué.");
     } finally {
@@ -691,6 +699,17 @@ export default function HistoriqueTestsCard({ userId, refreshKey, limite = 20 }:
           </div>
         )}
         </div>
+      )}
+
+      {apercuPdf && (
+        <ApercuPdfModal
+          title={apercuPdf.title}
+          subtitle={apercuPdf.subtitle}
+          filename={apercuPdf.filename}
+          docBuilder={apercuPdf.build}
+          note={apercuPdf.note}
+          onClose={fermerApercuPdf}
+        />
       )}
     </section>
   );

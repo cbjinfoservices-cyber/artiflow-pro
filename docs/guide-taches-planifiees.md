@@ -26,7 +26,7 @@ fonction « toutes les heures » : elle n'expédiera qu'au bon moment.
 « Agents → Tâches planifiées » à chercher : le déclenchement se fait par un **service de cron
 externe** qui appelle les URLs de tes fonctions à intervalle régulier.
 
-Les 21 fonctions concernées ont `verify_jwt = false` : elles sont appelables **sans
+Les 25 fonctions concernées ont `verify_jwt = false` : elles sont appelables **sans
 authentification**, donc par n'importe quel service de cron. Trois méthodes possibles :
 
 | Méthode | Idéal si… | Section |
@@ -54,7 +54,7 @@ Pour chaque fonction : on enregistre un appel avec
 
 ---
 
-## 4. Les tâches à créer (21)
+## 4. Les tâches à créer (25)
 
 | Fonction | Rôle | Cadence conseillée (cron) |
 |----------|------|---------------------------|
@@ -70,7 +70,8 @@ Pour chaque fonction : on enregistre un appel avec
 | `recap-hebdo-alertes-taux` | Synthèse hebdo des alertes de taux de réussite | Toutes les heures — `0 * * * *` |
 | `recap-hebdo-echecs-blanc` | Récap hebdo des échecs des rejeux à blanc (CSV) | Toutes les heures — `0 * * * *` |
 | `recap-hebdo-echecs-paiement` | Synthèse hebdo des échecs de paiement Stripe aux gestionnaires | Toutes les heures — `0 * * * *` |
-| `recap-hebdo-alertes-stripe-non-traitees` | Récap hebdo des alertes de configuration Stripe encore à traiter | Toutes les heures — `0 * * * *` |
+| `recap-hebdo-alertes-stripe-non-traitees` | Récap hebdo des alertes de configuration Stripe encore à traiter — joint automatiquement l'archive PDF des suppressions en attente | Toutes les heures — `0 * * * *` |
+| `recap-invitations-intervenants` | Récap hebdo des fiches « invitées sans compte » à relancer | Toutes les heures — `0 * * * *` |
 | `envoi-bilan-annuel` | Bilan d'archivage annuel | Une fois par jour — `0 7 * * *` |
 | `alerte-mot-de-passe-ancien` | Alerte « mot de passe ancien » à l'artisan | Une fois par jour — `0 8 * * *` |
 | `recap-mensuel-mot-de-passe` | Récap mensuel des alertes mot de passe | Toutes les heures — `0 * * * *` |
@@ -79,13 +80,16 @@ Pour chaque fonction : on enregistre un appel avec
 | `envoi-comparatif-cadence-annuel` | Comparatif de cadence annuel (PDF) | Une fois par jour — `0 7 * * *` |
 | `envoi-recap-echecs-annuel` | Régularité annuelle d'archivage des échecs (PDF, date réglable) | Toutes les heures — `0 * * * *` |
 | `export-csv-mensuel` | Export CSV mensuel par email (réessais + escalade) | Toutes les heures — `0 * * * *` |
+| `envoi-bienvenue-nouveaux-pros` | Email de bienvenue automatique aux nouvelles inscriptions | Toutes les heures — `0 * * * *` |
+| `rappeler-suppressions-prochaines` | Rappels email à J-7 puis J-1 avant la suppression réelle d'un compte | Toutes les heures — `0 * * * *` |
+| `purger-comptes-supprimes` | Efface réellement les comptes arrivés au terme des 30 jours de grâce | Toutes les heures — `0 * * * *` |
 
 > **Pourquoi « toutes les heures » pour certaines ?** Ces fonctions contiennent un réglage
 > interne *jour + heure* (ex. « récap hebdo le lundi à 8 h »). Les appeler chaque heure garantit
 > qu'elles se déclenchent au bon créneau, sans jamais envoyer deux fois (anti-doublon intégré).
 >
 > **Astuce** : comme toutes les fonctions revérifient l'heure elles-mêmes, une seule cadence
-> horaire (« `0 * * * *` ») appliquée aux 18 fonctions fonctionne parfaitement. Les cadences
+> horaire (« `0 * * * *` ») appliquée aux 25 fonctions fonctionne parfaitement. Les cadences
 > « une fois par jour » ci-dessus sont juste une optimisation pour économiser des appels.
 
 ---
@@ -137,7 +141,7 @@ Un script prêt à l'emploi est fourni : **`docs/cron/automatisations-artiflow.s
    ```
    0 * * * * /opt/artiflow/automatisations-artiflow.sh >> /var/log/artiflow.log 2>&1
    ```
-5. Enregistrer. Le script appelle **les 21 fonctions** ; chacune n'expédie qu'au bon moment.
+5. Enregistrer. Le script appelle **les 25 fonctions** ; chacune n'expédie qu'au bon moment.
 
 Le script utilise par défaut le domaine réel du Backend et permet de le surcharger via la
 variable d'environnement `BACKEND_HOST` si besoin.
@@ -183,6 +187,6 @@ Retourner dans **Espace artisan → Envois automatiques** : les cartes doivent p
 - Les tâches planifiées ne **créent** rien : elles **appellent** des fonctions déjà prêtes.
 - Sans elles : le produit reste une super app **manuelle**.
 - Avec elles : **tout s'allume** — relances, récaps, alertes, journal comptable partent seuls.
-- Il y a **21** fonctions à brancher (dont `recap-hebdo-echecs-blanc`, `recap-hebdo-echecs-paiement` et `recap-hebdo-alertes-stripe-non-traitees`).
+- Il y a **25** fonctions à brancher (dont `rappeler-suppressions-prochaines` pour les rappels J-7 / J-1, et `purger-comptes-supprimes`, indispensable pour que la suppression de compte programmée à J+30 soit réellement exécutée).
 
 👉 Une fois ces tâches créées et au vert, la Phase « automatisations » est **terminée à 100 %**.

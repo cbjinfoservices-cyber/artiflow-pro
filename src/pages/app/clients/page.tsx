@@ -9,6 +9,9 @@ import { formatShortDate, todayISO } from "@/lib/dates";
 import { notePrioriteInfo, NOTE_PRIORITES } from "@/lib/notePriorites";
 import { RELANCE_CLIENT_DELAI_ALERTE, joursDepuisDerniereRelance } from "@/lib/relancesClient";
 import { useRelancesClient } from "@/hooks/useRelancesClient";
+import { useEchecsEnvoisClients, type EchecEnvoiClient } from "@/hooks/useEchecsEnvoisClients";
+import { renvoyerEmailClientEnEchec } from "@/lib/suiviChantier";
+import { ajouterRenvoiCloche } from "@/lib/renvoisClocheMemoire";
 import { lireFiltresClients, memoriserFiltresClients, effacerFiltresClients } from "@/lib/clientsFiltresMemoire";
 import { ajouterLienCopie } from "@/lib/liensCopiesMemoire";
 import DataState from "@/pages/app/components/DataState";
@@ -17,22 +20,59 @@ import SampleDataButton from "@/pages/app/components/SampleDataButton";
 import Modal from "@/pages/app/components/Modal";
 import ClientFormModal from "@/pages/app/clients/components/ClientFormModal";
 import QuickNoteModal from "@/pages/app/clients/components/QuickNoteModal";
-import ProDetailPanel from "@/pages/app/professionnels/components/ProDetailPanel";
+import ProDetailPanel from "@/pages/app/clients/components/ProDetailPanel";
+import ClientsProIndicateurs from "@/pages/app/clients/components/ClientsProIndicateurs";
+import ClientsFiltreType, { type TypeClientFiltre } from "@/pages/app/clients/components/ClientsFiltreType";
+import RepartitionCarnet from "@/pages/app/clients/components/RepartitionCarnet";
+import ClientsProFiltres, { type TriPro } from "@/pages/app/clients/components/ClientsProFiltres";
 import BadgeVuePartagee from "@/pages/app/components/BadgeVuePartagee";
 import BoutonEpinglerVue from "@/pages/app/components/BoutonEpinglerVue";
 import BoutonPartager from "@/pages/app/components/BoutonPartager";
 import MenuVuesPartageesRecentes from "@/pages/app/components/MenuVuesPartageesRecentes";
 import RechercheRepliable from "@/components/feature/RechercheRepliable";
 import GuidePremiereVisite from "@/components/base/GuidePremiereVisite";
+import RappelAstucePage from "@/components/base/RappelAstucePage";
 import { guidePremiereVisiteVu, marquerGuidePremiereVisiteVu } from "@/lib/guidePremiereVisite";
 import type { ClientItem } from "@/hooks/useArtisanData";
+import { originePublique } from "@/lib/site";
+
+/** Champs attendus sur une fiche professionnelle, avec leur libellé lisible. */
+const CHAMPS_PRO: ReadonlyArray<{ cle: "siret" | "contact_nom" | "secteur"; label: string }> = [
+  { cle: "siret", label: "SIRET" },
+  { cle: "contact_nom", label: "interlocuteur" },
+  { cle: "secteur", label: "secteur" },
+];
+
+/** Liste les informations manquantes sur une fiche pro (vide si la fiche est complète). */
+function champsProManquants(client: ClientItem): string[] {
+  return CHAMPS_PRO.filter((champ) => !(client[champ.cle] ?? "").trim()).map((champ) => champ.label);
+}
+
+/** Une fiche pro est incomplète dès qu'il lui manque le SIRET, l'interlocuteur ou le secteur. */
+function estProIncomplete(client: ClientItem): boolean {
+  return champsProManquants(client).length > 0;
+}
 
 export default function AppClients() {
-  usePageMeta("Clients · ArtiFlow-pro", "Gérez votre carnet de clients artisans.");
+  usePageMeta(
+    "Clients · ArtiFlow-pro",
+    "Votre carnet de clients : particuliers et entreprises (interlocuteur, secteur, SIRET, CA) réunis dans un seul écran.",
+  );
   const { user } = useAuth();
   const { loading, error, clients, devis, chantiers, factures, reload } = useArtisanData();
   // Relances client programmées : pour signaler « relance prévue » directement sur les cartes.
   const { relances: relancesClient } = useRelancesClient(user?.id ?? null);
+  // Emails clients refusés : pour rappeler le dernier refus sur la fiche et proposer le renvoi.
+  const { parChantier: echecsParChantier, reload: reloadEchecs } = useEchecsEnvoisClients();
+  const echecParClient = useMemo(() => {
+    const map = new Map<number, EchecEnvoiClient>();
+    Object.values(echecsParChantier).forEach((echec) => {
+      if (!echec.clientId) return;
+      const deja = map.get(echec.clientId);
+      if (!deja || echec.created_at > deja.created_at) map.set(echec.clientId, echec);
+    });
+    return map;
+  }, [echecsParChantier]);
 
   // Dernière vue mémorisée des filtres clients (type, priorité, « a des notes ») : valeur par défaut au retour.
   const memoFiltres = useMemo(lireFiltresClients, []);
@@ -40,28 +80,45 @@ export default function AppClients() {
   // Filtres de la vue, mémorisés dans l'URL (?type=, ?priorite=, ?notes=1) pour rendre la vue filtrée partageable.
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Indicateur « vue partagée » : vrai quand l'adresse contient des filtres (vue reçue via un lien partagé).
+  // Indicateur « vue partagée » : vrai quand l'adresse porte de vrais filtres reçus par lien.
+  // Les vues « Particuliers » et « Professionnels » sont devenues des modes de navigation normaux
+  // (elles ont leur entrée dans le menu), elles ne comptent donc pas comme un partage.
   const aFiltresUrl = useMemo(
-    () => ["type", "priorite", "notes"].some((k) => searchParams.has(k)),
+    () =>
+      ["priorite", "notes", "incomplet"].some((k) => searchParams.has(k)) ||
+      (searchParams.has("type") &&
+        !["Particuliers", "Professionnels"].includes(searchParams.get("type") ?? "")),
     [searchParams],
   );
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState(() => {
     const t = searchParams.get("type");
-    return t === "Particuliers" || t === "Professionnels" ? t : memoFiltres.type ?? "Tous";
+    if (t === "Particuliers" || t === "Professionnels") return t;
+    // Un lien « fiches incomplètes » sans type explicite reste une vue professionnels.
+    if (searchParams.get("incomplet") === "1") return "Professionnels";
+    return memoFiltres.type ?? "Tous";
   });
   const [prioriteFilter, setPrioriteFilter] = useState(() => {
     const p = searchParams.get("priorite");
     return p && NOTE_PRIORITES.some((x) => x.key === p) ? p : memoFiltres.priorite ?? "Toutes";
   });
   const [hasNotes, setHasNotes] = useState(() => searchParams.get("notes") === "1" || Boolean(memoFiltres.notes));
+  // Tri et secteur ne concernent que la vue professionnels : ils restent locaux à la session.
+  const [tri, setTri] = useState<TriPro>("nom");
+  const [secteurFilter, setSecteurFilter] = useState("");
+  // Filtre « fiche pro incomplète » : n'a de sens que dans la vue professionnels.
+  const [proIncomplet, setProIncomplet] = useState(() => searchParams.get("incomplet") === "1");
   const [noticeCopie, setNoticeCopie] = useState(false);
   const [quickNote, setQuickNote] = useState<ClientItem | null>(null);
   const [detail, setDetail] = useState<ClientItem | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ClientItem | null>(null);
+  // Type pré-sélectionné dans le formulaire quand on arrive par « + Particulier » / « + Entreprise » du menu.
+  const [formType, setFormType] = useState<"particulier" | "professionnel" | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  // Message de confirmation après enregistrement (et renvoi éventuel d'un email refusé).
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<ClientItem | null>(null);
 
   // Guide de première visite : présenté au premier passage sur le carnet de clients,
@@ -72,22 +129,91 @@ export default function AppClients() {
     setGuideVisible(false);
   };
 
+  // Vue « Professionnels » : ce n'est pas un second carnet, seulement le carnet filtré sur les
+  // entreprises. On y ajoute les repères utiles côté pro (secteur, CA généré, tri par CA).
+  const modePro = typeFilter === "Professionnels";
+  const pros = useMemo(() => clients.filter((c) => c.type === "professionnel"), [clients]);
+  // Répartition du carnet, affichée sur les pastilles du filtre de type.
+  const nbParticuliers = useMemo(() => clients.filter((c) => c.type !== "professionnel").length, [clients]);
+  const caDe = (id: number) => devis.filter((d) => d.client_id === id).reduce((sum, d) => sum + Number(d.total_ht || 0), 0);
+  const secteurs = useMemo(() => {
+    const set = new Set<string>();
+    pros.forEach((c) => {
+      if (c.secteur) set.add(c.secteur);
+    });
+    return [...set].sort((a, b) => a.localeCompare(b, "fr"));
+  }, [pros]);
+  // Nombre de fiches pro auxquelles il manque au moins une information (SIRET, interlocuteur, secteur).
+  const nbProsIncompletes = useMemo(() => pros.filter(estProIncomplete).length, [pros]);
+
+  // Répartition complète du carnet, affichée en tête de page : volume, devis et CA par type de fiche.
+  const repartition = useMemo(() => {
+    const calculer = (liste: ClientItem[]) => ({
+      nombre: liste.length,
+      devis: liste.reduce((sum, c) => sum + devis.filter((d) => d.client_id === c.id).length, 0),
+      ca: liste.reduce((sum, c) => sum + caDe(c.id), 0),
+    });
+    return {
+      particuliers: calculer(clients.filter((c) => c.type !== "professionnel")),
+      entreprises: calculer(clients.filter((c) => c.type === "professionnel")),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clients, devis]);
+
+  // Mini-historique : CA généré sur les 3 derniers mois (mois courant inclus), par type de fiche.
+  // On s'appuie sur la date de création du devis, comme le CA global des cartes de répartition.
+  const historiqueCa = useMemo(() => {
+    const mois: { cle: string; label: string }[] = [];
+    const aujourdhui = new Date();
+    for (let i = 2; i >= 0; i -= 1) {
+      const d = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth() - i, 1);
+      mois.push({
+        cle: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+        label: d.toLocaleDateString("fr-FR", { month: "short" }),
+      });
+    }
+    const cleMois = (iso: string) => iso.slice(0, 7);
+    const calculer = (liste: ClientItem[]) => {
+      const ids = new Set(liste.map((c) => c.id));
+      return mois.map((m) => ({
+        label: m.label,
+        ca: devis
+          .filter((d) => d.client_id !== null && ids.has(d.client_id) && cleMois(d.created_at) === m.cle)
+          .reduce((sum, d) => sum + Number(d.total_ht || 0), 0),
+      }));
+    };
+    return {
+      particuliers: calculer(clients.filter((c) => c.type !== "professionnel")),
+      entreprises: calculer(clients.filter((c) => c.type === "professionnel")),
+    };
+  }, [clients, devis]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return clients.filter((c) => {
+    const list = clients.filter((c) => {
       const matchQ =
         !q ||
         c.nom.toLowerCase().includes(q) ||
         (c.email ?? "").toLowerCase().includes(q) ||
-        (c.telephone ?? "").toLowerCase().includes(q);
+        (c.telephone ?? "").toLowerCase().includes(q) ||
+        (c.contact_nom ?? "").toLowerCase().includes(q) ||
+        (c.siret ?? "").toLowerCase().includes(q);
       const matchType =
         typeFilter === "Tous" ||
         (typeFilter === "Professionnels" ? c.type === "professionnel" : c.type !== "professionnel");
       const matchNotes = !hasNotes || Boolean(c.notes && c.notes.trim().length > 0);
       const matchPriorite = prioriteFilter === "Toutes" || c.note_priorite === prioriteFilter;
-      return matchQ && matchType && matchNotes && matchPriorite;
+      const matchSecteur = !modePro || !secteurFilter || c.secteur === secteurFilter;
+      const matchIncomplet = !modePro || !proIncomplet || estProIncomplete(c);
+      return matchQ && matchType && matchNotes && matchPriorite && matchSecteur && matchIncomplet;
     });
-  }, [clients, query, typeFilter, hasNotes, prioriteFilter]);
+    if (!modePro) return list;
+    const sorted = [...list];
+    if (tri === "ca") sorted.sort((a, b) => caDe(b.id) - caDe(a.id));
+    else sorted.sort((a, b) => a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" }));
+    return sorted;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clients, query, typeFilter, hasNotes, prioriteFilter, modePro, secteurFilter, tri, proIncomplet, devis]);
 
   const nbAvecNotes = useMemo(() => clients.filter((c) => Boolean(c.notes && c.notes.trim())).length, [clients]);
 
@@ -96,15 +222,30 @@ export default function AppClients() {
     memoriserFiltresClients({ type: typeFilter, priorite: prioriteFilter, notes: hasNotes });
   }, [typeFilter, prioriteFilter, hasNotes]);
 
+  // Les entrées « Particuliers » et « Entreprises » du menu ouvrent la même page avec un filtre de
+  // type dans l'adresse : si l'on est déjà sur le carnet, on aligne l'écran sur la nouvelle adresse.
+  useEffect(() => {
+    const t = searchParams.get("type");
+    if (t !== "Particuliers" && t !== "Professionnels") return;
+    setTypeFilter((precedent) => (precedent === t ? precedent : t));
+    if (t !== "Professionnels") {
+      setSecteurFilter("");
+      setProIncomplet(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   // Construit les paramètres d'URL de la vue filtrée courante (type, priorité, notes), avec surcharge ponctuelle.
-  const buildParams = (override: Partial<{ type: string; priorite: string; notes: boolean }> = {}) => {
+  const buildParams = (override: Partial<{ type: string; priorite: string; notes: boolean; incomplet: boolean }> = {}) => {
     const t = override.type ?? typeFilter;
     const p = override.priorite ?? prioriteFilter;
     const n = override.notes ?? hasNotes;
+    const inc = override.incomplet ?? proIncomplet;
     const params = new URLSearchParams();
     if (t && t !== "Tous") params.set("type", t);
     if (p && p !== "Toutes") params.set("priorite", p);
     if (n) params.set("notes", "1");
+    if (t === "Professionnels" && inc) params.set("incomplet", "1");
     return params;
   };
 
@@ -118,7 +259,10 @@ export default function AppClients() {
     setTypeFilter("Tous");
     setPrioriteFilter("Toutes");
     setHasNotes(false);
-    setSearchParams(buildParams({ type: "Tous", priorite: "Toutes", notes: false }), { replace: true });
+    setSecteurFilter("");
+    setTri("nom");
+    setProIncomplet(false);
+    setSearchParams(buildParams({ type: "Tous", priorite: "Toutes", notes: false, incomplet: false }), { replace: true });
   };
 
   // Remet d'un coup les filtres du carnet (type, priorité, « a des notes ») à leurs valeurs par
@@ -127,14 +271,17 @@ export default function AppClients() {
     setTypeFilter("Tous");
     setPrioriteFilter("Toutes");
     setHasNotes(false);
-    setSearchParams(buildParams({ type: "Tous", priorite: "Toutes", notes: false }), { replace: true });
+    setSecteurFilter("");
+    setTri("nom");
+    setProIncomplet(false);
+    setSearchParams(buildParams({ type: "Tous", priorite: "Toutes", notes: false, incomplet: false }), { replace: true });
   };
 
 
   // Copie un lien partageable de la vue filtrée du carnet de clients (type + priorité + notes).
   const copyClientsLink = async () => {
     const qs = buildParams().toString();
-    const url = `${window.location.origin}${window.location.pathname}${qs ? `?${qs}` : ""}`;
+    const url = `${originePublique()}${window.location.pathname}${qs ? `?${qs}` : ""}`;
     try {
       await navigator.clipboard.writeText(url);
       ajouterLienCopie("Vue filtrée · clients", url);
@@ -167,6 +314,19 @@ export default function AppClients() {
   }, [clients]);
 
   const handleExportCsv = () => {
+    const entetes = [
+      "Nom",
+      "Type",
+      "Interlocuteur",
+      "Secteur",
+      "Téléphone",
+      "Email",
+      "Adresse",
+      "SIRET",
+      "Notes internes",
+      "Priorité",
+      ...(modePro ? ["Devis", "CA HT"] : []),
+    ];
     const rows = filtered.map((c) => [
       c.nom,
       c.type === "professionnel" ? "Professionnel" : "Particulier",
@@ -178,12 +338,12 @@ export default function AppClients() {
       c.siret ?? "",
       c.notes ?? "",
       notePrioriteInfo(c.note_priorite)?.label ?? "",
+      ...(modePro
+        ? [String(devis.filter((d) => d.client_id === c.id).length), caDe(c.id).toFixed(2).replace(".", ",")]
+        : []),
     ]);
-    const csv = toCsv(
-      ["Nom", "Type", "Interlocuteur", "Secteur", "Téléphone", "Email", "Adresse", "SIRET", "Notes internes", "Priorité"],
-      rows,
-    );
-    downloadCsv(`clients-artiflow-${todayISO()}.csv`, csv);
+    const csv = toCsv(entetes, rows);
+    downloadCsv(`${modePro ? "professionnels" : "clients"}-artiflow-${todayISO()}.csv`, csv);
   };
 
   const countDevis = (id: number) => devis.filter((d) => d.client_id === id).length;
@@ -208,25 +368,87 @@ export default function AppClients() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, clients, loading]);
 
-  const openCreate = () => {
+  // Bascule le carnet sur un type de fiche (pastilles et cartes de répartition partagent cette logique).
+  const changerType = (t: TypeClientFiltre) => {
+    setTypeFilter(t);
+    if (t !== "Professionnels") {
+      setSecteurFilter("");
+      setProIncomplet(false);
+    }
+    setSearchParams(buildParams({ type: t, incomplet: t === "Professionnels" ? proIncomplet : false }), {
+      replace: true,
+    });
+  };
+
+  const openCreate = (type?: "particulier" | "professionnel") => {
     setEditing(null);
+    setFormType(type ?? (modePro ? "professionnel" : undefined));
     setFormOpen(true);
   };
+
+  // Ferme le formulaire et oublie le type pré-sélectionné, pour ne pas le conserver à la réouverture.
+  const fermerFormulaire = () => {
+    setFormOpen(false);
+    setFormType(undefined);
+  };
+
+  // Les raccourcis « + Particulier » / « + Entreprise » du menu arrivent avec `?nouveau=` : on ouvre
+  // directement le formulaire avec le bon type, puis on retire le paramètre pour ne pas le rejouer.
+  useEffect(() => {
+    const nouveau = searchParams.get("nouveau");
+    if (!nouveau) return;
+    if (nouveau === "particulier" || nouveau === "professionnel") {
+      setEditing(null);
+      setFormType(nouveau);
+      setFormOpen(true);
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete("nouveau");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const openEdit = (client: ClientItem) => {
     setEditing(client);
+    setFormType(undefined);
     setFormOpen(true);
   };
 
-  const handleSubmit = async (payload: ClientPayload) => {
+  const handleSubmit = async (payload: ClientPayload, options?: { renvoyerApres?: boolean }) => {
     if (!user) return;
     setBusy(true);
     setActionError(null);
+    setActionNotice(null);
     try {
-      if (editing) await updateClient(editing.id, payload);
-      else await createClient(user.id, payload);
-      setFormOpen(false);
+      let notice: string | null = null;
+      if (editing) {
+        await updateClient(editing.id, payload);
+        // Adresse corrigée + renvoi accepté : on réexpédie le dernier email refusé
+        // avec la nouvelle adresse, sans repasser par la cloche.
+        const echec = echecParClient.get(editing.id) ?? null;
+        if (options?.renvoyerApres && echec) {
+          const resultat = await renvoyerEmailClientEnEchec(echec.chantierId, echec.motif);
+          notice = resultat.ok
+            ? resultat.destinataire
+              ? `Fiche enregistrée · email renvoyé à ${resultat.destinataire}.`
+              : "Fiche enregistrée · email renvoyé au client."
+            : `Fiche enregistrée, mais le renvoi a échoué : ${resultat.error ?? "adresse toujours refusée."}`;
+          ajouterRenvoiCloche({
+            chantierId: echec.chantierId,
+            destinataire: resultat.destinataire ?? echec.destinataire,
+            ok: resultat.ok,
+            message: resultat.ok
+              ? `Renvoyé à ${resultat.destinataire ?? echec.destinataire ?? "l'adresse corrigée"}.`
+              : resultat.error ?? "Le renvoi a échoué.",
+          });
+          reloadEchecs();
+        }
+      } else {
+        await createClient(user.id, payload);
+      }
+      fermerFormulaire();
       setEditing(null);
+      setActionNotice(notice);
       await reload();
     } catch {
       setActionError("L'enregistrement du client a échoué. Réessayez.");
@@ -292,7 +514,7 @@ export default function AppClients() {
           <div className="flex flex-col items-center gap-3">
             <button
               type="button"
-              onClick={openCreate}
+              onClick={() => openCreate()}
               className="inline-flex items-center gap-2 h-11 px-6 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
             >
               <i className="ri-add-line"></i> Ajouter un client
@@ -301,7 +523,14 @@ export default function AppClients() {
           </div>
         </EmptyState>
         {formOpen && (
-          <ClientFormModal initial={editing} busy={busy} onClose={() => setFormOpen(false)} onSubmit={handleSubmit} />
+          <ClientFormModal
+            initial={editing}
+            busy={busy}
+            defaultType={formType ?? (modePro ? "professionnel" : undefined)}
+            onClose={fermerFormulaire}
+            onSubmit={handleSubmit}
+            echecEnvoi={editing ? echecParClient.get(editing.id) ?? null : null}
+          />
         )}
       </div>
     );
@@ -310,6 +539,15 @@ export default function AppClients() {
   return (
     <DataState loading={loading} error={error} onRetry={reload}>
       <div className="flex flex-col gap-5 animate-fade-in">
+        {/* Répartition du carnet : deux cartes cliquables qui filtrent directement sur un type. */}
+        <RepartitionCarnet
+          particuliers={repartition.particuliers}
+          entreprises={repartition.entreprises}
+          historiqueParticuliers={historiqueCa.particuliers}
+          historiqueEntreprises={historiqueCa.entreprises}
+          actif={typeFilter as TypeClientFiltre}
+          onChoisir={changerType}
+        />
         {guideVisible && (
           <GuidePremiereVisite
             titre="Bienvenue : ajoutez vos premiers clients"
@@ -366,11 +604,18 @@ export default function AppClients() {
             placeholder="Rechercher un client…"
             conteneurClassName="w-full md:w-72"
           />
-          {aFiltresUrl && (
-            <>
-              <BadgeVuePartagee />
-              <BoutonEpinglerVue label="Clients · vue partagée" />
-            </>
+          {aFiltresUrl && <BadgeVuePartagee />}
+          {(aFiltresUrl || typeFilter !== "Tous") && (
+            <BoutonEpinglerVue
+              label={
+                typeFilter === "Professionnels"
+                  ? "Clients · Professionnels"
+                  : typeFilter === "Particuliers"
+                    ? "Clients · Particuliers"
+                    : "Clients · vue partagée"
+              }
+              chemin={cheminPartage}
+            />
           )}
           <MenuVuesPartageesRecentes basePath="/app/clients" />
           <BoutonPartager
@@ -396,33 +641,22 @@ export default function AppClients() {
             </button>
             <button
               type="button"
-              onClick={openCreate}
+              onClick={() => openCreate()}
               className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
             >
-              <i className="ri-user-add-line"></i>
-              Nouveau client
+              <i className={modePro ? "ri-building-2-line" : "ri-user-add-line"}></i>
+              {modePro ? "Nouveau professionnel" : "Nouveau client"}
             </button>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap gap-1 p-1 rounded-full bg-background-100 border border-background-200 w-fit">
-            {["Tous", "Particuliers", "Professionnels"].map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => {
-                  setTypeFilter(t);
-                  setSearchParams(buildParams({ type: t }), { replace: true });
-                }}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap cursor-pointer transition-colors ${
-                  typeFilter === t ? "bg-primary-500 text-background-50" : "text-foreground-600 hover:bg-background-200"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+          <ClientsFiltreType
+            valeur={typeFilter}
+            onChanger={changerType}
+            nbParticuliers={nbParticuliers}
+            nbEntreprises={pros.length}
+          />
           <button
             type="button"
             onClick={() => {
@@ -503,23 +737,34 @@ export default function AppClients() {
           })}
         </div>
 
-        {(typeFilter !== "Tous" || prioriteFilter !== "Toutes" || hasNotes) && (
+        {(typeFilter !== "Tous" || prioriteFilter !== "Toutes" || hasNotes || proIncomplet) &&
+          !(typeFilter !== "Tous" && prioriteFilter === "Toutes" && !hasNotes && !proIncomplet) && (
           <div className="flex flex-wrap items-center gap-2 px-4 py-3 rounded-lg bg-accent-50 border border-accent-200 animate-fade-in">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent-800 whitespace-nowrap">
               <i className="ri-filter-3-line"></i>
               Vue filtrée · carnet de clients
             </span>
-            {aFiltresUrl && (
-              <>
-                <BadgeVuePartagee />
-                <BoutonEpinglerVue label="Clients · vue partagée" />
-              </>
-            )}
+            {aFiltresUrl && <BadgeVuePartagee />}
             <span className="hidden sm:block w-px h-4 bg-accent-200" aria-hidden="true"></span>
             {typeFilter !== "Tous" && (
               <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-background-50 border border-accent-200 text-[11px] font-semibold text-foreground-700 whitespace-nowrap">
                 <i className="ri-contacts-book-2-line text-accent-600"></i>
                 {typeFilter}
+              </span>
+            )}
+            {modePro && secteurFilter && (
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-background-50 border border-accent-200 text-[11px] font-semibold text-foreground-700 whitespace-nowrap">
+                <i className="ri-price-tag-3-line text-accent-600"></i>
+                {secteurFilter}
+              </span>
+            )}
+            {modePro && proIncomplet && (
+              <span
+                className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-background-50 border border-accent-200 text-[11px] font-semibold text-foreground-700 whitespace-nowrap"
+                title="Fiches pro auxquelles il manque au moins une information (SIRET, interlocuteur ou secteur)"
+              >
+                <i className="ri-error-warning-line text-secondary-700"></i>
+                Fiche incomplète
               </span>
             )}
             {prioriteFilter !== "Toutes" && (
@@ -569,11 +814,56 @@ export default function AppClients() {
           </div>
         )}
 
+        {modePro && (
+          <ClientsProIndicateurs
+            pros={pros}
+            devis={devis}
+            chantiers={chantiers}
+            onVoirTous={() => {
+              setTypeFilter("Tous");
+              setSecteurFilter("");
+              setProIncomplet(false);
+              setSearchParams(buildParams({ type: "Tous", incomplet: false }), { replace: true });
+            }}
+          />
+        )}
+
+        {modePro && (
+          <ClientsProFiltres
+            secteurs={secteurs}
+            secteur={secteurFilter}
+            onSecteurChange={setSecteurFilter}
+            tri={tri}
+            onTriChange={setTri}
+            incomplet={proIncomplet}
+            onIncompletChange={(v) => {
+              setProIncomplet(v);
+              setSearchParams(buildParams({ incomplet: v }), { replace: true });
+            }}
+            nbIncomplets={nbProsIncompletes}
+          />
+        )}
+
         {actionError && (
           <p className="text-xs text-red-600 flex items-center gap-1.5">
             <i className="ri-error-warning-line"></i>
             {actionError}
           </p>
+        )}
+
+        {actionNotice && (
+          <div className="flex items-start gap-1.5 px-3 py-2 rounded-md bg-accent-50 border border-accent-200 text-xs text-accent-900">
+            <i className="ri-checkbox-circle-line mt-0.5"></i>
+            <span className="min-w-0 flex-1">{actionNotice}</span>
+            <button
+              type="button"
+              onClick={() => setActionNotice(null)}
+              aria-label="Fermer le message"
+              className="w-5 h-5 shrink-0 flex items-center justify-center rounded text-accent-800 hover:bg-accent-100 cursor-pointer"
+            >
+              <i className="ri-close-line"></i>
+            </button>
+          </div>
         )}
 
         {filtered.length === 0 ? (
@@ -584,6 +874,7 @@ export default function AppClients() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map((c) => {
               const relance = relanceParClient.get(c.id);
+              const manquants = modePro ? champsProManquants(c) : [];
               return (
                 <div key={c.id} className="flex flex-col p-5 rounded-lg bg-background-100 border border-background-200">
                   <div className="flex items-start justify-between gap-3">
@@ -620,6 +911,19 @@ export default function AppClients() {
                       {c.adresse ?? "—"}
                     </span>
                   </div>
+
+                  {manquants.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => openEdit(c)}
+                      title={`Compléter cette fiche (${manquants.join(", ")}) pour des devis et factures sans aller-retour`}
+                      className="mt-3 self-start inline-flex flex-wrap items-center gap-1 h-7 px-2.5 rounded-full bg-secondary-100 border border-secondary-200 text-[11px] font-semibold text-secondary-800 whitespace-nowrap cursor-pointer hover:bg-secondary-200 hover:border-secondary-300 transition-colors"
+                    >
+                      <i className="ri-error-warning-line"></i>
+                      Fiche incomplète : {manquants.join(", ")} manquant{manquants.length > 1 ? "s" : ""}
+                      <i className="ri-edit-line"></i>
+                    </button>
+                  )}
 
                   {c.notes && c.notes.trim() ? (
                     <div className="mt-3 flex flex-col gap-1.5 rounded-md bg-accent-100/50 border border-accent-100 px-2.5 py-2">
@@ -710,8 +1014,18 @@ export default function AppClients() {
           </div>
         )}
 
+        {/* Rappel discret en bas d'écran : les astuces de cet écran vivent dans le panneau Aide. */}
+        <RappelAstucePage />
+
         {formOpen && (
-          <ClientFormModal initial={editing} busy={busy} onClose={() => setFormOpen(false)} onSubmit={handleSubmit} />
+          <ClientFormModal
+            initial={editing}
+            busy={busy}
+            defaultType={formType ?? (modePro ? "professionnel" : undefined)}
+            onClose={fermerFormulaire}
+            onSubmit={handleSubmit}
+            echecEnvoi={editing ? echecParClient.get(editing.id) ?? null : null}
+          />
         )}
 
         {quickNote && (
@@ -730,6 +1044,8 @@ export default function AppClients() {
               openEdit(c);
             }}
             onClientSaved={reload}
+            echecEnvoi={echecParClient.get(detail.id) ?? null}
+            onEnvoiRelance={reloadEchecs}
           />
         )}
 

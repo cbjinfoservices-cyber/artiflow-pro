@@ -1583,6 +1583,7 @@ export default function HistoriqueAlertesAutoRelanceCard({
                 type="button"
                 onClick={handleOublierPlage}
                 title="Oublier la plage retenue (ne plus la restaurer à la prochaine visite)"
+                aria-label="Oublier la plage retenue"
                 className="inline-flex items-center justify-center w-5 h-5 rounded-full text-foreground-500 cursor-pointer hover:bg-background-200 hover:text-foreground-800 transition-colors"
               >
                 <i className="ri-delete-bin-6-line text-xs"></i>

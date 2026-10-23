@@ -14,7 +14,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20copper%20plumbing%20pipes%20and%20valves%20with%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20industrial%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-plombier&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20copper%20plumbing%20pipes%20and%20brass%20valves%20with%20warm%20lighting%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20industrial%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-plombier-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20copper%20plumbing%20pipes%20and%20brass%20valves%20with%20warm%20lighting%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20industrial%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-plombier-card&orientation=landscape",
     stats: [
       { value: "6 min", label: "pour un devis de chaudière complet" },
       { value: "+31 %", label: "de dépannages acceptés" },
@@ -40,6 +40,8 @@ export const metiers = [
       { question: "ArtiFlow-pro connaît-il mes tarifs de chaudières ?", answer: "Oui. Vous importez ou saisissez vos prix une fois, et l'IA les réutilise pour chaque devis de chauffage, modèle par modèle." },
       { question: "Puis-je envoyer un devis de dépannage depuis le chantier ?", answer: "Absolument. Le devis se génère par dictée, vous validez, il part par email ou WhatsApp avant même de remballer l'outillage." },
       { question: "Ça marche aussi pour les mises aux normes gaz ?", answer: "Oui, avec des modèles spécifiques et les mentions de sécurité que vous aurez enregistrées." },
+      { question: "Comment chiffrer un dépannage d'urgence sans repasser au bureau ?", answer: "Vous dictez l'intervention depuis le chantier : ArtiFlow-pro monte le devis avec vos prix et l'envoie aussitôt par email ou WhatsApp, sans passage au bureau." },
+      { question: "Puis-je préparer mes devis de chauffage à l'avance ?", answer: "Oui, enregistrez vos tarifs fournisseurs et vos modèles une fois pour toutes : chaque nouveau devis de chaudière se monte ensuite en quelques minutes." },
     ],
   },
   {
@@ -57,7 +59,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20electrical%20circuit%20lines%20and%20copper%20wiring%20with%20warm%20amber%20and%20deep%20green%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20technical%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-electricien&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20a%20modern%20electrical%20panel%20with%20neat%20copper%20wiring%20and%20circuit%20breakers%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20industrial%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-electricien-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20a%20modern%20electrical%20panel%20with%20neat%20copper%20wiring%20and%20circuit%20breakers%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20industrial%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-electricien-card&orientation=landscape",
     stats: [
       { value: "2 min", label: "pour envoyer un devis électricité" },
       { value: "+24 %", label: "de devis de mise aux normes signés" },
@@ -83,6 +85,8 @@ export const metiers = [
       { question: "Les devis électricité incluent-ils les normes NF C 15-100 ?", answer: "ArtiFlow-pro part de vos modèles et de vos mentions : vous enregistrez une fois vos références de normes, puis elles apparaissent sur chaque devis concerné." },
       { question: "Puis-je faire signer un devis directement sur place ?", answer: "Oui, la signature électronique permet au client de valider sur votre téléphone, séance tenante." },
       { question: "Est-ce adapté aux chantiers de promotion immobilière ?", answer: "Oui, l'offre Entreprise gère les gros volumes et plusieurs utilisateurs sur les mêmes dossiers." },
+      { question: "Comment gérer les mentions obligatoires d'une mise aux normes ?", answer: "Vous enregistrez vos références et vos mentions une fois (NF C 15-100, sécurité) : elles s'ajoutent automatiquement aux devis concernés." },
+      { question: "Puis-je chiffrer un tableau électrique poste par poste ?", answer: "Oui, chaque protection, câblage et repérage peut être détaillé ligne par ligne, avec vos unités et vos prix." },
     ],
   },
   {
@@ -100,7 +104,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20brick%20and%20stone%20textures%20with%20warm%20terracotta%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20material%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-macon&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20bricks%20and%20stone%20blocks%20with%20mortar%20and%20a%20trowel%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-macon-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20bricks%20and%20stone%20blocks%20with%20mortar%20and%20a%20trowel%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-macon-card&orientation=landscape",
     stats: [
       { value: "+18 %", label: "de devis d'extension signés" },
       { value: "-1 h 20", label: "de trajet économisée par semaine" },
@@ -126,6 +130,8 @@ export const metiers = [
       { question: "ArtiFlow-pro calcule-t-il les quantités de matériaux ?", answer: "Oui, à partir de vos métrés dictés et de vos prix, il estime les quantités de béton, parpaings ou hourdis selon vos ratios." },
       { question: "Puis-je suivre plusieurs chantiers en parallèle ?", answer: "Oui, chaque chantier a sa fiche, ses étapes et ses photos. Le planning les organise même sans conflit." },
       { question: "Ça gère les devis d'extension en plusieurs lots ?", answer: "Oui, vous pouvez découper un devis en lots et sous-lots, avec un récapitulatif clair pour le client." },
+      { question: "Comment chiffrer un métré d'extension au m² et au m³ ?", answer: "Vous dictez vos dimensions : ArtiFlow-pro calcule les surfaces, les volumes de béton et les quantités de matériaux selon vos ratios et vos prix." },
+      { question: "Puis-je organiser mes chantiers par secteur ?", answer: "Oui, le planning regroupe les chantiers par zone pour réduire les trajets et enchaîner les interventions sans perdre de temps." },
     ],
   },
   {
@@ -143,7 +149,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20paint%20rollers%2C%20color%20swatches%20and%20broad%20paint%20strokes%20with%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-peintre&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20paint%20rollers%20and%20paint%20cans%20with%20rich%20color%20swatches%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-peintre-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20paint%20rollers%20and%20paint%20cans%20with%20rich%20color%20swatches%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-peintre-card&orientation=landscape",
     stats: [
       { value: "1 h", label: "gagnée par devis de peinture" },
       { value: "+22 %", label: "de devis de façade acceptés" },
@@ -169,6 +175,8 @@ export const metiers = [
       { question: "ArtiFlow-pro déduit-il les fenêtres et les portes ?", answer: "Oui, il soustrait automatiquement les ouvertures de vos surfaces pour que vous facturiez les m² réellement peints." },
       { question: "Je peux gérer plusieurs finitions sur un même devis ?", answer: "Bien sûr : chaque pièce ou chaque mur peut avoir sa finition et son prix au m², avec un total clair par lot." },
       { question: "Ça marche aussi pour les façades et les ravalements ?", answer: "Oui, avec des modèles dédiés : nettoyage, traitement, sous-couche et finition façade sont chiffrés séparément." },
+      { question: "Comment déduire les ouvertures de mon métré peinture ?", answer: "Renseignez les dimensions de la pièce et des ouvertures : ArtiFlow-pro soustrait portes et fenêtres pour facturer uniquement les m² réellement peints." },
+      { question: "Puis-je séparer la préparation de la mise en peinture ?", answer: "Oui, rebouchage, ponçage et sous-couche sont des postes distincts de la finition, chacun avec son propre tarif au m²." },
     ],
   },
   {
@@ -186,7 +194,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20wood%20shavings%2C%20chisels%20and%20wood%20grain%20textures%20with%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20craft%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-menuisier&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20woodworking%20hand%20tools%20and%20oak%20planks%20with%20sawdust%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20craftsmanship%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-menuisier-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20woodworking%20hand%20tools%20and%20oak%20planks%20with%20sawdust%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20craftsmanship%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-menuisier-card&orientation=landscape",
     stats: [
       { value: "3 min", label: "pour un devis de fenêtres complet" },
       { value: "+19 %", label: "de devis sur mesure signés" },
@@ -212,13 +220,15 @@ export const metiers = [
       { question: "Puis-je proposer plusieurs matériaux dans un seul devis ?", answer: "Oui, ArtiFlow-pro gère les variantes : le client voit chaque option chiffrée et choisit directement dans le devis." },
       { question: "Ça convient aux escaliers et aux pièces uniques ?", answer: "Oui, vous pouvez composer librement vos lignes et vos dimensions pour tout ouvrage sur mesure." },
       { question: "Je peux suivre la pose après la fabrication ?", answer: "Bien sûr, le devis validé ouvre une fiche chantier avec les étapes de fabrication et de pose à cocher." },
+      { question: "Comment proposer plusieurs matériaux dans un même devis ?", answer: "Chaque variante (bois, alu, PVC…) est chiffrée dans le même devis : le client compare et choisit directement l'option qui lui convient." },
+      { question: "Ça convient aux fenêtres, escaliers et pièces uniques ?", answer: "Oui, vous composez librement vos lignes et vos dimensions pour tout ouvrage sur mesure, sans être limité à un catalogue." },
     ],
   },
   {
     slug: "carreleur",
     name: "Carreleur",
     shortName: "Carreleur",
-    title: "Devis carrelage au m² sans y passer la soirée | ArtiFlow-pro",
+    title: "Devis carrelage au m² en quelques minutes | ArtiFlow-pro",
     metaDescription:
       "Devis carrelage au m² avec estimation des chutes : sols, murs, salles de bain, terrasses. Fourniture et pose détaillées, relance automatique.",
     ogImage:
@@ -229,7 +239,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20geometric%20ceramic%20tiles%20and%20a%20notched%20trowel%20with%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-carreleur&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20stacked%20ceramic%20tiles%20and%20a%20trowel%20with%20tile%20adhesive%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-carreleur-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20stacked%20ceramic%20tiles%20and%20a%20trowel%20with%20tile%20adhesive%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-carreleur-card&orientation=landscape",
     stats: [
       { value: "+16 %", label: "de devis de salle de bain signés" },
       { value: "-45 min", label: "de métré économisées par devis" },
@@ -255,6 +265,8 @@ export const metiers = [
       { question: "ArtiFlow-pro ajoute-t-il la réserve de chutes ?", answer: "Oui, selon le pourcentage que vous définissez et la pose (droite ou diagonale), la quantité commandée est ajustée." },
       { question: "Puis-je facturer séparément la pose et le matériau ?", answer: "Oui, le devis distingue la fourniture du carrelage et la main-d'œuvre, avec un total transparent pour le client." },
       { question: "Ça gère la faïence et les plinthes ?", answer: "Bien sûr : mur, sol, plinthes et joints sont autant de postes que vous pouvez ajouter selon vos habitudes." },
+      { question: "Comment estimer la réserve de chutes de carrelage ?", answer: "ArtiFlow-pro ajoute automatiquement un pourcentage de chutes selon la pose (droite ou diagonale) pour éviter tout retour en magasin." },
+      { question: "Puis-je facturer la fourniture et la pose séparément ?", answer: "Oui, le devis distingue clairement le matériau de la main-d'œuvre, avec un total transparent et défendable pour le client." },
     ],
   },
   {
@@ -272,7 +284,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20terracotta%20roof%20tiles%20and%20zinc%20gutters%20with%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-couvreur&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20terracotta%20roof%20tiles%20and%20a%20zinc%20gutter%20section%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-couvreur-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20terracotta%20roof%20tiles%20and%20a%20zinc%20gutter%20section%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-couvreur-card&orientation=landscape",
     stats: [
       { value: "8 min", label: "pour chiffrer une réfection de toit" },
       { value: "+27 %", label: "de devis de zinguerie signés" },
@@ -298,6 +310,8 @@ export const metiers = [
       { question: "ArtiFlow-pro gère-t-il les devis pour les assurances ?", answer: "Oui, vous pouvez produire un devis détaillé et clair, prêt à être transmis à l'expert en charge du sinistre." },
       { question: "Puis-je marquer une intervention comme urgente ?", answer: "Bien sûr : les chantiers urgents remontent automatiquement en haut de votre planning de la semaine." },
       { question: "Ça calcule aussi la surface développée d'un toit ?", answer: "Oui, à partir des dimensions et de la pente, ArtiFlow-pro estime la surface puis applique vos prix au m²." },
+      { question: "Comment prioriser les interventions après un orage ?", answer: "Marquez une intervention comme urgente : elle remonte en tête de votre planning de la semaine, avant les chantiers non urgents." },
+      { question: "Puis-je transmettre un devis de toiture à l'assurance ?", answer: "Oui, les devis de sinistre sont détaillés et clairs, prêts à être envoyés à l'expert d'assurance en charge du dossier." },
     ],
   },
   {
@@ -315,7 +329,7 @@ export const metiers = [
     heroImage:
       "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20plasterboard%20panels%20and%20a%20taping%20knife%20with%20white%20powder%20texture%2C%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-platrier&orientation=landscape",
     cardImage:
-      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20plasterboard%20sheets%20and%20a%20taping%20knife%20with%20joint%20compound%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=800&height=600&seq=artiflow-metier-platrier-card&orientation=landscape",
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20plasterboard%20sheets%20and%20a%20taping%20knife%20with%20joint%20compound%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20material%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-platrier-card&orientation=landscape",
     stats: [
       { value: "+21 %", label: "de devis de faux plafond signés" },
       { value: "0", label: "poste oublié entre mur et plafond" },
@@ -341,8 +355,74 @@ export const metiers = [
       { question: "ArtiFlow-pro additionne-t-il murs et plafonds ?", answer: "Oui, à partir de vos dimensions par pièce, il calcule les surfaces de murs et de plafond puis applique vos prix au m²." },
       { question: "Je peux inclure l'isolant et l'ossature ?", answer: "Bien sûr : ossature, isolant, plaques, bandes et enduit sont des postes que vous ajoutez une fois et réutilisez." },
       { question: "Ça convient aux rénovations complètes d'appartement ?", answer: "Oui, chaque pièce a son chiffrage et le devis global reste clair, avec un récapitulatif par pièce." },
+      { question: "Comment additionner surfaces de murs et de plafonds ?", answer: "Vous saisissez les dimensions pièce par pièce : ArtiFlow-pro totalise les surfaces de murs et de plafond puis applique vos prix au m²." },
+      { question: "Puis-je détailler ossature, isolant et bandes ?", answer: "Oui, ossature, isolant, plaques, bandes et enduit sont des postes réutilisables que vous ajoutez une fois pour toutes." },
     ],
   },
+  {
+    slug: "installateur-climatisation",
+    name: "Frigoriste climaticien",
+    shortName: "Frigoriste",
+    title: "Devis climatisation & pompe à chaleur | ArtiFlow-pro",
+    metaDescription:
+      "Devis climatisation et pompe à chaleur détaillés : splits, gainables, entretien annuel. Chiffrez la pose, la mise en service et les relances sans repasser au bureau.",
+    ogImage:
+      "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20for%20an%20air%20conditioning%20and%20refrigeration%20brand%2C%20a%20wall%20mounted%20indoor%20unit%20silhouette%2C%20copper%20refrigerant%20lines%20and%20a%20condenser%20fan%20shape%20with%20cool%20teal%20and%20warm%20amber%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-metier-climatisation&orientation=landscape",
+    tagline: "Des devis de climatisation posés le jour même, pas la semaine suivante.",
+    intro:
+      "Pose de splits, gainables, pompes à chaleur air-air, entretien annuel et dépannage frigorifique : ArtiFlow-pro rédige vos devis avec vos tarifs, planifie les interventions et relance le client jusqu'à la signature.",
+    heroImage:
+      "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20an%20air%20conditioning%20outdoor%20unit%2C%20condenser%20fan%20blades%20and%20copper%20refrigerant%20piping%20with%20cool%20teal%20and%20warm%20amber%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20technical%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-climatisation&orientation=landscape",
+    cardImage:
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20a%20modern%20air%20conditioning%20indoor%20split%20unit%20with%20copper%20pipes%20and%20a%20manifold%20gauge%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20technical%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-climatisation-card&orientation=landscape",
+    stats: [
+      { value: "4 min", label: "pour un devis de split posé complet" },
+      { value: "+26 %", label: "de devis de pompe à chaleur signés" },
+      { value: "0 oubli", label: "sur les contrats d'entretien annuel" },
+    ],
+    problems: [
+      { icon: "ri-temp-hot-line", title: "Ruée de juin à août", description: "Tout le monde appelle en même temps : impossible de chiffrer chaque pose sans y passer ses soirées." },
+      { icon: "ri-file-list-3-line", title: "Postes techniques à ne pas oublier", description: "Liaisons frigorifiques, support mural, condensats, mise en service : un oubli et la marge fond sur le chantier." },
+      { icon: "ri-calendar-2-line", title: "Entretiens annuels oubliés", description: "Les contrats d'entretien ne se renouvellent pas tout seuls, et le chiffre d'affaires récurrent s'évapore." },
+    ],
+    helps: [
+      { icon: "ri-mic-line", title: "Pose dictée depuis le chantier", description: "« Split 3,5 kW en chambre, support mural, cinq mètres de liaison » → ArtiFlow-pro monte les lignes avec vos prix." },
+      { icon: "ri-bookmark-3-line", title: "Vos tarifs frigorifiques", description: "Splits, gainables, groupes extérieurs, fluide frigorigène : votre bibliothèque de prix reste la référence." },
+      { icon: "ri-refresh-line", title: "Entretien récurrent", description: "ArtiFlow-pro ressort les contrats d'entretien annuel au bon moment et relance le client automatiquement." },
+      { icon: "ri-camera-line", title: "Preuves de mise en service", description: "Photos de pose, repères de charge et mise en service horodatés : la garantie est documentée." },
+    ],
+    testimonial: {
+      name: "Yacine Moreau",
+      role: "Frigoriste climaticien · Montpellier",
+      quote: "En pleine canicule, je dicte la pose entre deux interventions et les devis partent le soir. Je ne perds plus un client parce que j'ai répondu trop tard.",
+    },
+    faq: [
+      { question: "ArtiFlow-pro gère-t-il les pompes à chaleur air-air ?", answer: "Oui. Vous enregistrez vos modèles, leurs puissances et vos tarifs de pose, et l'IA réutilise ces prix pour chaque devis de PAC." },
+      { question: "Puis-je facturer l'entretien annuel séparément de la pose ?", answer: "Oui, la prestation d'entretien est un poste à part, réutilisable d'une année sur l'autre et relancé automatiquement." },
+      { question: "Ça marche aussi pour le froid commercial ?", answer: "Oui, chambres froides, vitrines et climatisation tertiaire se chiffrent avec vos propres postes et vos propres unités." },
+      { question: "Comment relancer un client qui hésite entre deux puissances ?", answer: "Vous pouvez chiffrer les deux options dans le même devis : le client compare et choisit directement, sans échange de mails supplémentaire." },
+      { question: "Puis-je documenter la mise en service pour la garantie ?", answer: "Oui, chaque intervention accepte des photos horodatées du groupe extérieur et de la mise en service, conservées avec la fiche chantier." },
+    ],
+  },
+];
+
+export const metiersZonesIntro =
+  "ArtiFlow-pro accompagne les artisans du bâtiment partout en France métropolitaine. Le service est disponible dans l'ensemble des régions métropolitaines :";
+
+export const metiersZones = [
+  { name: "Île-de-France", code: "FR-IDF" },
+  { name: "Auvergne-Rhône-Alpes", code: "FR-ARA" },
+  { name: "Hauts-de-France", code: "FR-HDF" },
+  { name: "Nouvelle-Aquitaine", code: "FR-NAQ" },
+  { name: "Occitanie", code: "FR-OCC" },
+  { name: "Provence-Alpes-Côte d'Azur", code: "FR-PAC" },
+  { name: "Grand Est", code: "FR-GES" },
+  { name: "Pays de la Loire", code: "FR-PDL" },
+  { name: "Normandie", code: "FR-NOR" },
+  { name: "Bretagne", code: "FR-BRE" },
+  { name: "Bourgogne-Franche-Comté", code: "FR-BFC" },
+  { name: "Centre-Val de Loire", code: "FR-CVL" },
+  { name: "Corse", code: "FR-COR" },
 ];
 
 export const metiersSeo = {
@@ -354,13 +434,14 @@ export const metiersSeo = {
   carreleur: "Devis carrelage",
   couvreur: "Devis couverture",
   platrier: "Devis plâtrerie",
+  "installateur-climatisation": "Devis climatisation & pompe à chaleur",
 };
 
 export const metiersFaq = [
   {
     question: "ArtiFlow-pro est-il vraiment adapté à mon corps d'état ?",
     answer:
-      "Oui. Chaque métier dispose de ses propres modèles de devis, de ses unités et de ses postes types : plomberie, électricité, maçonnerie, peinture, menuiserie, carrelage, couverture et plâtrerie. L'IA part de vos tarifs, pas d'un devis générique.",
+      "Oui. Chaque métier dispose de ses propres modèles de devis, de ses unités et de ses postes types : plomberie, électricité, maçonnerie, peinture, menuiserie, carrelage, couverture, plâtrerie et climatisation. L'IA part de vos tarifs, pas d'un devis générique.",
   },
   {
     question: "Les devis sont-ils différents d'un métier à l'autre ?",

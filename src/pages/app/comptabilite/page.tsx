@@ -7,13 +7,15 @@ import { formatEuros } from "@/lib/format";
 import { addDays, toISODate, todayISO } from "@/lib/dates";
 import { downloadCsv } from "@/lib/csv";
 import { buildBalanceAgeePdf, buildJournalComptablePdf, buildRecapTvaPdf } from "@/lib/comptabilitePdf";
-import { savePdf, pdfToBase64 } from "@/lib/pdf";
+import { pdfToBase64 } from "@/lib/pdf";
 import { buildJournalComptableCsv, buildJournalLignes, computeComptaTotaux, computeTvaParTaux, computeBalanceAgee, isAvoir, type ComptaDevis, type ComptaFacture } from "@/lib/exportComptable";
 import { sendJournalComptableEmail, updateComptableEmail, updateComptableCommentaire, updateComptableAutoSettings, updateComptableOverrideEmail, updateComptableExportPrefs, updateComptableDernierExport, updateComptableRelanceSettings, updateComptableBilanSettings, updateComptableAppUrl, runEnvoiJournalNow, runRelanceManquanteNow, runEnvoiBilanNow, renvoyerJournalMois, type ComptableEnvoi, type ComptableExportKind, type ComptableRemplacement } from "@/lib/artisanApi";
 import { publicBaseUrl } from "@/lib/signature";
 import { useComptableEnvois } from "@/hooks/useComptableEnvois";
 import { useDernierBilan } from "@/hooks/useDernierBilan";
 import { useComptableRemplacements } from "@/hooks/useComptableRemplacements";
+import type { jsPDF } from "jspdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
 import DataState from "@/pages/app/components/DataState";
 import EmptyState from "@/pages/app/components/EmptyState";
 import SampleDataButton from "@/pages/app/components/SampleDataButton";
@@ -67,6 +69,12 @@ export default function AppComptabilite() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  // Aperçu avant téléchargement d'un PDF comptable (mêmes fenêtre et bouton que les devis/factures).
+  const [apercuPdf, setApercuPdf] = useState<{
+    title: string;
+    filename: string;
+    build: () => Promise<jsPDF>;
+  } | null>(null);
   const [balancePdfBusy, setBalancePdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [journalPdfBusy, setJournalPdfBusy] = useState(false);
@@ -394,8 +402,13 @@ export default function AppComptabilite() {
       const suffixeClient = clientLabel
         ? `-${clientLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`
         : "";
-      savePdf(doc, `recap-tva-artiflow-${todayISO()}${suffixeClient}.pdf`);
-      setNotice(`Récapitulatif de TVA par taux exporté en PDF${clientLabel ? ` (client : ${clientLabel})` : ""}.`);
+      // Aperçu avant téléchargement : on vérifie les colonnes et les totaux à l'écran.
+      setApercuPdf({
+        title: "Aperçu · Récapitulatif de TVA par taux",
+        filename: `recap-tva-artiflow-${todayISO()}${suffixeClient}.pdf`,
+        build: async () => doc,
+      });
+      setNotice(`Aperçu du récapitulatif de TVA ouvert${clientLabel ? ` (client : ${clientLabel})` : ""} : vérifiez la mise en page puis téléchargez le PDF.`);
     } catch {
       setPdfError("L'export PDF du récapitulatif de TVA a échoué. Réessayez.");
     } finally {
@@ -415,8 +428,12 @@ export default function AppComptabilite() {
         detail: balanceAgeeDetail,
       });
       const suffixeClient = clientLabel ? `-${slugify(clientLabel)}` : "";
-      savePdf(doc, `balance-agee-artiflow-${todayISO()}${suffixeClient}.pdf`);
-      setNotice(`Balance âgée des créances exportée en PDF${clientLabel ? ` (client : ${clientLabel})` : ""}.`);
+      setApercuPdf({
+        title: "Aperçu · Balance âgée des créances",
+        filename: `balance-agee-artiflow-${todayISO()}${suffixeClient}.pdf`,
+        build: async () => doc,
+      });
+      setNotice(`Aperçu de la balance âgée ouvert${clientLabel ? ` (client : ${clientLabel})` : ""} : contrôlez les paliers avant de télécharger.`);
     } catch {
       setPdfError("L'export PDF de la balance âgée a échoué. Réessayez.");
     } finally {
@@ -455,8 +472,12 @@ export default function AppComptabilite() {
       });
       const suffixe = periode === "Tout" ? "" : `-${slugify(periode)}`;
       const suffixeClient = clientLabel ? `-${slugify(clientLabel)}` : "";
-      savePdf(doc, `journal-comptable-artiflow-${todayISO()}${suffixe}${suffixeClient}.pdf`);
-      setNotice(`Journal comptable exporté en PDF${clientLabel ? ` (client : ${clientLabel})` : ""} : journal, TVA et synthèse réunis.`);
+      setApercuPdf({
+        title: "Aperçu · Journal comptable complet",
+        filename: `journal-comptable-artiflow-${todayISO()}${suffixe}${suffixeClient}.pdf`,
+        build: async () => doc,
+      });
+      setNotice(`Aperçu du journal comptable ouvert${clientLabel ? ` (client : ${clientLabel})` : ""} : journal, TVA et synthèse réunis.`);
     } catch {
       setPdfError("L'export PDF du journal comptable a échoué. Réessayez.");
     } finally {
@@ -1126,6 +1147,17 @@ export default function AppComptabilite() {
           filtreFaibleInitial={faibleFocus}
           onRenvoyerDerniere={handleRenvoyerDernierePiece}
         />
+
+        {apercuPdf && (
+          <ApercuPdfModal
+            title={apercuPdf.title}
+            subtitle="Vérifiez la mise en page (colonnes, libellés, totaux) avant de télécharger le PDF."
+            filename={apercuPdf.filename}
+            docBuilder={apercuPdf.build}
+            note="Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF »."
+            onClose={() => setApercuPdf(null)}
+          />
+        )}
 
         {apercu.length > 0 && (
           <div className="rounded-lg bg-background-100 border border-background-200 overflow-hidden">

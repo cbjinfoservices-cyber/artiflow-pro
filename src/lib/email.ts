@@ -19,6 +19,19 @@ export async function sendFactureEmail(factureId: number, pdfBase64: string, fil
 }
 
 /**
+ * Relance une facture impayée par email, avec le PDF de la facture en pièce jointe.
+ * L'email reprend l'objet et le ton d'un rappel de paiement, et l'envoi alimente
+ * l'historique des relances de factures.
+ */
+export async function sendFactureRelanceEmail(
+  factureId: number,
+  pdfBase64: string,
+  filename: string,
+): Promise<void> {
+  await invoke("send-facture-email", { factureId, pdfBase64, filename, relance: true });
+}
+
+/**
  * Envoie une relance (canal email) au client.
  * Le PDF de la facture concernée peut être joint en pièce jointe.
  * `groupe` indique que l'envoi fait partie d'un lot (relance groupée / escalade automatique).

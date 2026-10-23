@@ -1,4 +1,4 @@
-import { type DragEvent } from "react";
+import { useState, type DragEvent } from "react";
 import { Link } from "react-router-dom";
 import { metiers } from "@/mocks/metiers";
 import { CATEGORIES_GUIDES_PRATIQUES, formatLecture, isNouveauArticle } from "@/mocks/ressources";
@@ -9,6 +9,7 @@ import { useFavori } from "@/hooks/useBibliotheque";
 import { aUneNote, togglerFavori } from "@/lib/bibliotheque";
 import { marquerCommeLu, marquerCommeNonLu } from "@/lib/lecture";
 import HighlightTerm from "@/components/base/HighlightTerm";
+import ApercuGuideModal from "@/components/feature/ApercuGuideModal";
 
 export type Article = {
   slug: string;
@@ -58,6 +59,7 @@ export default function ArticleCard({
   const lu = statut === "lu";
   const nouveau = isNouveauArticle(article);
   const miseAJour = getGuideMiseAJour(article.slug);
+  const [apercuOuvert, setApercuOuvert] = useState(false);
 
   return (
     <article
@@ -78,6 +80,8 @@ export default function ArticleCard({
             src={imageCarte}
             alt={`Guide ${nomCategorie} · ${article.title}`}
             title={`${article.title} · ArtiFlow-pro`}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
           />
         )}
@@ -153,6 +157,18 @@ export default function ArticleCard({
             <i className="ri-arrow-right-line"></i>
           </Link>
           <div className="flex flex-wrap items-center justify-end gap-2">
+            {miseAJour && (
+              <button
+                type="button"
+                onClick={() => setApercuOuvert(true)}
+                aria-label={`Voir l'aperçu du guide révisé : ${article.title}`}
+                title={`Voir l'aperçu de la version révisée du ${formatDateLongue(miseAJour)}`}
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer border bg-accent-100 text-accent-900 border-accent-200 hover:bg-accent-200 transition-colors"
+              >
+                <i className="ri-eye-line"></i>
+                Voir l'aperçu
+              </button>
+            )}
             <button
               type="button"
               onClick={() => togglerFavori(article.slug)}
@@ -184,6 +200,14 @@ export default function ArticleCard({
           </div>
         </div>
       </div>
+      {apercuOuvert && miseAJour && (
+        <ApercuGuideModal
+          guide={article}
+          categorie={nomCategorie}
+          miseAJour={miseAJour}
+          onClose={() => setApercuOuvert(false)}
+        />
+      )}
     </article>
   );
 }

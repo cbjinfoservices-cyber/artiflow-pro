@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { plans } from "@/mocks/landing";
 import { useProductOfferSchema } from "@/hooks/useProductOfferSchema";
 import { useMonAbonnement } from "@/hooks/useMonAbonnement";
 import BandeauDejaAbonne from "@/components/feature/BandeauDejaAbonne";
-import AbonnementCheckoutModal from "@/pages/tarifs/components/AbonnementCheckoutModal";
 import { useDiagnosticPaiementEur } from "@/hooks/useDiagnosticPaiementEur";
 import Infobulle from "@/components/base/Infobulle";
+
+// La fenêtre de souscription ne s'affiche qu'au clic sur « S'abonner » : on la charge à la
+// demande pour ne pas alourdir le démarrage de la page d'accueil.
+const AbonnementCheckoutModal = lazy(() => import("@/pages/tarifs/components/AbonnementCheckoutModal"));
 
 export default function Pricing() {
   const [annual, setAnnual] = useState(false);
@@ -38,7 +41,7 @@ export default function Pricing() {
 
   return (
     <section id="tarifs" className="w-full bg-background-50">
-      <div className="w-full px-4 md:px-8 lg:px-12 py-16 md:py-24">
+      <div className="w-full px-4 md:px-8 lg:px-12 py-12 md:py-18">
         <div className="max-w-3xl mx-auto text-center">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700">
             <i className="ri-price-tag-3-line"></i>
@@ -79,7 +82,7 @@ export default function Pricing() {
           </div>
         ) : null}
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+        <div className="mt-9 grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
           {plans.map((plan) => {
             const price = annual ? Math.round(Number(plan.price) * 0.8) : Number(plan.price);
             return (
@@ -163,12 +166,16 @@ export default function Pricing() {
         </p>
       </div>
 
-      <AbonnementCheckoutModal
-        open={abonnement.open}
-        plan={abonnement.plan}
-        period={abonnement.period}
-        onClose={closeAbonnement}
-      />
+      {abonnement.open && (
+        <Suspense fallback={null}>
+          <AbonnementCheckoutModal
+            open
+            plan={abonnement.plan}
+            period={abonnement.period}
+            onClose={closeAbonnement}
+          />
+        </Suspense>
+      )}
     </section>
   );
 }

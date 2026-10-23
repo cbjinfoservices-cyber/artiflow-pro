@@ -152,8 +152,41 @@ function ligneRecap(label: string, valeur: string): string {
   </tr>`;
 }
 
+/** Libellés lisibles des statuts juridiques (mêmes valeurs que la fiche profil artisan). */
+const LIBELLES_STATUT_JURIDIQUE: Record<string, string> = {
+  "auto-entrepreneur": "Auto-entrepreneur / Micro-entreprise",
+  "entreprise-individuelle": "Entreprise individuelle (EI)",
+  eurl: "EURL",
+  sarl: "SARL",
+  "sasu-sas": "SASU / SAS",
+};
+
+/** Libellés lisibles des tailles d'entreprise (mêmes valeurs que la fiche profil artisan). */
+const LIBELLES_TAILLE_ENTREPRISE: Record<string, string> = {
+  seul: "Je travaille seul",
+  "2-5": "2 à 5 personnes",
+  "6-20": "6 à 20 personnes",
+  "plus-20": "Plus de 20 personnes",
+};
+
+/** Traduit une clé de statut juridique en libellé, ou null si non renseignée. */
+function statutJuridiqueLabel(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return LIBELLES_STATUT_JURIDIQUE[value] ?? value;
+}
+
+/** Traduit une clé de taille d'entreprise en libellé, ou null si non renseignée. */
+function tailleEntrepriseLabel(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return LIBELLES_TAILLE_ENTREPRISE[value] ?? value;
+}
+
 interface Recapitulatif {
   entreprise: string;
+  /** Forme juridique de l'entreprise (libellé), ou null si non renseignée. */
+  statutJuridique: string | null;
+  /** Taille de l'entreprise (libellé), ou null si non renseignée. */
+  tailleEntreprise: string | null;
   offre: string;
   facturation: string;
   modePaiement: string;
@@ -181,6 +214,8 @@ function tableauRecap(r: Recapitulatif): string {
     : ligneRecap("Montant mensuel", `${r.montantMois} €`);
   return `<table style="width:100%;border-collapse:collapse;margin:4px 0 6px;">
     ${ligneRecap("Entreprise", r.entreprise)}
+    ${r.statutJuridique ? ligneRecap("Statut juridique", r.statutJuridique) : ""}
+    ${r.tailleEntreprise ? ligneRecap("Taille de l'entreprise", r.tailleEntreprise) : ""}
     ${ligneRecap("Offre", `ArtiFlow-pro ${r.offre}`)}
     ${ligneRecap("Facturation", r.facturation)}
     ${ligneRecap("Type de paiement", r.modePaiement)}
@@ -308,10 +343,16 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await admin
       .from("profiles")
-      .select("entreprise, metier, email")
+      .select("entreprise, metier, email, statut_juridique, taille_entreprise")
       .eq("id", user.id)
       .maybeSingle();
-    const profil = profile as { entreprise?: string | null; metier?: string | null; email?: string | null } | null;
+    const profil = profile as {
+      entreprise?: string | null;
+      metier?: string | null;
+      email?: string | null;
+      statut_juridique?: string | null;
+      taille_entreprise?: string | null;
+    } | null;
 
     const entreprise = profil?.entreprise || user.email?.split("@")[0] || "Mon entreprise";
     const today = new Date().toISOString().slice(0, 10);
@@ -330,6 +371,8 @@ Deno.serve(async (req) => {
       entreprise,
       email: user.email ?? profil?.email ?? null,
       metier: profil?.metier ?? null,
+      statut_juridique: profil?.statut_juridique ?? null,
+      taille_entreprise: profil?.taille_entreprise ?? null,
       offre,
       statut: enEssai ? "Essai" : "Actif",
       montant_mensuel: montantMois,
@@ -416,6 +459,8 @@ Deno.serve(async (req) => {
         : null;
       const recap: Recapitulatif = {
         entreprise,
+        statutJuridique: statutJuridiqueLabel(profil?.statut_juridique),
+        tailleEntreprise: tailleEntrepriseLabel(profil?.taille_entreprise),
         offre,
         facturation: facturation === "annuel" ? "Annuelle (12 mois)" : "Mensuelle",
         modePaiement: unique ? "Paiement unique (non reconductible)" : "Abonnement reconductible",

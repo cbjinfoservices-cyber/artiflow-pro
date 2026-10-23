@@ -7,6 +7,7 @@ import Modal from "@/pages/app/components/Modal";
 import EvolutionModelesChart from "@/pages/app/dashboard/components/EvolutionModelesChart";
 import ModelSparkline from "@/pages/app/dashboard/components/ModelSparkline";
 import RechercheRepliable from "@/components/feature/RechercheRepliable";
+import { originePublique } from "@/lib/site";
 
 interface TemplateOption {
   key: string;
@@ -203,7 +204,7 @@ export default function ModelesRapidesPanel({
     if (compareEntries.length === 0) return;
     const keys = compareEntries.map((e) => e.opt.key).join(",");
     const path = window.location.pathname.replace(/\/app\/dashboard\/?$/, "/app/devis");
-    const url = `${window.location.origin}${path}?modele=${encodeURIComponent(keys)}`;
+    const url = `${originePublique()}${path}?modele=${encodeURIComponent(keys)}`;
     try {
       await navigator.clipboard.writeText(url);
       setCompareNotice("Lien de la sélection copié : partagez-le pour ouvrir la même vue filtrée.");

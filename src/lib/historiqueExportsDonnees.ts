@@ -13,12 +13,15 @@
 import { cleArtiflow, ecrireJson, lireJson, v } from "@/lib/stockageLocal";
 import type { FormatExportDonnees } from "@/lib/exportDonneesPersonnelles";
 
+/** Formats acceptés par le journal : les sauvegardes de données et le PDF du récap mensuel. */
+export type FormatEntreeHistorique = FormatExportDonnees | "recap-pdf";
+
 /** Une entrée du journal des exports. */
 export interface EntreeHistoriqueExport {
   /** Date ISO de l'export. */
   date: string;
-  /** Format produit (« csv », « json » ou « complet »). */
-  format: FormatExportDonnees;
+  /** Format produit (« csv », « json », « complet » ou « recap-pdf »). */
+  format: FormatEntreeHistorique;
   /** Nombre de catégories (tables non vides) exportées. */
   tables: number;
   /** Nombre total de lignes exportées. */
@@ -33,7 +36,7 @@ const CLE = cleArtiflow("export", "historique");
 /** Nombre maximal d'entrées conservées (les plus récentes d'abord). */
 const MAX = 24;
 
-const FORMATS: readonly FormatExportDonnees[] = ["csv", "json", "complet"];
+const FORMATS: readonly FormatEntreeHistorique[] = ["csv", "json", "complet", "recap-pdf"];
 
 /** Valide une entrée lue (retombe sur des valeurs sûres si la donnée est abîmée). */
 const entreeValider = v.objetPartiel<EntreeHistoriqueExport>(

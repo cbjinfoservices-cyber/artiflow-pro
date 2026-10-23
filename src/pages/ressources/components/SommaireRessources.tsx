@@ -11,7 +11,10 @@ const ICON_BY_SLUG: Record<string, string> = {
   carreleur: "ri-layout-grid-line",
   couvreur: "ri-home-4-line",
   platrier: "ri-layout-4-line",
+  "installateur-climatisation": "ri-temp-cold-line",
   "securite-du-compte": "ri-shield-keyhole-line",
+  "gestion-devis": "ri-file-list-3-line",
+  facturation: "ri-file-code-line",
 };
 
 /** Transforme une liste de slugs de catégories (métiers et guides pratiques) en sections de sommaire. */

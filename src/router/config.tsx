@@ -1,55 +1,80 @@
 import { Navigate, type RouteObject } from "react-router-dom";
+import { lazy } from "react";
 import NotFound from "@/pages/NotFound";
-import Home from "@/pages/home/page";
-import TarifsPage from "@/pages/tarifs/page";
-import MetiersPage from "@/pages/metiers/page";
-import MetierPage from "@/pages/metier/page";
-import RessourcesPage from "@/pages/ressources/page";
-import RessourcesSujetsPage from "@/pages/ressources/sujets/page";
-import RessourcesParcoursPage from "@/pages/ressources/parcours/page";
-import RessourcesBibliothequePage from "@/pages/ressources/bibliotheque/page";
-import ArticlePage from "@/pages/ressources/detail/page";
-import PlanDuSitePage from "@/pages/plan-du-site/page";
-import MentionsLegalesPage from "@/pages/mentions-legales/page";
-import RgpdPage from "@/pages/rgpd/page";
-import CgvPage from "@/pages/cgv/page";
-import CookiesPage from "@/pages/cookies/page";
-import AccessibilitePage from "@/pages/accessibilite/page";
-import ContactPage from "@/pages/contact/page";
-import AProposPage from "@/pages/a-propos/page";
-import AuteurPage from "@/pages/auteur/page";
-import PodcastPage from "@/pages/podcast/page";
-import NouveautesPage from "@/pages/nouveautes/page";
-import RejoindrePage from "@/pages/rejoindre/page";
-import AppLayout from "@/pages/app/components/AppLayout";
+// Les gardes d'accès sont légères et partagées par de nombreuses sections :
+// on les garde dans le bundle initial pour éviter un aller-retour sur chaque navigation.
 import AuthGuard from "@/pages/app/components/AuthGuard";
 import GestionnaireGuard from "@/pages/app/components/GestionnaireGuard";
 import GestionnaireSectionGuard from "@/pages/app/components/GestionnaireSectionGuard";
 import ArtisanOnlyGuard from "@/pages/app/components/ArtisanOnlyGuard";
-import AuthPage from "@/pages/app/auth/page";
-import ResetPasswordPage from "@/pages/app/auth/reset-password/page";
-import AppDemarrage from "@/pages/app/demarrage/page";
-import AppDashboard from "@/pages/app/dashboard/page";
-import AppDevis from "@/pages/app/devis/page";
-import AppBibliothequeLignes from "@/pages/app/bibliotheque-lignes/page";
-import AppFactures from "@/pages/app/factures/page";
-import AppClients from "@/pages/app/clients/page";
-import AppProfessionnels from "@/pages/app/professionnels/page";
-import AppAbonnements from "@/pages/app/abonnements/page";
-import AppBackOffice from "@/pages/app/back-office/page";
-import AppAuditSeo from "@/pages/app/audit-seo/page";
-import AppMonCompteGestionnaire from "@/pages/app/mon-compte-gestionnaire/page";
-import AppComptabilite from "@/pages/app/comptabilite/page";
-import AppPlanning from "@/pages/app/planning/page";
-import AppRelances from "@/pages/app/relances/page";
-import AppRelancesProgrammees from "@/pages/app/relances-programmees/page";
-import AppEnvois from "@/pages/app/envois/page";
-import AppEnvoisAutomatiques from "@/pages/app/envois-automatiques/page";
-import AppChantiers from "@/pages/app/chantiers/page";
-import AppProfil from "@/pages/app/profil/page";
-import AppPreferences from "@/pages/app/preferences/page";
-import SignatureDevisPage from "@/pages/signature-devis/page";
-import GuideMotDePasseSolidePage from "@/pages/guide-mot-de-passe-solide/page";
+
+// La coquille de l'espace connecté (barre latérale, menu mobile, cloche, bandeaux et tous
+// les hooks de suivi qu'elle entraîne) représente un gros volume de code qui n'est utile
+// qu'à l'intérieur de /app. On la charge à la demande : elle sort du bundle initial et
+// n'est téléchargée qu'au moment d'entrer dans l'espace, ce qui allège nettement le
+// fichier principal (index-*.js) servi à tous les visiteurs.
+const RoleLayout = lazy(() => import("@/pages/app/components/RoleLayout"));
+
+// Chaque page est chargée à la demande (code splitting) : ouvrir une page
+// ne télécharge plus le code de toutes les autres, ce qui allège fortement
+// le bundle initial et accélère le premier affichage.
+const Home = lazy(() => import("@/pages/home/page"));
+const TarifsPage = lazy(() => import("@/pages/tarifs/page"));
+const MetiersPage = lazy(() => import("@/pages/metiers/page"));
+const MetiersRecapitulatifPage = lazy(() => import("@/pages/metiers/recapitulatif/page"));
+const MetierPage = lazy(() => import("@/pages/metier/page"));
+const ZonesInterventionPage = lazy(() => import("@/pages/zones-intervention/page"));
+const VillePage = lazy(() => import("@/pages/ville/page"));
+const RessourcesPage = lazy(() => import("@/pages/ressources/page"));
+const RessourcesSujetsPage = lazy(() => import("@/pages/ressources/sujets/page"));
+const RessourcesParcoursPage = lazy(() => import("@/pages/ressources/parcours/page"));
+const RessourcesBibliothequePage = lazy(() => import("@/pages/ressources/bibliotheque/page"));
+const ArticlePage = lazy(() => import("@/pages/ressources/detail/page"));
+const PlanDuSitePage = lazy(() => import("@/pages/plan-du-site/page"));
+const MentionsLegalesPage = lazy(() => import("@/pages/mentions-legales/page"));
+const RgpdPage = lazy(() => import("@/pages/rgpd/page"));
+const CgvPage = lazy(() => import("@/pages/cgv/page"));
+const CookiesPage = lazy(() => import("@/pages/cookies/page"));
+const AccessibilitePage = lazy(() => import("@/pages/accessibilite/page"));
+const ContactPage = lazy(() => import("@/pages/contact/page"));
+const AProposPage = lazy(() => import("@/pages/a-propos/page"));
+const AuteurPage = lazy(() => import("@/pages/auteur/page"));
+const PodcastPage = lazy(() => import("@/pages/podcast/page"));
+const NouveautesPage = lazy(() => import("@/pages/nouveautes/page"));
+const NouveautePersonnalisationPage = lazy(() => import("@/pages/nouveautes/personnalisation-documents/page"));
+const NouveauteSuiviEmailsPage = lazy(() => import("@/pages/nouveautes/suivi-emails-clients/page"));
+const NouveauteRecapitulatifPage = lazy(() => import("@/pages/nouveautes/recapitulatif/page"));
+const RejoindrePage = lazy(() => import("@/pages/rejoindre/page"));
+const AuthPage = lazy(() => import("@/pages/app/auth/page"));
+const ResetPasswordPage = lazy(() => import("@/pages/app/auth/reset-password/page"));
+const AppDemarrage = lazy(() => import("@/pages/app/demarrage/page"));
+const AppDashboard = lazy(() => import("@/pages/app/dashboard/page"));
+const AppDevis = lazy(() => import("@/pages/app/devis/page"));
+const AppBibliothequeLignes = lazy(() => import("@/pages/app/bibliotheque-lignes/page"));
+const AppFactures = lazy(() => import("@/pages/app/factures/page"));
+const AppFacturationElectronique = lazy(() => import("@/pages/app/facturation-electronique/page"));
+const AppClients = lazy(() => import("@/pages/app/clients/page"));
+const AppAbonnements = lazy(() => import("@/pages/app/abonnements/page"));
+const AppProsInscrits = lazy(() => import("@/pages/app/pros-inscrits/page"));
+const AppBackOffice = lazy(() => import("@/pages/app/back-office/page"));
+const AppAuditSeo = lazy(() => import("@/pages/app/audit-seo/page"));
+const AppMonCompteGestionnaire = lazy(() => import("@/pages/app/mon-compte-gestionnaire/page"));
+const AppComptabilite = lazy(() => import("@/pages/app/comptabilite/page"));
+const AppPlanning = lazy(() => import("@/pages/app/planning/page"));
+const AppIntervenants = lazy(() => import("@/pages/app/intervenants/page"));
+const AppPointages = lazy(() => import("@/pages/app/pointages/page"));
+const AppRelances = lazy(() => import("@/pages/app/relances/page"));
+const AppRelancesProgrammees = lazy(() => import("@/pages/app/relances-programmees/page"));
+const AppEnvois = lazy(() => import("@/pages/app/envois/page"));
+const AppEnvoisAutomatiques = lazy(() => import("@/pages/app/envois-automatiques/page"));
+const AppChantiers = lazy(() => import("@/pages/app/chantiers/page"));
+const AppProfil = lazy(() => import("@/pages/app/profil/page"));
+const AppPreferences = lazy(() => import("@/pages/app/preferences/page"));
+const AppMonPlanning = lazy(() => import("@/pages/app/mon-planning/page"));
+const SignatureDevisPage = lazy(() => import("@/pages/signature-devis/page"));
+const SuiviChantierPage = lazy(() => import("@/pages/suivi/page"));
+const EspaceClientPage = lazy(() => import("@/pages/espace-client/page"));
+const GuideMotDePasseSolidePage = lazy(() => import("@/pages/guide-mot-de-passe-solide/page"));
 
 const routes: RouteObject[] = [
   {
@@ -65,8 +90,20 @@ const routes: RouteObject[] = [
     element: <MetiersPage />,
   },
   {
+    path: "/metiers/recapitulatif",
+    element: <MetiersRecapitulatifPage />,
+  },
+  {
     path: "/metiers/:slug",
     element: <MetierPage />,
+  },
+  {
+    path: "/zones-intervention",
+    element: <ZonesInterventionPage />,
+  },
+  {
+    path: "/zones-intervention/:slug",
+    element: <VillePage />,
   },
   {
     path: "/ressources",
@@ -137,6 +174,18 @@ const routes: RouteObject[] = [
     element: <NouveautesPage />,
   },
   {
+    path: "/nouveautes/personnalisation-documents",
+    element: <NouveautePersonnalisationPage />,
+  },
+  {
+    path: "/nouveautes/suivi-emails-clients",
+    element: <NouveauteSuiviEmailsPage />,
+  },
+  {
+    path: "/nouveautes/recapitulatif",
+    element: <NouveauteRecapitulatifPage />,
+  },
+  {
     path: "/app",
     children: [
       { path: "auth", element: <AuthPage /> },
@@ -146,15 +195,19 @@ const routes: RouteObject[] = [
         children: [
           { path: "demarrage", element: <ArtisanOnlyGuard><AppDemarrage /></ArtisanOnlyGuard> },
           {
-            element: <AppLayout />,
+            element: <RoleLayout />,
             children: [
               { index: true, element: <ArtisanOnlyGuard><AppDashboard /></ArtisanOnlyGuard> },
               { path: "devis", element: <ArtisanOnlyGuard><AppDevis /></ArtisanOnlyGuard> },
               { path: "bibliotheque-lignes", element: <ArtisanOnlyGuard><AppBibliothequeLignes /></ArtisanOnlyGuard> },
               { path: "factures", element: <ArtisanOnlyGuard><AppFactures /></ArtisanOnlyGuard> },
+              { path: "facturation-electronique", element: <ArtisanOnlyGuard><AppFacturationElectronique /></ArtisanOnlyGuard> },
               { path: "clients", element: <ArtisanOnlyGuard><AppClients /></ArtisanOnlyGuard> },
-              { path: "professionnels", element: <ArtisanOnlyGuard><AppProfessionnels /></ArtisanOnlyGuard> },
+              // Les professionnels ne sont plus un carnet séparé : l'ancienne page (liens déjà
+              // partagés, vues épinglées) arrive directement sur le carnet filtré sur les entreprises.
+              { path: "professionnels", element: <Navigate to="/app/clients?type=Professionnels" replace /> },
               { path: "abonnements", element: <GestionnaireGuard><AppAbonnements /></GestionnaireGuard> },
+              { path: "pros-inscrits", element: <GestionnaireGuard><AppProsInscrits /></GestionnaireGuard> },
               { path: "back-office", element: <GestionnaireGuard><AppBackOffice /></GestionnaireGuard> },
               { path: "audit-seo", element: <GestionnaireGuard><AppAuditSeo /></GestionnaireGuard> },
               { path: "mon-compte-gestionnaire", element: <GestionnaireGuard><AppMonCompteGestionnaire /></GestionnaireGuard> },
@@ -163,6 +216,8 @@ const routes: RouteObject[] = [
               { path: "mon-abonnement", element: <Navigate to="/app/profil?onglet=abonnement" replace /> },
               { path: "comptabilite", element: <GestionnaireSectionGuard section="comptabilite"><AppComptabilite /></GestionnaireSectionGuard> },
               { path: "planning", element: <ArtisanOnlyGuard><AppPlanning /></ArtisanOnlyGuard> },
+              { path: "intervenants", element: <ArtisanOnlyGuard><AppIntervenants /></ArtisanOnlyGuard> },
+              { path: "pointages", element: <ArtisanOnlyGuard><AppPointages /></ArtisanOnlyGuard> },
               { path: "relances", element: <ArtisanOnlyGuard><AppRelances /></ArtisanOnlyGuard> },
               { path: "relances-programmees", element: <ArtisanOnlyGuard><AppRelancesProgrammees /></ArtisanOnlyGuard> },
               { path: "envois", element: <ArtisanOnlyGuard><AppEnvois /></ArtisanOnlyGuard> },
@@ -170,6 +225,7 @@ const routes: RouteObject[] = [
               { path: "chantiers", element: <ArtisanOnlyGuard><AppChantiers /></ArtisanOnlyGuard> },
               { path: "profil", element: <ArtisanOnlyGuard><AppProfil /></ArtisanOnlyGuard> },
               { path: "preferences", element: <AppPreferences /> },
+              { path: "mon-planning", element: <AppMonPlanning /> },
               // Redirection douce : les anciens liens vers l'ancienne page Diagnostic
               // (déjà partagés ou reçus par email) arrivent au tableau de bord.
               { path: "diagnostic", element: <Navigate to="/app" replace /> },
@@ -186,6 +242,14 @@ const routes: RouteObject[] = [
   {
     path: "/signature-devis/:token",
     element: <SignatureDevisPage />,
+  },
+  {
+    path: "/suivi/:token",
+    element: <SuiviChantierPage />,
+  },
+  {
+    path: "/espace-client",
+    element: <EspaceClientPage />,
   },
   {
     path: "*",

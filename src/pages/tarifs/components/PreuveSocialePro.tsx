@@ -41,8 +41,12 @@ export default function PreuveSocialePro() {
                 <div className="w-11 h-11 shrink-0 rounded-full overflow-hidden bg-background-200">
                   <img
                     src={t.avatar}
-                    alt={`${t.name}, ${t.role}`}
-                    title={`${t.name} · artisan abonné à l'offre Pro`}
+                    alt={`${t.name}, ${t.role} - avis client sur ArtiFlow-pro`}
+                    title={`${t.name} · artisan abonné à ArtiFlow-pro Pro`}
+                    width={128}
+                    height={128}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover object-top"
                   />
                 </div>

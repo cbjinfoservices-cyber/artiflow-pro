@@ -30,6 +30,7 @@ import {
   triOptions,
 } from "@/pages/plan-du-site/components/equipePreferences";
 import { useProfilsFavoris } from "@/pages/plan-du-site/components/useProfilsFavoris";
+import { originePublique } from "@/lib/site";
 
 /**
  * Section « Équipe & auteurs » du plan du site : chaque membre dispose d'une
@@ -645,7 +646,7 @@ export default function EquipeAuteursSection() {
     if (favorisSeuls) params.set("favoris", "1");
     if (membreCible) params.set("membre", membreCible);
     const query = params.toString();
-    return `${window.location.origin}${window.location.pathname}${
+    return `${originePublique()}${window.location.pathname}${
       query ? `?${query}` : ""
     }#equipe-auteurs`;
   };
@@ -1659,8 +1660,10 @@ export default function EquipeAuteursSection() {
                     <span className="block w-full h-full rounded-full overflow-hidden">
                       <img
                         src={membre.photo}
-                        alt={`${membre.name}, ${membre.role}`}
+                        alt={`Portrait de ${membre.name}, ${membre.role} chez ArtiFlow-pro`}
                         title={`${membre.name} · ArtiFlow-pro`}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover object-top"
                       />
                     </span>

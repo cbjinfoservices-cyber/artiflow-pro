@@ -9,7 +9,9 @@ import { formatShortDate, todayISO } from "@/lib/dates";
 import { RELANCE_CLIENT_DELAI_ALERTE, joursDepuisDerniereRelance } from "@/lib/relancesClient";
 import { useRelancesClient } from "@/hooks/useRelancesClient";
 import ScheduleRelanceModal from "@/pages/app/dashboard/components/ScheduleRelanceModal";
-import { buildClientFichePdf, savePdf } from "@/lib/pdf";
+import { buildClientFichePdf } from "@/lib/pdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 import { buildBalanceAgeePdf } from "@/lib/comptabilitePdf";
 import { computeBalanceAgee, isAvoir, type ComptaFacture } from "@/lib/exportComptable";
 
@@ -46,7 +48,9 @@ export default function ProDetailPanel({ client, devis, chantiers, factures, onC
   const { profile, user } = useAuth();
   const [onglet, setOnglet] = useState<Onglet>("devis");
   const [exporting, setExporting] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [balanceExporting, setBalanceExporting] = useState(false);
+  const { apercu: apercuBalance, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
   const [exportError, setExportError] = useState<string | null>(null);
   const [notes, setNotes] = useState(client.notes ?? "");
   const [notesDraft, setNotesDraft] = useState(client.notes ?? "");
@@ -99,67 +103,59 @@ export default function ProDetailPanel({ client, devis, chantiers, factures, onC
     [proFactures],
   );
 
-  const handleExportPdf = async () => {
-    setExporting(true);
+  const handleExportPdf = () => {
+    // Ouvre l'aperçu AVANT téléchargement : on vérifie la mise en page (tableaux, statuts, montants)
+    // à l'écran, puis on enregistre le PDF depuis l'aperçu.
     setExportError(null);
-    try {
-      const doc = await buildClientFichePdf({
-        emetteur: {
-          entreprise: profile?.entreprise ?? "",
-          metier: profile?.metier ?? "",
-          telephone: profile?.telephone ?? "",
-          email: profile?.email ?? user?.email ?? "",
-          logo: profile?.logo_url ?? null,
-          siret: profile?.siret ?? null,
-          tva: profile?.tva ?? null,
-          assurance: profile?.assurance ?? null,
-          penalitesRetard: profile?.penalites_retard ?? null,
-        },
-        client: {
-          nom: client.nom,
-          contact: client.contact_nom,
-          secteur: client.secteur,
-          siret: client.siret,
-          adresse: client.adresse,
-          telephone: client.telephone,
-          email: client.email,
-        },
-        devis: proDevis.map((d) => ({
-          numero: d.numero,
-          objet: d.objet,
-          dateLabel: formatShortDate(d.created_at),
-          statut: d.statut,
-          totalHT: d.total_ht,
-        })),
-        chantiers: proChantiers.map((c) => ({
-          libelle: c.libelle,
-          statut: c.statut,
-          montant: c.montant,
-          dateLabel: c.date_debut ? formatShortDate(c.date_debut) : "—",
-        })),
-        factures: proFactures.map((f) => ({
-          numero: f.numero,
-          statut: f.statut,
-          dateLabel: formatShortDate(f.date_emission),
-          totalTTC: f.total_ttc,
-        })),
-        totals: { caDevis: totalDevis, totalFacture, chantiersEnCours, chantiersTotal: proChantiers.length },
-        notes,
-        notesPriorite: priorite,
-      });
-      const slug = client.nom
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      savePdf(doc, `fiche-${slug || "client"}-${todayISO()}.pdf`);
-    } catch {
-      setExportError("L'export PDF a échoué. Réessayez.");
-    } finally {
-      setExporting(false);
-    }
+    setPreviewOpen(true);
   };
+
+  // Construit le PDF de la fiche client (devis, chantiers, factures) pour l'aperçu comme pour le téléchargement.
+  const construireFicheClient = () =>
+    buildClientFichePdf({
+      emetteur: {
+        entreprise: profile?.entreprise ?? "",
+        metier: profile?.metier ?? "",
+        telephone: profile?.telephone ?? "",
+        email: profile?.email ?? user?.email ?? "",
+        logo: profile?.logo_url ?? null,
+        siret: profile?.siret ?? null,
+        tva: profile?.tva ?? null,
+        assurance: profile?.assurance ?? null,
+        penalitesRetard: profile?.penalites_retard ?? null,
+      },
+      client: {
+        nom: client.nom,
+        contact: client.contact_nom,
+        secteur: client.secteur,
+        siret: client.siret,
+        adresse: client.adresse,
+        telephone: client.telephone,
+        email: client.email,
+      },
+      devis: proDevis.map((d) => ({
+        numero: d.numero,
+        objet: d.objet,
+        dateLabel: formatShortDate(d.created_at),
+        statut: d.statut,
+        totalHT: d.total_ht,
+      })),
+      chantiers: proChantiers.map((c) => ({
+        libelle: c.libelle,
+        statut: c.statut,
+        montant: c.montant,
+        dateLabel: c.date_debut ? formatShortDate(c.date_debut) : "—",
+      })),
+      factures: proFactures.map((f) => ({
+        numero: f.numero,
+        statut: f.statut,
+        dateLabel: formatShortDate(f.date_emission),
+        totalTTC: f.total_ttc,
+      })),
+      totals: { caDevis: totalDevis, totalFacture, chantiersEnCours, chantiersTotal: proChantiers.length },
+      notes,
+      notesPriorite: priorite,
+    });
 
   // Export PDF de la balance âgée de ce client : uniquement ses factures impayées,
   // réparties par ancienneté (0-30 / 30-60 / +60 j), sans passer par la Comptabilité.
@@ -195,26 +191,32 @@ export default function ProDetailPanel({ client, devis, chantiers, factures, onC
           };
         })
         .sort((a, b) => b.jours - a.jours);
-      const doc = buildBalanceAgeePdf({
-        emetteur: {
-          entreprise: profile?.entreprise ?? "",
-          metier: profile?.metier ?? "",
-          telephone: profile?.telephone ?? "",
-          email: profile?.email ?? user?.email ?? "",
-          siret: profile?.siret ?? null,
-          tva: profile?.tva ?? null,
-        },
-        filtreLabel: `Client : ${client.nom}`,
-        balance,
-        detail,
-      });
       const slug = client.nom
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
-      savePdf(doc, `balance-agee-${slug || "client"}-${todayISO()}.pdf`);
+      ouvrirApercuPdf({
+        title: `Aperçu · Balance âgée ${client.nom}`,
+        subtitle: "Vérifiez la répartition par ancienneté et les totaux avant de télécharger.",
+        filename: `balance-agee-${slug || "client"}-${todayISO()}.pdf`,
+        note: `${impayes.length} facture${impayes.length > 1 ? "s" : ""} impayée${impayes.length > 1 ? "s" : ""} · ce client uniquement`,
+        build: async () =>
+          buildBalanceAgeePdf({
+            emetteur: {
+              entreprise: profile?.entreprise ?? "",
+              metier: profile?.metier ?? "",
+              telephone: profile?.telephone ?? "",
+              email: profile?.email ?? user?.email ?? "",
+              siret: profile?.siret ?? null,
+              tva: profile?.tva ?? null,
+            },
+            filtreLabel: `Client : ${client.nom}`,
+            balance,
+            detail,
+          }),
+      });
     } catch {
       setExportError("L'export de la balance âgée a échoué. Réessayez.");
     } finally {
@@ -648,12 +650,11 @@ export default function ProDetailPanel({ client, devis, chantiers, factures, onC
             <button
               type="button"
               onClick={handleExportPdf}
-              disabled={exporting}
-              className="flex-1 inline-flex items-center justify-center gap-2 h-10 rounded-md bg-secondary-100 text-secondary-800 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-secondary-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-              title="Exporter la fiche (devis, chantiers, factures) en PDF"
+              className="flex-1 inline-flex items-center justify-center gap-2 h-10 rounded-md bg-secondary-100 text-secondary-800 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-secondary-200 transition-colors"
+              title="Aperçu de la fiche (devis, chantiers, factures) en PDF avant téléchargement"
             >
-              {exporting ? <i className="ri-loader-4-line animate-spin"></i> : <i className="ri-file-pdf-2-line"></i>}
-              Exporter en PDF
+              <i className="ri-eye-line"></i>
+              Aperçu du PDF
             </button>
             <button
               type="button"
@@ -673,6 +674,31 @@ export default function ProDetailPanel({ client, devis, chantiers, factures, onC
         existing={relanceProgrammee}
         onClose={() => setScheduleOpen(false)}
         onSaved={handleRelanceSaved}
+      />
+    )}
+    {apercuBalance && (
+      <ApercuPdfModal
+        title={apercuBalance.title}
+        subtitle={apercuBalance.subtitle}
+        filename={apercuBalance.filename}
+        docBuilder={apercuBalance.build}
+        note={apercuBalance.note}
+        onClose={fermerApercuPdf}
+      />
+    )}
+    {previewOpen && (
+      <ApercuPdfModal
+        title={`Aperçu · Fiche ${client.nom}`}
+        subtitle="Vérifiez les tableaux (devis, chantiers, factures) avant de télécharger."
+        filename={`fiche-${(client.nom
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "client")}-${todayISO()}.pdf`}
+        docBuilder={construireFicheClient}
+        note="La fiche client regroupe tous les devis, chantiers et factures de ce client."
+        onClose={() => setPreviewOpen(false)}
       />
     )}
     </>

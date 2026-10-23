@@ -61,6 +61,8 @@ export default function ALireEnsuite({ article }: { article: Article }) {
               src={metier.cardImage}
               alt={`Guide ${metier.name} · ${cible.title}`}
               title={`${cible.title} · ArtiFlow-pro`}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
             />
           )}

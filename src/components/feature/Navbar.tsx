@@ -7,6 +7,7 @@ import CompteurNouvellesRessources from "@/components/base/CompteurNouvellesRess
 import { nouveautes } from "@/mocks/nouveautes";
 import { compterGuidesNouveaux } from "@/mocks/ressources";
 import NavDropdown from "@/components/feature/NavDropdown";
+import { useMenuClavier } from "@/hooks/useMenuClavier";
 import {
   MetiersMenuContent,
   RessourcesMenuContent,
@@ -59,6 +60,10 @@ const derniereNouveauteISO = nouveautes.reduce(
   ""
 );
 
+/** Annonce mise en avant dans le menu : la personnalisation des documents. */
+const annoncePersonnalisationISO =
+  nouveautes.find((n) => n.id === "personnalisation-documents")?.dateIso ?? "";
+
 /** Nombre de guides récemment publiés, affiché sur l'entrée « Ressources ». */
 const nbNouveauxGuides = compterGuidesNouveaux();
 
@@ -68,7 +73,6 @@ const navLinks: { label: string; to?: string; section?: string; dropdown?: "meti
   { label: "Tarifs", to: "/tarifs", icon: "ri-price-tag-3-line" },
   { label: "Ressources", dropdown: "ressources", icon: "ri-book-2-line" },
   { label: "Nouveautés", to: "/nouveautes", icon: "ri-sparkling-2-line" },
-  { label: "Contact", to: "/contact", icon: "ri-mail-send-line" },
   { label: "Podcast", to: "/podcast", icon: "ri-mic-line" },
   { label: "FAQ", section: "faq", icon: "ri-question-line" },
 ];
@@ -87,6 +91,9 @@ export default function Navbar() {
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const compteRef = useRef<HTMLDivElement>(null);
+  // Le focus clavier est piloté par le bouton (ouverture) et le panneau (navigation).
+  const compteBtnRef = useRef<HTMLButtonElement>(null);
+  const comptePanelRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
   const location = useLocation();
   const goSection = useSectionNav();
@@ -115,6 +122,16 @@ export default function Navbar() {
     setCompteOpen(false);
     await signOut();
   };
+
+  // Navigation clavier du menu du compte : flèches haut/bas, Début/Fin, Échap.
+  const { onTriggerKeyDown: onCompteTriggerKeyDown, onPanelKeyDown: onComptePanelKeyDown } =
+    useMenuClavier({
+      ouvert: compteOpen,
+      ouvrir: () => setCompteOpen(true),
+      fermer: () => setCompteOpen(false),
+      panelRef: comptePanelRef,
+      triggerRef: compteBtnRef,
+    });
 
   useEffect(() => {
     const onScroll = () => {
@@ -248,6 +265,9 @@ export default function Navbar() {
                 className={base}
               >
                 {link.label}
+                {link.section === "fonctionnalites" && (
+                  <BadgeNouveau dateISO={annoncePersonnalisationISO} jours={7} compact />
+                )}
               </button>
             );
           })}
@@ -282,8 +302,10 @@ export default function Navbar() {
           ) : (
             <div ref={compteRef} className="relative">
               <button
+                ref={compteBtnRef}
                 type="button"
                 onClick={() => setCompteOpen((v) => !v)}
+                onKeyDown={onCompteTriggerKeyDown}
                 aria-label={compteLabel}
                 aria-haspopup="menu"
                 aria-expanded={compteOpen}
@@ -342,7 +364,10 @@ export default function Navbar() {
               </button>
               {compteOpen && (
                 <div
+                  ref={comptePanelRef}
                   role="menu"
+                  aria-label="Menu du compte"
+                  onKeyDown={onComptePanelKeyDown}
                   className="absolute right-0 top-12 w-60 rounded-lg bg-background-50 border border-background-200 overflow-hidden z-50"
                 >
                   <div className="px-4 py-3 border-b border-background-200">
@@ -574,6 +599,9 @@ export default function Navbar() {
                     >
                       <i className={`${link.icon} text-lg text-foreground-400`}></i>
                       <span className="flex-1 text-left">{link.label}</span>
+                      {link.section === "fonctionnalites" && (
+                        <BadgeNouveau dateISO={annoncePersonnalisationISO} jours={7} compact />
+                      )}
                     </button>
                   );
                 })}

@@ -14,7 +14,7 @@
 # Sur un NAS (Synology/QNAP) : crée une « tâche planifiée » définie par l'utilisateur,
 # exécution toutes les heures, commande = le chemin de ce script.
 #
-# Note : les 21 fonctions ci-dessous peuvent toutes être appelées à l'heure (0 * * * *) :
+# Note : les 28 fonctions ci-dessous peuvent toutes être appelées à l'heure (0 * * * *) :
 # elles se bloquent elles-mêmes si ce n'est pas le bon moment.
 
 set -u
@@ -73,6 +73,9 @@ appeler "recap-hebdo-echecs-paiement"   # cadence conseillée : 0 * * * *
 # Récap hebdo des alertes Stripe non traitées — Rappel des alertes de config Stripe encore à traiter
 appeler "recap-hebdo-alertes-stripe-non-traitees"   # cadence conseillée : 0 * * * *
 
+# Récap invitations intervenants — Récap hebdo des fiches invitées sans compte à relancer
+appeler "recap-invitations-intervenants"   # cadence conseillée : 0 * * * *
+
 # Bilan d'archivage annuel — Bilan annuel d'archivage au comptable
 appeler "envoi-bilan-annuel"   # cadence conseillée : 0 7 * * *
 
@@ -96,5 +99,23 @@ appeler "envoi-recap-echecs-annuel"   # cadence conseillée : 0 * * * *
 
 # Export CSV mensuel par email — Réessais + journal d'escalade
 appeler "export-csv-mensuel"   # cadence conseillée : 0 * * * *
+
+# Email de bienvenue aux nouveaux pros — Accueille chaque nouvelle inscription (une seule fois)
+appeler "envoi-bienvenue-nouveaux-pros"   # cadence conseillée : 0 * * * *
+
+# Rappels avant suppression — Prévient l'artisan à J-7 puis à J-1 avant l'effacement
+appeler "rappeler-suppressions-prochaines"   # cadence conseillée : 0 * * * *
+
+# Purge des comptes — Efface réellement les comptes arrivés au terme des 30 jours de grâce
+appeler "purger-comptes-supprimes"   # cadence conseillée : 0 * * * *
+
+# Récap hebdo des chantiers — Avancement des chantiers à l'artisan, jour et heure au choix
+appeler "recap-hebdo-chantiers"   # cadence conseillée : 0 * * * *
+
+# Nouvelles groupées automatiques — Email groupé aux clients silencieux, fréquence au choix
+appeler "envoi-auto-nouvelles-groupees"   # cadence conseillée : 0 * * * *
+
+# Récap mensuel des envois groupés — PDF du mois écoulé au comptable (mode « envoi »)
+appeler "recap-envois-groupees-mensuel"   # cadence conseillée : 0 * * * *
 
 echo "=== terminé ==="

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { simulateurMetiers } from "@/mocks/simulateur";
+import { simulateurLignesClimatisation, simulateurMetiers } from "@/mocks/simulateur";
 import { useDemoModal } from "@/hooks/useDemoModal";
 
 const TAUX_DEFAUT = 45;
@@ -49,7 +49,7 @@ export default function Simulateur() {
 
   return (
     <section id="simulateur" className="w-full bg-background-100 border-y border-background-200">
-      <div className="w-full px-4 md:px-8 lg:px-12 py-16 md:py-24">
+      <div className="w-full px-4 md:px-8 lg:px-12 py-12 md:py-18">
         <div className="max-w-3xl mx-auto text-center">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-accent-700">
             <i className="ri-calculator-line"></i>
@@ -64,7 +64,7 @@ export default function Simulateur() {
           </p>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-5 gap-5 items-stretch">
+        <div className="mt-9 grid grid-cols-1 lg:grid-cols-5 gap-5 items-stretch">
           <div className="lg:col-span-3 p-6 md:p-7 rounded-lg border border-background-200 bg-background-50">
             <div>
               <label htmlFor="sim-metier" className="block text-sm font-semibold text-foreground-900">
@@ -232,6 +232,49 @@ export default function Simulateur() {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 rounded-lg border border-background-200 bg-background-50 p-5 md:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-10 h-10 shrink-0 flex items-center justify-center rounded-md bg-accent-100 text-accent-700 text-lg">
+                <i className="ri-temp-cold-line"></i>
+              </span>
+              <div className="min-w-0">
+                <p className="font-heading font-semibold text-sm md:text-base text-foreground-950">
+                  Exemples de lignes générées — climatisation
+                </p>
+                <p className="mt-0.5 text-xs text-foreground-500">
+                  Ce que l'IA propose à partir de vos tarifs, avant votre relecture.
+                </p>
+              </div>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-secondary-100 text-secondary-900 text-xs font-semibold whitespace-nowrap">
+              Frigoriste climaticien
+            </span>
+          </div>
+
+          <ul className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            {simulateurLignesClimatisation.map((ligne) => (
+              <li
+                key={ligne.designation}
+                className="min-w-0 p-4 rounded-md bg-background-100 border border-background-200"
+              >
+                <p className="text-sm text-foreground-900 leading-snug">{ligne.designation}</p>
+                <div className="mt-2.5 flex items-baseline justify-between gap-3">
+                  <span className="text-xs text-foreground-500 whitespace-nowrap">1 {ligne.unite}</span>
+                  <span className="font-heading font-bold text-base text-primary-700 whitespace-nowrap">
+                    {formatEuros(ligne.prix)} €
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-3 text-xs text-foreground-500 leading-relaxed">
+            Exemples indicatifs, hors particularités du logement : échafaudage, liaison supplémentaire ou reprise de
+            l'ancien appareil.
+          </p>
         </div>
       </div>
     </section>

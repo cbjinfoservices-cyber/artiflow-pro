@@ -25,6 +25,100 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+type EnvoiOptions = {
+  nom: string;
+  to: string[];
+  cc?: string[];
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; content: string }>;
+};
+
+/**
+ * Envoie via Brevo, puis bascule automatiquement sur Resend si Brevo échoue.
+ * Aucun récapitulatif n'est perdu, même si Brevo est en incident. La tentative est
+ * tracée dans `envoi_fournisseur_historique` pour la carte « Suivi des envois ».
+ */
+async function envoyerEmailAvecRepli(
+  fonction: string,
+  opts: EnvoiOptions,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+): Promise<{ ok: boolean; fournisseur: string; repli: boolean; error?: string }> {
+  const trace = async (fournisseur: string, statut: string, repli: boolean, message?: string) => {
+    if (!admin) return;
+    try {
+      await admin
+        .from("envoi_fournisseur_historique")
+        .insert({ fonction, fournisseur, statut, repli, message: message ?? null });
+    } catch {
+      /* trace non bloquante */
+    }
+  };
+  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.fr";
+  let erreurBrevo = "";
+  if (brevoKey) {
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: { "api-key": brevoKey, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          sender: { name: opts.nom, email: brevoFrom },
+          to: opts.to.map((email) => ({ email })),
+          cc: opts.cc?.length ? opts.cc.map((email) => ({ email })) : undefined,
+          subject: opts.subject,
+          htmlContent: opts.html,
+          attachment: opts.attachments?.length
+            ? opts.attachments.map((a) => ({ name: a.filename, content: a.content }))
+            : undefined,
+        }),
+      });
+      if (res.ok) {
+        await trace("brevo", "succes", false);
+        return { ok: true, fournisseur: "brevo", repli: false };
+      }
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      erreurBrevo = data?.message || `Brevo a refusé l'envoi (code ${res.status}).`;
+      await trace("brevo", "echec", false, erreurBrevo);
+    } catch (e) {
+      erreurBrevo = e instanceof Error ? e.message : "Brevo est injoignable.";
+      await trace("brevo", "echec", false, erreurBrevo);
+    }
+  }
+  const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+  const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+  if (resendKey && fromDomain) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: `${opts.nom} <noreply@${fromDomain}>`,
+          to: opts.to,
+          cc: opts.cc?.length ? opts.cc : undefined,
+          subject: opts.subject,
+          html: opts.html,
+          attachments: opts.attachments?.length ? opts.attachments : undefined,
+        }),
+      });
+      if (res.ok) {
+        await trace("resend", "succes", false);
+        return { ok: true, fournisseur: "resend", repli: true };
+      }
+      const data = (await res.json().catch(() => null)) as { message?: string } | null;
+      const erreur = data?.message || `Resend a refusé l'envoi (code ${res.status}).`;
+      await trace("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    } catch (e) {
+      const erreur = e instanceof Error ? e.message : "Resend est injoignable.";
+      await trace("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    }
+  }
+  return { ok: false, fournisseur: "aucun", repli: false, error: "Aucun service d'envoi configuré (Resend non paramétré)." };
+}
+
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -191,7 +285,7 @@ Deno.serve(async (req) => {
     const { data: profiles, error: profError } = await query;
     if (profError) return json({ ok: false, error: profError.message }, 500);
 
-    const canSend = Boolean(resendKey && fromDomain);
+    const canSend = Boolean(Deno.env.get("BREVO_API_KEY") || (resendKey && fromDomain));
     const { day: todayDay, hour: todayHour } = parisParts();
     let sent = 0;
     let skipped = 0;
@@ -280,20 +374,20 @@ Deno.serve(async (req) => {
 
       const appUrl = resolveAppUrl(p.comptable_app_url, req);
       try {
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from: `${nom} <noreply@${fromDomain}>`,
+        const envoi = await envoyerEmailAvecRepli(
+          "recap-mensuel-mot-de-passe",
+          {
+            nom,
             to: [email],
-            ...(copieComptable ? { cc: comptableEmails } : {}),
+            cc: copieComptable ? comptableEmails : undefined,
             subject: `Récap mensuel — ${total} alerte${total > 1 ? "s" : ""} mot de passe (${moisLabelCap})`,
             html: buildEmailHtml({ nom, moisLabelCap, total, auto, tests, appUrl }),
-          }),
-        });
-        if (!res.ok) {
+          },
+          admin,
+        );
+        if (!envoi.ok) {
           skipped += 1;
-          details.push({ userId, sent: false, reason: "Refus de Resend." });
+          details.push({ userId, sent: false, reason: envoi.error || "Envoi refusé." });
           continue;
         }
         // Anti-doublon : on mémorise le mois récapitulé et l'horodatage du dernier envoi réel.

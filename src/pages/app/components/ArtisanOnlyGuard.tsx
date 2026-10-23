@@ -8,10 +8,11 @@ import { useAuth } from "@/hooks/useAuth";
  * son back-office au lieu de voir des pages métier.
  */
 export default function ArtisanOnlyGuard({ children }: { children: ReactNode }) {
-  const { isGestionnaire, loading, gestionnairesLoading } = useAuth();
+  const { isGestionnaire, isIntervenant, loading, gestionnairesLoading, intervenantLoading } = useAuth();
 
-  if (loading || gestionnairesLoading) return null;
+  if (loading || gestionnairesLoading || intervenantLoading) return null;
   if (isGestionnaire) return <Navigate to="/app/back-office" replace />;
+  if (isIntervenant) return <Navigate to="/app/mon-planning" replace />;
 
   return <>{children}</>;
 }

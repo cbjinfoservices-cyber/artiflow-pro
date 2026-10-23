@@ -23,6 +23,7 @@ import {
   reordonnerLiensCopies,
   type LienCopie,
 } from "@/lib/liensCopiesMemoire";
+import { originePublique } from "@/lib/site";
 
 /** Horodatage court d'une copie (« 10 oct. »). */
 function quandLabel(iso: string): string {
@@ -44,7 +45,7 @@ function quandCompletLabel(iso: string): string {
  */
 function cheminInterne(url: string): string {
   let path = url;
-  if (path.startsWith(window.location.origin)) path = path.slice(window.location.origin.length);
+  if (path.startsWith(originePublique())) path = path.slice(originePublique().length);
   const base = (__BASE_PATH__ || "").replace(/\/+$/, "");
   if (base && path.startsWith(base)) path = path.slice(base.length);
   return path.startsWith("/") ? path : `/${path}`;

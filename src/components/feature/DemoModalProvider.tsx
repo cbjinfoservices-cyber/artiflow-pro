@@ -1,6 +1,10 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { Suspense, lazy, useCallback, useMemo, useState, type ReactNode } from "react";
 import { DemoModalContext, type DemoPrefill } from "@/hooks/useDemoModal";
-import DemoModal from "@/components/feature/DemoModal";
+
+// La fenêtre « Réserver une démo » n'apparaît qu'au clic sur les boutons « Voir une démo ».
+// On la charge donc à la demande : son code (et le formulaire qu'elle embarque) sort du bundle
+// initial et n'est téléchargé qu'à la première ouverture, ce qui allège le démarrage du site.
+const DemoModal = lazy(() => import("@/components/feature/DemoModal"));
 
 export default function DemoModalProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -20,7 +24,11 @@ export default function DemoModalProvider({ children }: { children: ReactNode })
   return (
     <DemoModalContext.Provider value={value}>
       {children}
-      <DemoModal open={open} source={source} prefill={prefill} onClose={closeDemo} />
+      {open && (
+        <Suspense fallback={null}>
+          <DemoModal open={open} source={source} prefill={prefill} onClose={closeDemo} />
+        </Suspense>
+      )}
     </DemoModalContext.Provider>
   );
 }

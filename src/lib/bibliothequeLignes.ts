@@ -49,6 +49,8 @@ export const CATEGORIES_LIGNES = [
   "Menuiserie",
   "Maçonnerie",
   "Toiture",
+  "Climatisation",
+  "Facturation électronique",
   "Divers",
 ] as const;
 
@@ -88,6 +90,24 @@ export const CATALOGUE_LIGNES: LigneCatalogue[] = [
   // Toiture
   { cle: "catalogue-toiture-1", designation: "Réparation d'une fuite de toiture", unite: "intervention", prix_unitaire: 350, taux_tva: 10, categorie: "Toiture" },
   { cle: "catalogue-toiture-2", designation: "Nettoyage des gouttières", unite: "ml", prix_unitaire: 8, taux_tva: 10, categorie: "Toiture" },
+  // Climatisation
+  { cle: "catalogue-clim-1", designation: "Fourniture et pose d'un split réversible 2,5 kW", unite: "u", prix_unitaire: 1490, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-2", designation: "Fourniture et pose d'un split réversible 3,5 kW", unite: "u", prix_unitaire: 1690, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-3", designation: "Fourniture et pose d'un gainable 4 pièces", unite: "forfait", prix_unitaire: 5800, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-4", designation: "Mise en service et contrôle d'étanchéité du circuit", unite: "forfait", prix_unitaire: 240, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-5", designation: "Liaison frigorifique supplémentaire", unite: "ml", prix_unitaire: 45, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-6", designation: "Contrat d'entretien annuel climatisation", unite: "intervention", prix_unitaire: 180, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-7", designation: "Dépose et évacuation d'un ancien climatiseur", unite: "forfait", prix_unitaire: 120, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-8", designation: "Fourniture et pose d'une pompe à chaleur air/eau", unite: "forfait", prix_unitaire: 12500, taux_tva: 5.5, categorie: "Climatisation" },
+  { cle: "catalogue-clim-9", designation: "Percement de mur et rebouchage pour liaison frigorifique", unite: "u", prix_unitaire: 70, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-10", designation: "Pose d'un support mural pour groupe extérieur", unite: "u", prix_unitaire: 85, taux_tva: 10, categorie: "Climatisation" },
+  { cle: "catalogue-clim-11", designation: "Forfait entretien annuel multi-split (3 unités)", unite: "contrat", prix_unitaire: 320, taux_tva: 10, categorie: "Climatisation" },
+  // Facturation électronique
+  { cle: "catalogue-efact-1", designation: "Préparation du fichier Factur-X d'une facture", unite: "facture", prix_unitaire: 15, taux_tva: 20, categorie: "Facturation électronique" },
+  { cle: "catalogue-efact-2", designation: "Transmission d'une facture via plateforme agréée (PDP)", unite: "facture", prix_unitaire: 9, taux_tva: 20, categorie: "Facturation électronique" },
+  { cle: "catalogue-efact-3", designation: "Accompagnement à la mise en conformité facturation électronique", unite: "forfait", prix_unitaire: 190, taux_tva: 20, categorie: "Facturation électronique" },
+  { cle: "catalogue-efact-4", designation: "Paramétrage des mentions obligatoires sur les documents", unite: "forfait", prix_unitaire: 90, taux_tva: 20, categorie: "Facturation électronique" },
+  { cle: "catalogue-efact-5", designation: "Reprise et retransmission après rejet d'une facture", unite: "u", prix_unitaire: 25, taux_tva: 20, categorie: "Facturation électronique" },
   // Divers
   { cle: "catalogue-divers-1", designation: "Déplacement et diagnostic sur site", unite: "forfait", prix_unitaire: 60, taux_tva: 20, categorie: "Divers" },
   { cle: "catalogue-divers-2", designation: "Évacuation des déchets de chantier", unite: "forfait", prix_unitaire: 180, taux_tva: 20, categorie: "Divers" },

@@ -24,9 +24,12 @@ export default function ProductPreview() {
     <section id="apercu" className="relative w-full bg-background-100 border-y border-background-200 overflow-hidden">
       {/* Texture de fond discrète : schéma de chantier tout corps d'état, très légère pour ne pas gêner la lecture */}
       <img
-        src="https://readdy.ai/api/search-image?query=Subtle%20stylized%20construction%20blueprint%20texture%20with%20thin%20charcoal%20and%20warm%20orange%20line%20drawings%20of%20building%20floor%20plans%2C%20scaffolding%20frames%20and%20technical%20annotations%20on%20a%20light%20off-white%20paper%20background%2C%20minimal%20airy%20technical%20illustration%2C%20soft%20even%20lighting%2C%20high%20detail&width=1920&height=1080&seq=artiflow-apercu-bg&orientation=landscape"
-        alt=""
+        src="https://readdy.ai/api/search-image?query=Subtle%20stylized%20construction%20blueprint%20texture%20with%20thin%20charcoal%20and%20warm%20orange%20line%20drawings%20of%20building%20floor%20plans%2C%20scaffolding%20frames%20and%20technical%20annotations%20on%20a%20light%20off-white%20paper%20background%2C%20minimal%20airy%20technical%20illustration%2C%20soft%20even%20lighting%2C%20high%20detail&width=1280&height=720&seq=artiflow-apercu-bg&orientation=landscape"
+        alt="Schéma technique de chantier tout corps d'état en arrière-plan de l'aperçu de l'application ArtiFlow-pro"
+        title="Aperçu de l'application ArtiFlow-pro"
         aria-hidden="true"
+        loading="lazy"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover object-center opacity-[0.14]"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background-100 via-background-100/85 to-background-100"></div>

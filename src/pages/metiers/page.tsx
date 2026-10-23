@@ -5,9 +5,10 @@ import { metiers, metiersFaq } from "@/mocks/metiers";
 import { useDemoModal } from "@/hooks/useDemoModal";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useFaqSchema } from "@/hooks/useFaqSchema";
-import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
+import FilAriane from "@/components/feature/FilAriane";
 import SommaireMetiers from "@/pages/metiers/components/SommaireMetiers";
 import FaqAccordion from "@/components/feature/FaqAccordion";
+import EncartBesoinAide from "@/components/feature/EncartBesoinAide";
 
 const raisons = [
   {
@@ -34,8 +35,8 @@ export default function MetiersPage() {
   const { openDemo } = useDemoModal();
 
   usePageMeta(
-    "ArtiFlow-pro · Tous les métiers du bâtiment : devis & relances",
-    "Plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste : découvrez comment ArtiFlow-pro génère les devis, relances et plannings de chaque corps d'état.",
+    "Métiers du bâtiment : devis & relances | ArtiFlow-pro",
+    "Plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste, frigoriste climaticien : les devis, relances et plannings d'ArtiFlow-pro pour chaque corps d'état.",
     {
       type: "website",
       image:
@@ -44,13 +45,6 @@ export default function MetiersPage() {
   );
 
   useFaqSchema(metiersFaq, "artiflow-metiers-faq-schema");
-  useBreadcrumbSchema(
-    [
-      { name: "Accueil", path: "/" },
-      { name: "Métiers", path: "/metiers" },
-    ],
-    "artiflow-metiers-breadcrumb-schema"
-  );
 
   return (
     <div className="w-full min-h-screen bg-background-50 pb-20 lg:pb-0">
@@ -59,11 +53,14 @@ export default function MetiersPage() {
       <main>
         <section id="top" className="w-full pt-16 md:pt-18 bg-background-100 border-b border-background-200">
           <div className="w-full px-4 md:px-8 lg:px-12 pt-14 md:pt-20 pb-12 md:pb-16">
-            <nav className="flex items-center gap-2 text-xs text-foreground-500 mb-6">
-              <Link to="/" className="hover:text-foreground-900 cursor-pointer">Accueil</Link>
-              <i className="ri-arrow-right-s-line"></i>
-              <span className="text-foreground-800">Métiers</span>
-            </nav>
+            <FilAriane
+              items={[
+                { name: "Accueil", path: "/" },
+                { name: "Métiers", path: "/metiers" },
+              ]}
+              variante="clair"
+              schemaId="artiflow-metiers-breadcrumb-schema"
+            />
 
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700">
@@ -112,8 +109,12 @@ export default function MetiersPage() {
                   <div className="relative w-full h-40 overflow-hidden bg-background-100">
                     <img
                       src={m.cardImage}
-                      alt={`ArtiFlow-pro pour les ${m.name.toLowerCase()}s`}
-                      title={`${m.name} · ArtiFlow-pro`}
+                      alt={`Devis pour ${m.name.toLowerCase()}s avec ArtiFlow-pro`}
+                      title={`${m.name} : devis et relances | ArtiFlow-pro`}
+                      width={400}
+                      height={300}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
@@ -220,6 +221,43 @@ export default function MetiersPage() {
                 </Link>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Encart « Besoin d'aide ? » : repris en bas de page, là où le visiteur hésite sur sa version métier. */}
+        <section className="w-full bg-background-50 border-t border-background-200">
+          <div className="w-full px-4 md:px-8 lg:px-12 py-12 md:py-16">
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-5">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700">
+                  <i className="ri-customer-service-2-line"></i>
+                  Un doute sur votre métier ?
+                </span>
+                <p className="mt-2 text-sm text-foreground-600">
+                  Dites-nous votre corps d'état : on vous montre la version d'ArtiFlow-pro la plus adaptée à vos chantiers.
+                </p>
+              </div>
+              <EncartBesoinAide variante="clair" />
+            </div>
+          </div>
+        </section>
+
+        <section className="w-full bg-background-100 border-t border-background-200">
+          <div className="w-full px-4 md:px-8 lg:px-12 py-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/metiers/recapitulatif"
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-full text-sm font-semibold whitespace-nowrap cursor-pointer bg-background-50 border border-background-200 text-foreground-800 hover:border-primary-300 transition-colors"
+            >
+              <i className="ri-list-check-2 text-primary-600"></i>
+              Récapitulatif des fiches métiers
+            </Link>
+            <Link
+              to="/zones-intervention"
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-full text-sm font-semibold whitespace-nowrap cursor-pointer bg-background-50 border border-background-200 text-foreground-800 hover:border-accent-300 transition-colors"
+            >
+              <i className="ri-map-2-line text-accent-600"></i>
+              Zones d'intervention par ville
+            </Link>
           </div>
         </section>
 

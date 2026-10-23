@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { fetchDureeEssai } from "@/lib/parametresEssai";
 
 /** Tarif mensuel de référence de chaque offre (en euros). */
 export const OFFRE_PRIX: Record<string, number> = { Essentiel: 29, Pro: 59, Entreprise: 99 };
@@ -31,6 +32,10 @@ export interface AbonnementItem {
   email: string | null;
   metier: string | null;
   ville: string | null;
+  /** Forme juridique de l'entreprise (auto-entrepreneur, EI, EURL, SARL, SASU/SAS), ou null. */
+  statut_juridique: string | null;
+  /** Taille de l'entreprise (seul, 2-5, 6-20, plus-20), ou null. */
+  taille_entreprise: string | null;
   offre: string;
   statut: string;
   montant_mensuel: number;
@@ -39,6 +44,8 @@ export interface AbonnementItem {
   mandat_sepa: string | null;
   date_debut: string | null;
   date_echeance: string | null;
+  /** Date d'envoi de l'email de bienvenue automatique, ou null s'il n'est pas encore parti. */
+  bienvenue_envoyee_le: string | null;
   created_at: string;
 }
 
@@ -68,6 +75,8 @@ export async function fetchAbonnements(): Promise<AbonnementItem[]> {
     email: toStr(row.email),
     metier: toStr(row.metier),
     ville: toStr(row.ville),
+    statut_juridique: toStr(row.statut_juridique),
+    taille_entreprise: toStr(row.taille_entreprise),
     offre: toStr(row.offre) ?? "Pro",
     statut: toStr(row.statut) ?? "Actif",
     montant_mensuel: toNum(row.montant_mensuel),
@@ -76,8 +85,34 @@ export async function fetchAbonnements(): Promise<AbonnementItem[]> {
     mandat_sepa: toStr(row.mandat_sepa),
     date_debut: toStr(row.date_debut),
     date_echeance: toStr(row.date_echeance),
+    bienvenue_envoyee_le: toStr(row.bienvenue_envoyee_le),
     created_at: toStr(row.created_at) ?? new Date().toISOString(),
   }));
+}
+
+/**
+ * Répercute la forme juridique et la taille de l'entreprise d'un artisan sur ses abonnements.
+ * Le back-office lit les pros inscrits depuis la table `abonnements` (les profils étant privés),
+ * on y recopie donc ces deux informations d'entreprise pour pouvoir les filtrer dans l'interface.
+ * Best-effort : un souci d'écriture ne bloque jamais l'enregistrement du profil côté artisan.
+ */
+export async function syncEntrepriseAbonnement(
+  artisanId: string,
+  statutJuridique: string | null,
+  tailleEntreprise: string | null,
+): Promise<void> {
+  try {
+    await supabase
+      .from("abonnements")
+      .update({
+        statut_juridique: statutJuridique,
+        taille_entreprise: tailleEntreprise,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("artisan_id", artisanId);
+  } catch {
+    /* best-effort : ne bloque pas la mise à jour du profil */
+  }
 }
 
 /**
@@ -509,6 +544,48 @@ export async function createAbonnement(payload: AbonnementPayload): Promise<void
   }
 }
 
+/**
+ * Crée l'abonnement d'essai initial d'un artisan qui vient de s'inscrire, afin que son
+ * compte apparaisse aussitôt dans le back-office « Pros inscrits » (cette page ne lit que la
+ * table des abonnements, jamais les profils). Idempotent : n'agit que si aucune ligne n'existe
+ * pour ce compte. Best-effort : une erreur n'empêche jamais l'accès à l'espace artisan.
+ */
+export async function creerAbonnementEssaiInitial(params: {
+  artisanId: string;
+  entreprise: string | null;
+  email: string | null;
+  metier: string | null;
+}): Promise<void> {
+  try {
+    const { data: existing } = await supabase
+      .from("abonnements")
+      .select("id")
+      .eq("artisan_id", params.artisanId)
+      .limit(1)
+      .maybeSingle();
+    if (existing) return;
+
+    const duree = await fetchDureeEssai();
+    const debut = new Date();
+    const echeance = new Date(debut);
+    echeance.setDate(echeance.getDate() + duree);
+
+    await supabase.from("abonnements").insert({
+      artisan_id: params.artisanId,
+      entreprise: params.entreprise?.trim() || "Entreprise non renseignée",
+      email: params.email,
+      metier: params.metier,
+      offre: "Essentiel",
+      statut: "Essai",
+      montant_mensuel: 0,
+      date_debut: debut.toISOString().slice(0, 10),
+      date_echeance: echeance.toISOString().slice(0, 10),
+    });
+  } catch {
+    /* best-effort : ne bloque pas l'accès à l'espace artisan */
+  }
+}
+
 /** Change le statut d'un abonnement (Actif / Essai / Impayé / Résilié). */
 export async function updateAbonnementStatut(id: number, statut: string): Promise<void> {
   const { data: current } = await supabase
@@ -568,4 +645,18 @@ export async function updateAbonnementOffre(id: number, offre: string): Promise<
       motif: `Passage à l'offre ${offre}`,
     });
   }
+}
+
+/**
+ * Marque l'email de bienvenue comme envoyé (date du jour) pour un abonnement.
+ * Utilisé après un envoi MANUEL (renvoi de secours depuis la fiche d'un pro) : on
+ * mémorise la date pour refléter le statut dans la liste et la fiche, et pour que la
+ * tâche planifiée ne renvoie pas une seconde fois l'accueil automatique.
+ */
+export async function marquerBienvenueEnvoyee(id: number): Promise<void> {
+  const { error } = await supabase
+    .from("abonnements")
+    .update({ bienvenue_envoyee_le: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
 }

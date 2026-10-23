@@ -3,7 +3,6 @@ import type { ComptableRemplacement } from "@/lib/artisanApi";
 import { downloadCsv, toCsv } from "@/lib/csv";
 import { todayISO } from "@/lib/dates";
 import { buildRemplacementsPdf } from "@/lib/comptabilitePdf";
-import { savePdf } from "@/lib/pdf";
 import {
   exportRemplacementsChartImage,
   exportRemplacementsHistoriqueImage,
@@ -80,6 +79,8 @@ import RemplacementsSelection from "./remplacements/RemplacementsSelection";
 import RemplacementsListe from "./remplacements/RemplacementsListe";
 import RemplacementsRangementBar from "@/components/feature/RemplacementsRangementBar";
 import Toast from "@/components/base/Toast";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 
 /**
  * Vue « Remplacements » de l'Espace comptable : recense tous les destinataires ponctuels
@@ -138,6 +139,8 @@ export default function RemplacementsCarte({
   /** Renvoie en un clic la dernière pièce transmise à une adresse (journal ou bilan). */
   onRenvoyerDerniere?: (r: ComptableRemplacement) => Promise<{ ok: boolean; message: string }>;
 }) {
+  // Aperçu avant téléchargement des PDF de remplacements (liste complète et sélection du mois).
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [filtreAdresse, setFiltreAdresse] = useState("");
   const [filtreExercice, setFiltreExercice] = useState("");
@@ -925,12 +928,16 @@ export default function RemplacementsCarte({
           exercice: exerciceLabel(r.exercice, r.type),
         })),
       });
-      savePdf(
-        doc,
-        moisPlusFaible
+      // Aperçu avant téléchargement : on contrôle le périmètre filtré, les totaux et le mini-graphe.
+      ouvrirApercuPdf({
+        title: "Aperçu · Remplacements comptables",
+        subtitle: "Vérifiez le périmètre filtré, les adresses et le mini-graphe avant de télécharger le PDF.",
+        filename: moisPlusFaible
           ? `remplacements-comptables-mois-faible-${moisPlusFaible.cle}-${todayISO()}.pdf`
           : `remplacements-comptables-${todayISO()}.pdf`,
-      );
+        build: async () => doc,
+        note: "Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF ».",
+      });
     } catch {
       /* l'échec de l'export PDF est silencieux : la liste reste consultable à l'écran */
     }
@@ -1074,7 +1081,14 @@ export default function RemplacementsCarte({
         })),
       });
       const suffixeFaible = moisPlusFaible ? `-mois-faible-${moisPlusFaible.cle}` : "";
-      savePdf(doc, `remplacements-selection${suffixeFaible}-${todayISO()}.pdf`);
+      // Aperçu avant téléchargement : seules les pièces cochées figurent dans le document.
+      ouvrirApercuPdf({
+        title: "Aperçu · Sélection de remplacements",
+        subtitle: `Vérifiez les ${remplacementsMoisSelectionnes.length} pièce${remplacementsMoisSelectionnes.length > 1 ? "s" : ""} cochée${remplacementsMoisSelectionnes.length > 1 ? "s" : ""} avant de télécharger le PDF.`,
+        filename: `remplacements-selection${suffixeFaible}-${todayISO()}.pdf`,
+        build: async () => doc,
+        note: "Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF ».",
+      });
     } catch {
       /* l'échec de l'export PDF est silencieux : la sélection reste consultable à l'écran */
     }
@@ -2112,6 +2126,17 @@ export default function RemplacementsCarte({
       />
 
       {copieMsg && <Toast message={copieMsg} onClose={() => setCopieMsg(null)} icon="ri-clipboard-line" />}
+
+      {apercuPdf && (
+        <ApercuPdfModal
+          title={apercuPdf.title}
+          subtitle={apercuPdf.subtitle}
+          filename={apercuPdf.filename}
+          docBuilder={apercuPdf.build}
+          note={apercuPdf.note}
+          onClose={fermerApercuPdf}
+        />
+      )}
     </div>
   );
 }

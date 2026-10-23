@@ -26,20 +26,53 @@ function emailValide(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+/** Envoi d'un email transactionnel via l'API Resend (canal d'envoi principal). */
+async function envoyerViaResend(opts: {
+  apiKey: string;
+  fromEmail: string;
+  emetteurNom: string;
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<{ ok: boolean; id?: string; error?: string }> {
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${opts.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${opts.emetteurNom} <${opts.fromEmail}>`,
+        to: [opts.to],
+        subject: opts.subject,
+        html: opts.html,
+      }),
+    });
+    const data = (await res.json().catch(() => null)) as { id?: string; message?: string } | null;
+    if (!res.ok) {
+      return { ok: false, error: data?.message || `Resend a refusé l'envoi (code ${res.status}).` };
+    }
+    return { ok: true, id: data?.id };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Le service d'envoi est injoignable." };
+  }
+}
+
 /**
  * Envoie a l'artisan un email d'alerte lorsqu'un test d'envoi a echoue, afin qu'il
  * soit prevenu meme s'il a ferme l'application. Best-effort : ne doit jamais faire
  * echouer la fonction appelante.
  */
 async function envoyerAlerteEchec(opts: {
-  resendKey: string;
-  fromDomain: string;
+  brevoKey: string;
+  fromEmail: string;
   emetteurNom: string;
   emailArtisan: string;
   destinataire: string;
   erreur: string;
 }): Promise<void> {
-  const { resendKey, fromDomain, emetteurNom, emailArtisan, destinataire, erreur } = opts;
+  const { brevoKey, fromEmail, emetteurNom, emailArtisan, destinataire, erreur } = opts;
   if (!emailArtisan) return;
   const sujet = "Alerte ArtiFlow-pro : un email de test a échoué";
   const html = `<!doctype html>
@@ -70,15 +103,7 @@ async function envoyerAlerteEchec(opts: {
     </div>
   </div>
 </body></html>`;
-  try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: `${emetteurNom} <noreply@${fromDomain}>`, to: [emailArtisan], subject: sujet, html }),
-    });
-  } catch {
-    /* une alerte qui échoue ne doit jamais remonter */
-  }
+  await envoyerViaResend({ apiKey: brevoKey, fromEmail, emetteurNom, to: emailArtisan, subject: sujet, html });
 }
 
 /**
@@ -87,12 +112,12 @@ async function envoyerAlerteEchec(opts: {
  * resultat explicite (contrairement a l'alerte automatique, best-effort).
  */
 async function envoyerTestAlerte(opts: {
-  resendKey: string;
-  fromDomain: string;
+  brevoKey: string;
+  fromEmail: string;
   emetteurNom: string;
   to: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const { resendKey, fromDomain, emetteurNom, to } = opts;
+  const { brevoKey, fromEmail, emetteurNom, to } = opts;
   const sujet = "[Test] Alerte ArtiFlow-pro : vérification de l'adresse de réception";
   const html = `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8"></head>
@@ -123,21 +148,9 @@ async function envoyerTestAlerte(opts: {
     </div>
   </div>
 </body></html>`;
-  const fromAddress = `${emetteurNom} <noreply@${fromDomain}>`;
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: fromAddress, to: [to], subject: sujet, html }),
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as { message?: string } | null;
-      return { ok: false, error: body?.message || `L'API Resend a refusé l'envoi du test (code ${res.status}).` };
-    }
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Le service d'envoi est injoignable." };
-  }
+  const envoi = await envoyerViaResend({ apiKey: brevoKey, fromEmail, emetteurNom, to, subject: sujet, html });
+  if (!envoi.ok) return { ok: false, error: envoi.error || "L'envoi du test a échoué." };
+  return { ok: true };
 }
 
 /**
@@ -150,8 +163,8 @@ async function envoyerTestAlerte(opts: {
  * ressemble l'alerte (son taux actuel compare a son seuil), sans attendre une baisse reelle.
  */
 async function envoyerTestAlerteTaux(opts: {
-  resendKey: string;
-  fromDomain: string;
+  brevoKey: string;
+  fromEmail: string;
   emetteurNom: string;
   to: string;
   taux: number;
@@ -160,7 +173,7 @@ async function envoyerTestAlerteTaux(opts: {
   total: number;
   echecs: number;
 }): Promise<{ ok: boolean; error?: string }> {
-  const { resendKey, fromDomain, emetteurNom, to, taux, seuil, jours, total, echecs } = opts;
+  const { brevoKey, fromEmail, emetteurNom, to, taux, seuil, jours, total, echecs } = opts;
   const sousSeuil = taux < seuil;
   const couleur = sousSeuil ? "#b91c1c" : "#0f766e";
   const fond = sousSeuil ? "#fee2e2" : "#ccfbf1";
@@ -203,21 +216,9 @@ async function envoyerTestAlerteTaux(opts: {
     </div>
   </div>
 </body></html>`;
-  const fromAddress = `${emetteurNom} <noreply@${fromDomain}>`;
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: fromAddress, to: [to], subject: sujet, html }),
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as { message?: string } | null;
-      return { ok: false, error: body?.message || `L'API Resend a refusé l'envoi du test (code ${res.status}).` };
-    }
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Le service d'envoi est injoignable." };
-  }
+  const envoi = await envoyerViaResend({ apiKey: brevoKey, fromEmail, emetteurNom, to, subject: sujet, html });
+  if (!envoi.ok) return { ok: false, error: envoi.error || "L'envoi du test a échoué." };
+  return { ok: true };
 }
 
 /**
@@ -242,16 +243,17 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+    const brevoKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
     const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+    const fromEmail = fromDomain ? `contact@${fromDomain}` : "";
 
     if (!supabaseUrl || !anonKey) return json({ ok: false, error: "Configuration manquante." }, 500);
-    if (!resendKey || !fromDomain) {
+    if (!brevoKey) {
       return json(
         {
           ok: false,
           error:
-            "L'envoi d'email n'est pas encore configuré. Activez Resend (clé API + domaine vérifié) puis relancez le diagnostic.",
+            "L'envoi d'email n'est pas encore configuré. Paramétrez Resend puis relancez le diagnostic.",
         },
         400,
       );
@@ -331,10 +333,129 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Mode « test du repli » : on simule volontairement une panne Brevo, puis on expédie
+    // l'email via Resend. C'est exactement le chemin de secours utilisé quand Brevo refuse
+    // un envoi : ce test prouve que le relais fonctionne vraiment. Les DEUX tentatives sont
+    // tracées dans envoi_fournisseur_historique pour apparaître dans « Suivi des envois ».
+    if (payload?.repliTest === true) {
+      const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+      const resendDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+      const messageBrevo = "Test du repli : échec Brevo simulé volontairement.";
+
+      if (admin) {
+        try {
+          await admin.from("envoi_fournisseur_historique").insert({
+            fonction: "test-repli",
+            fournisseur: "brevo",
+            statut: "echec",
+            repli: false,
+            message: messageBrevo,
+          });
+        } catch {
+          /* la trace ne doit jamais bloquer le test */
+        }
+      }
+
+      if (!resendKey || !resendDomain) {
+        return json(
+          {
+            ok: false,
+            error: "Le secours Resend n'est pas configuré (clé API + domaine). Le repli ne peut donc pas être testé.",
+          },
+          400,
+        );
+      }
+
+      const sujet = "[Test] Repli automatique : Resend a bien pris le relais de Brevo";
+      const html = `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
+  <div style="max-width:600px;margin:0 auto;padding:24px;">
+    <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="padding:24px;border-bottom:1px solid #eee;">
+        <p style="margin:0;font-size:20px;font-weight:700;">${escapeHtml(emetteurNom)}</p>
+        <p style="margin:6px 0 0;font-size:13px;color:#71717a;">Test du repli automatique des emails</p>
+      </div>
+      <div style="padding:24px;">
+        <div style="display:inline-block;padding:6px 12px;border-radius:999px;background:#ecfdf5;color:#15803d;font-size:12px;font-weight:700;">Resend a pris le relais</div>
+        <p style="margin:16px 0 12px;font-size:14px;line-height:1.7;color:#3f3f46;">
+          Ce message vous arrive <strong>via le secours Resend</strong>. Pour le produire, Brevo a été mis en
+          échec volontairement : c'est le même enchaînement que lorsqu'un envoi réel échoue.
+        </p>
+        <div style="background:#fafafa;border:1px solid #eee;border-radius:10px;padding:16px;font-size:13px;margin:0 0 18px;">
+          <p style="margin:0 0 6px;color:#71717a;">Canal principal : <strong style="color:#18181b;">Brevo</strong> — échec simulé</p>
+          <p style="margin:0;color:#71717a;">Repli utilisé : <strong style="color:#15803d;">Resend</strong></p>
+        </div>
+        <p style="margin:0;font-size:13px;color:#71717a;line-height:1.6;">
+          Vos devis, factures, relances et récapitulatifs continueront donc de partir même en cas de panne
+          ou de quota atteint chez Brevo.
+        </p>
+        <p style="margin:16px 0 0;font-size:12px;color:#a1a1aa;">
+          Test lancé le ${escapeHtml(new Date().toLocaleString("fr-FR"))} vers ${escapeHtml(to)}.
+        </p>
+      </div>
+      <div style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#a1a1aa;text-align:center;">
+        Email de test envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.
+      </div>
+    </div>
+  </div>
+</body></html>`;
+
+      let ok = false;
+      let erreur = "";
+      try {
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: `${emetteurNom} <noreply@${resendDomain}>`,
+            to: [to],
+            subject: sujet,
+            html,
+          }),
+        });
+        const data = (await res.json().catch(() => null)) as { id?: string; message?: string } | null;
+        if (res.ok) {
+          ok = true;
+        } else {
+          erreur = data?.message || `Resend a refusé l'envoi (code ${res.status}).`;
+        }
+      } catch (e) {
+        erreur = e instanceof Error ? e.message : "Resend est injoignable.";
+      }
+
+      if (admin) {
+        try {
+          await admin.from("envoi_fournisseur_historique").insert({
+            fonction: "test-repli",
+            fournisseur: "resend",
+            statut: ok ? "succes" : "echec",
+            repli: true,
+            message: ok ? messageBrevo : erreur,
+          });
+        } catch {
+          /* la trace ne doit jamais bloquer le test */
+        }
+      }
+
+      await journaliser(to, `${emetteurNom} <noreply@${resendDomain}>`, ok ? "succes" : "echec", ok ? "[Test repli] Resend a pris le relais." : `[Test repli] ${erreur}`);
+
+      if (!ok) {
+        return json({ ok: false, error: erreur || "Le repli Resend a échoué." }, 502);
+      }
+      return json({
+        ok: true,
+        to,
+        fournisseur: "resend",
+        repli: true,
+        fromAddress: `${emetteurNom} <noreply@${resendDomain}>`,
+      });
+    }
+
     // Mode « test de l'alerte » : on expédie volontairement un email à l'adresse de
     // réception pour vérifier qu'elle reçoit bien les alertes, sans journaliser de test.
     if (payload?.alerteTest === true) {
-      const resultat = await envoyerTestAlerte({ resendKey, fromDomain, emetteurNom, to });
+      const resultat = await envoyerTestAlerte({ brevoKey, fromEmail, emetteurNom, to });
       if (!resultat.ok) return json({ ok: false, error: resultat.error }, 502);
       // Consigne la reussite du test d'alerte : permet de conserver la date du dernier test
       // reussi comme preuve que l'adresse recoit bien les alertes.
@@ -348,7 +469,7 @@ Deno.serve(async (req) => {
           /* l'horodatage ne doit jamais faire echouer le test */
         }
       }
-      return json({ ok: true, to, fromAddress: `${emetteurNom} <noreply@${fromDomain}>` });
+      return json({ ok: true, to, fromAddress: `${emetteurNom} <${fromEmail}>` });
     }
 
     // Mode « test de l'alerte de taux » : on expédie une alerte de démonstration avec le
@@ -378,8 +499,8 @@ Deno.serve(async (req) => {
         }
       }
       const resultat = await envoyerTestAlerteTaux({
-        resendKey,
-        fromDomain,
+        brevoKey,
+        fromEmail,
         emetteurNom,
         to,
         taux,
@@ -405,7 +526,7 @@ Deno.serve(async (req) => {
           /* l'historisation ne doit jamais faire echouer l'envoi */
         }
       }
-      return json({ ok: true, to, fromAddress: `${emetteurNom} <noreply@${fromDomain}>` });
+      return json({ ok: true, to, fromAddress: `${emetteurNom} <${fromEmail}>` });
     }
 
     // Mode « test a blanc » : on rejoue le contenu EXACT d'une automatisation (construit en
@@ -415,38 +536,31 @@ Deno.serve(async (req) => {
       const sujet = String(payload?.subject ?? "").trim() || "[Test a blanc] Envoi automatique ArtiFlow-pro";
       const htmlRejoue = String(payload?.html ?? "").trim();
       if (!htmlRejoue) return json({ ok: false, error: "Aucun contenu a rejouer pour ce test a blanc." }, 400);
-      const fromAddressBlanc = `${emetteurNom} <noreply@${fromDomain}>`;
+      const fromAddressBlanc = `${emetteurNom} <${fromEmail}>`;
       const htmlBlanc = avecBandeauBlanc(htmlRejoue, emetteurNom);
-      let resBlanc: Response;
-      let dataBlanc: { id?: string; message?: string } | null;
-      try {
-        resBlanc = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ from: fromAddressBlanc, to: [to], subject: sujet, html: htmlBlanc }),
-        });
-        dataBlanc = (await resBlanc.json().catch(() => null)) as { id?: string; message?: string } | null;
-      } catch (netErr) {
-        const erreur = netErr instanceof Error ? netErr.message : "Le service d'envoi est injoignable.";
-        await journaliser(to, fromAddressBlanc, "echec", `[Test a blanc] ${erreur}`);
-        return json({ ok: false, error: erreur }, 502);
-      }
-      if (!resBlanc.ok) {
-        const erreur =
-          dataBlanc?.message || `L'API Resend a refuse l'envoi du test a blanc (code ${resBlanc.status}).`;
+      const envoiBlanc = await envoyerViaResend({
+        apiKey: brevoKey,
+        fromEmail,
+        emetteurNom,
+        to,
+        subject: sujet,
+        html: htmlBlanc,
+      });
+      if (!envoiBlanc.ok) {
+        const erreur = envoiBlanc.error || "L'envoi du test a blanc a echoue.";
         await journaliser(to, fromAddressBlanc, "echec", `[Test a blanc] ${erreur}`);
         return json({ ok: false, error: erreur }, 502);
       }
       await journaliser(to, fromAddressBlanc, "succes", "[Test a blanc] Envoi rejoue vers un destinataire de test.");
-      return json({ ok: true, id: dataBlanc?.id ?? null, to, fromAddress: fromAddressBlanc });
+      return json({ ok: true, id: envoiBlanc.id ?? null, to, fromAddress: fromAddressBlanc });
     }
 
     // Envoi de l'alerte seulement si l'artisan l'a activee et qu'une adresse est disponible.
     const alerterSiBesoin = async (destinataire: string, erreur: string) => {
       if (!alerteActive || !emailAlerte) return;
       await envoyerAlerteEchec({
-        resendKey,
-        fromDomain,
+        brevoKey,
+        fromEmail,
         emetteurNom,
         emailArtisan: emailAlerte,
         destinataire,
@@ -454,7 +568,7 @@ Deno.serve(async (req) => {
       });
     };
 
-    const fromAddress = `${emetteurNom} <noreply@${fromDomain}>`;
+    const fromAddress = `${emetteurNom} <${fromEmail}>`;
     const subject = "Test d'envoi ArtiFlow-pro — configuration email validée";
     const html = `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -469,7 +583,7 @@ Deno.serve(async (req) => {
         <p style="margin:0 0 12px;font-size:15px;">Bonjour,</p>
         <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#3f3f46;">
           Cet email confirme que votre configuration d'envoi fonctionne de bout en bout :
-          la clé API Resend est valide et le domaine <strong>${escapeHtml(fromDomain)}</strong> expédie correctement.
+          la clé API Resend est valide et le domaine <strong>${escapeHtml(fromEmail)}</strong> expédie correctement.
         </p>
         <p style="margin:0;font-size:13px;color:#71717a;">
           Vos devis, factures, relances et récaps partenaires pourront bien partir depuis cette adresse.
@@ -486,26 +600,17 @@ Deno.serve(async (req) => {
 </body></html>`;
 
     // On tente l'envoi : le service peut refuser (reponse non-ok) ou etre injoignable.
-    let res: Response;
-    let resendData: { id?: string; message?: string } | null;
-    try {
-      res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: fromAddress, to: [to], subject, html }),
-      });
-      resendData = (await res.json().catch(() => null)) as { id?: string; message?: string } | null;
-    } catch (netErr) {
-      const erreur =
-        netErr instanceof Error ? netErr.message : "Le service d'envoi est injoignable.";
-      await journaliser(to, fromAddress, "echec", erreur);
-      await alerterSiBesoin(to, erreur);
-      return json({ ok: false, error: erreur }, 502);
-    }
+    const envoi = await envoyerViaResend({
+      apiKey: brevoKey,
+      fromEmail,
+      emetteurNom,
+      to,
+      subject,
+      html,
+    });
 
-    if (!res.ok) {
-      const erreur =
-        resendData?.message || `L'API Resend a refusé l'envoi du test (code ${res.status}).`;
+    if (!envoi.ok) {
+      const erreur = envoi.error || "L'envoi du test a échoué.";
       await journaliser(to, fromAddress, "echec", erreur);
       // Alerte l'artisan par email : il est ainsi prevenu meme s'il ferme l'application.
       await alerterSiBesoin(to, erreur);
@@ -513,7 +618,7 @@ Deno.serve(async (req) => {
     }
 
     await journaliser(to, fromAddress, "succes", null);
-    return json({ ok: true, id: resendData?.id ?? null, to, fromAddress });
+    return json({ ok: true, id: envoi.id ?? null, to, fromAddress });
   } catch (e) {
     return json({ ok: false, error: e instanceof Error ? e.message : "Erreur inconnue." }, 500);
   }

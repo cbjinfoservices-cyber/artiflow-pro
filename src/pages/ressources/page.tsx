@@ -3,12 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "@/components/feature/Navbar";
 import Footer from "@/components/feature/Footer";
 import { articles, articlesRecents, articleFullText, isNouveauArticle, parseDateFr, readingMinutes, CATEGORIES_GUIDES_PRATIQUES } from "@/mocks/ressources";
+import { getGuideMiseAJour } from "@/mocks/guidesMiseAJour";
 import { metiers } from "@/mocks/metiers";
 import ArticleCard from "@/components/feature/ArticleCard";
 import { useDemoModal } from "@/hooks/useDemoModal";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useSectionNav } from "@/hooks/useSectionNav";
-import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
+import FilAriane from "@/components/feature/FilAriane";
 import { useItemListSchema } from "@/hooks/useItemListSchema";
 import SommaireRessources, { categoriesToSections } from "@/pages/ressources/components/SommaireRessources";
 import ReprendreLecture from "@/pages/ressources/components/ReprendreLecture";
@@ -105,11 +106,16 @@ function lireMetierFiltre(): string {
 const FILTRES_IDS = FILTRES.map((f) => f.id);
 const TRIS_IDS = TRIS.map((t) => t.id);
 
-type RessourcesPrefs = { recherche: string; filtre: FiltreAvancement; tri: TriLecture };
+type RessourcesPrefs = {
+  recherche: string;
+  filtre: FiltreAvancement;
+  tri: TriLecture;
+  misAJourSeuls: boolean;
+};
 
-/** Relit les préférences mémorisées du hub (recherche, filtre d'avancement et tri). */
+/** Relit les préférences mémorisées du hub (recherche, filtre d'avancement, tri et révisions). */
 function lirePrefs(): RessourcesPrefs {
-  const defaut: RessourcesPrefs = { recherche: "", filtre: "tous", tri: "metier" };
+  const defaut: RessourcesPrefs = { recherche: "", filtre: "tous", tri: "metier", misAJourSeuls: false };
   try {
     const brut = window.localStorage.getItem(PREFS_KEY);
     if (!brut) return defaut;
@@ -120,6 +126,7 @@ function lirePrefs(): RessourcesPrefs {
         ? (parse.filtre as FiltreAvancement)
         : defaut.filtre,
       tri: TRIS_IDS.includes(parse.tri as TriLecture) ? (parse.tri as TriLecture) : defaut.tri,
+      misAJourSeuls: parse.misAJourSeuls === true,
     };
   } catch {
     return defaut;
@@ -136,6 +143,7 @@ export default function RessourcesPage() {
   const [metierFiltre, setMetierFiltre] = useState<string>(lireMetierFiltre);
   const [temps, setTemps] = useState<FiltreTemps>(lireTemps);
   const [favorisSeuls, setFavorisSeuls] = useState(false);
+  const [misAJourSeuls, setMisAJourSeuls] = useState(prefs.misAJourSeuls);
   const nbFavoris = useCompteurFavoris();
   const { openDemo } = useDemoModal();
   const goSection = useSectionNav();
@@ -157,11 +165,11 @@ export default function RessourcesPage() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(PREFS_KEY, JSON.stringify({ recherche, filtre, tri }));
+      window.localStorage.setItem(PREFS_KEY, JSON.stringify({ recherche, filtre, tri, misAJourSeuls }));
     } catch {
       // Stockage indisponible : on ignore silencieusement.
     }
-  }, [recherche, filtre, tri]);
+  }, [recherche, filtre, tri, misAJourSeuls]);
 
   useEffect(() => {
     try {
@@ -173,20 +181,12 @@ export default function RessourcesPage() {
   }, [metierFiltre]);
 
   usePageMeta(
-    "Ressources artisans : devis, relances et chantiers par métier",
+    "Ressources artisans : devis, relances | ArtiFlow-pro",
     "Guides courts et concrets pour les artisans du bâtiment : chiffrage des devis, relances clients et organisation de chantier, par corps d'état.",
     {
       image:
         "https://readdy.ai/api/search-image?query=Stylized%20artistic%20scene%20of%20stacked%20open%20notebooks%20and%20rolled%20blueprints%20with%20artisan%20tool%20silhouettes%2C%20warm%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-ressources&orientation=landscape",
     }
-  );
-
-  useBreadcrumbSchema(
-    [
-      { name: "Accueil", path: "/" },
-      { name: "Ressources", path: "/ressources" },
-    ],
-    "artiflow-ressources-breadcrumb-schema"
   );
 
   useItemListSchema(
@@ -243,6 +243,9 @@ export default function RessourcesPage() {
     []
   );
 
+  // Guides ayant reçu une révision éditoriale (date de mise à jour renseignée).
+  const nbMisAJour = articles.filter((a) => getGuideMiseAJour(a.slug)).length;
+
   const q = recherche.trim().toLowerCase();
   // Nombre de guides masqués par le filtre métier (pour le bandeau d'information).
   const guidesMasquesMetier =
@@ -251,6 +254,7 @@ export default function RessourcesPage() {
   const listeSansTemps = articles.filter((a) => {
     if (metierFiltre && a.category !== metierFiltre) return false;
     if (favorisSeuls && !isFavori(a.slug)) return false;
+    if (misAJourSeuls && !getGuideMiseAJour(a.slug)) return false;
     if (filtre === "nouveau" ? !isNouveauArticle(a) : filtre !== "tous" && getStatut(a.slug) !== filtre) {
       return false;
     }
@@ -325,6 +329,7 @@ export default function RessourcesPage() {
     setMetierFiltre("");
     setTemps("tous");
     setFavorisSeuls(false);
+    setMisAJourSeuls(false);
   };
 
   const voirNouveautes = () => {
@@ -343,13 +348,14 @@ export default function RessourcesPage() {
       <main>
         <section id="top" className="w-full pt-16 md:pt-18 bg-background-100 border-b border-background-200">
           <div className="w-full px-4 md:px-8 lg:px-12 pt-14 md:pt-20 pb-12 md:pb-16">
-            <nav className="flex items-center gap-2 text-xs text-foreground-500 mb-6">
-              <Link to="/" className="hover:text-foreground-900 cursor-pointer">
-                Accueil
-              </Link>
-              <i className="ri-arrow-right-s-line"></i>
-              <span className="text-foreground-800">Ressources</span>
-            </nav>
+            <FilAriane
+              items={[
+                { name: "Accueil", path: "/" },
+                { name: "Ressources", path: "/ressources" },
+              ]}
+              variante="clair"
+              schemaId="artiflow-ressources-breadcrumb-schema"
+            />
 
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 text-sm font-semibold text-accent-700">
@@ -426,7 +432,7 @@ export default function RessourcesPage() {
 
         <ParcoursSection />
 
-        {q === "" && filtre === "tous" && metierFiltre === "" && (
+        {q === "" && filtre === "tous" && metierFiltre === "" && !misAJourSeuls && (
           <section className="w-full bg-background-100 border-y border-background-200">
             <div className="w-full px-4 md:px-8 lg:px-12 py-14 md:py-16">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-7">
@@ -569,6 +575,27 @@ export default function RessourcesPage() {
               )}
             </div>
 
+            {misAJourSeuls && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-lg bg-secondary-100 border border-secondary-200">
+                <span className="inline-flex items-center gap-2 text-sm text-secondary-900">
+                  <i className="ri-history-line"></i>
+                  <span>
+                    Vous ne voyez que les <strong className="font-semibold">{liste.length}</strong> guide
+                    {liste.length > 1 ? "s" : ""} révisé{liste.length > 1 ? "s" : ""} — le badge « Mis à jour le… »
+                    indique la date de la dernière révision.
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMisAJourSeuls(false)}
+                  className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-secondary-500 text-background-50 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-secondary-600 transition-colors"
+                >
+                  <i className="ri-eye-line"></i>
+                  Tout réafficher
+                </button>
+              </div>
+            )}
+
             {metierFiltre !== "" && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-lg bg-secondary-100 border border-secondary-200">
                 <span className="inline-flex items-center gap-2 text-sm text-secondary-900">
@@ -680,6 +707,23 @@ export default function RessourcesPage() {
                   <i className={favorisSeuls ? "ri-bookmark-3-fill" : "ri-bookmark-3-line"}></i>
                   Favoris
                   <span className={favorisSeuls ? "text-background-50/80" : "text-foreground-400"}>{nbFavoris}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMisAJourSeuls((v) => !v)}
+                  aria-pressed={misAJourSeuls}
+                  title="N'afficher que les guides dont le contenu a été révisé récemment"
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap cursor-pointer transition-colors border ${
+                    misAJourSeuls
+                      ? "bg-secondary-500 text-background-50 border-secondary-500 font-semibold"
+                      : "bg-background-100 text-foreground-700 border-background-200 hover:border-secondary-300 hover:text-secondary-800"
+                  }`}
+                >
+                  <i className="ri-history-line"></i>
+                  Mis à jour récemment
+                  <span className={misAJourSeuls ? "text-background-50/80" : "text-foreground-400"}>
+                    {nbMisAJour}
+                  </span>
                 </button>
               </div>
             </div>

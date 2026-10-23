@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/feature/Navbar";
 import Footer from "@/components/feature/Footer";
@@ -16,7 +16,9 @@ import RecapMensuelAnnuel from "@/pages/tarifs/components/RecapMensuelAnnuel";
 import CalculatriceRoi from "@/pages/tarifs/components/CalculatriceRoi";
 import SimulateurEntreprise from "@/pages/tarifs/components/SimulateurEntreprise";
 import SommaireTarifs from "@/pages/tarifs/components/SommaireTarifs";
-import AbonnementCheckoutModal from "@/pages/tarifs/components/AbonnementCheckoutModal";
+import DocumentsSurMesure from "@/pages/tarifs/components/DocumentsSurMesure";
+import BandeauQuoiDeNeufTarifs from "@/pages/tarifs/components/BandeauQuoiDeNeufTarifs";
+import MetiersGains from "@/pages/tarifs/components/MetiersGains";
 import ReassurancePaiement from "@/pages/tarifs/components/ReassurancePaiement";
 import BandeauDejaAbonne from "@/components/feature/BandeauDejaAbonne";
 import PaiementAnnuleBanner from "@/pages/tarifs/components/PaiementAnnuleBanner";
@@ -29,7 +31,12 @@ import { causesBlocagePaiement } from "@/lib/abonnementPaiement";
 import { viderCacheDiagnosticPaiement } from "@/lib/diagnosticPaiementCache";
 import ComparerOffresModal from "@/components/feature/ComparerOffresModal";
 import FaqAccordion from "@/components/feature/FaqAccordion";
+import EncartBesoinAide from "@/components/feature/EncartBesoinAide";
 import Infobulle from "@/components/base/Infobulle";
+
+// La fenêtre de souscription ne s'affiche qu'au clic sur « S'abonner » : on la charge à la
+// demande pour ne pas alourdir le démarrage de la page Tarifs.
+const AbonnementCheckoutModal = lazy(() => import("@/pages/tarifs/components/AbonnementCheckoutModal"));
 
 function splitPlanFeatures(features: string[]): { header: string | null; items: string[] } {
   const isHeader = (feature: string) => feature.startsWith("Tout ") && feature.includes("plus");
@@ -138,8 +145,8 @@ export default function TarifsPage() {
   }, [annual]);
 
   usePageMeta(
-    "Tarifs ArtiFlow-pro · Devis, planning & relances pour artisans",
-    "Découvrez les tarifs ArtiFlow-pro : Essentiel à 29 €, Pro à 59 € et Entreprise à 99 € par mois. Sans engagement, 14 jours d'essai et devis IA illimités.",
+    "Tarifs ArtiFlow-pro : devis IA & documents à votre image",
+    "Tarifs ArtiFlow-pro : Essentiel 29 €, Pro 59 €, Entreprise 99 €/mois. Devis IA, documents et emails à votre image, modèles réutilisables, sans engagement.",
     {
       type: "website",
       image:
@@ -187,10 +194,10 @@ export default function TarifsPage() {
                 Tarifs clairs
               </span>
               <h1 className="mt-3 font-heading font-bold text-3xl md:text-5xl text-foreground-950 tracking-tight">
-                Le bon prix pour votre activité, sans surprise
+                Des devis en 2 minutes, à votre image, au bon prix
               </h1>
               <p className="mt-4 text-base md:text-lg text-foreground-600 leading-relaxed">
-                Choisissez l'offre adaptée à votre atelier ou à votre équipe. {dureeEssai > 0 ? `${dureeEssai} jours d'essai sur l'offre Pro` : "Prélèvement mensuel ou annuel"}, résiliable en un clic.
+                Devis IA, relances automatiques et documents à vos couleurs : {dureeEssai > 0 ? `${dureeEssai} jours d'essai sur l'offre Pro` : "prélèvement mensuel ou annuel"}, résiliable en un clic. Choisissez l'offre qui suit la croissance de votre activité.
               </p>
             </div>
 
@@ -224,6 +231,9 @@ export default function TarifsPage() {
                 Économisez 2 mois
               </button>
             </div>
+
+            {/* Ce qui vient de sortir : les visiteurs voient les dernières livraisons avant de choisir. */}
+            <BandeauQuoiDeNeufTarifs className="mt-6" />
           </div>
 
           <div id="offres" className="w-full px-4 md:px-8 lg:px-12 pb-14 scroll-mt-32">
@@ -415,6 +425,8 @@ export default function TarifsPage() {
           </div>
         </section>
 
+        <DocumentsSurMesure />
+
         <PreuveSocialePro />
 
         <SommaireTarifs />
@@ -497,6 +509,8 @@ export default function TarifsPage() {
           </div>
         </section>
 
+        <MetiersGains />
+
         <SimulateurEntreprise annual={annual} />
 
         <section id="faq" className="w-full bg-background-100 scroll-mt-32">
@@ -523,29 +537,72 @@ export default function TarifsPage() {
         <section className="w-full bg-background-50">
           <div className="w-full px-4 md:px-8 lg:px-12 py-16 md:py-20">
             <div className="max-w-4xl mx-auto p-8 md:p-12 rounded-lg bg-accent-950 text-background-50 text-center">
-              <h2 className="font-heading font-bold text-3xl md:text-4xl tracking-tight">
-                Encore un doute ? Testez, c'est le plus simple.
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background-50/10 border border-background-50/20 text-[11px] font-semibold uppercase tracking-wide text-background-100">
+                <i className="ri-rocket-2-line"></i>
+                Prêt en moins de 30 minutes
+              </span>
+              <h2 className="mt-4 font-heading font-bold text-3xl md:text-4xl tracking-tight">
+                Vos devis signés plus vite, dès cette semaine
               </h2>
-              <p className="mt-4 text-sm md:text-base text-background-200/85 max-w-xl mx-auto">
-                {dureeEssai > 0 ? `${dureeEssai} jours d'essai, aucun débit avant la fin. ` : ""}On configure votre premier devis avec vous en 20 minutes.
+              <p className="mt-4 text-sm md:text-base text-background-200/85 max-w-2xl mx-auto">
+                {dureeEssai > 0 ? `${dureeEssai} jours d'essai, aucun débit avant la fin. ` : ""}On configure votre premier devis avec vous en 20 minutes — et vous repartez avec un modèle à vos couleurs.
               </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-2">
+                {["Devis IA en 2 min", "Relances automatiques", "Documents à votre image", "Sans engagement"].map((b) => (
+                  <span
+                    key={b}
+                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-background-50/10 border border-background-50/20 text-xs font-medium text-background-100 whitespace-nowrap"
+                  >
+                    <i className="ri-check-line text-primary-400"></i>
+                    {b}
+                  </span>
+                ))}
+              </div>
               <div className="mt-7 flex flex-col sm:flex-row justify-center gap-3">
+                <a
+                  href="#offres"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
+                >
+                  <i className="ri-price-tag-3-line"></i>
+                  Choisir mon offre
+                </a>
                 <button
                   type="button"
                   onClick={() => openDemo("tarifs")}
-                  className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-background-50/10 border border-background-50/30 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-background-50/20 transition-colors"
                 >
                   <i className="ri-calendar-check-line"></i>
                   Demander une démo
                 </button>
-                <Link
-                  to="/app"
-                  className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-md bg-background-50/10 border border-background-50/30 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-background-50/20 transition-colors"
-                >
-                  <i className="ri-login-box-line"></i>
-                  Ouvrir mon espace
-                </Link>
               </div>
+              <p className="mt-4 text-xs text-background-200/70">
+                Une question avant de vous lancer ?{" "}
+                <Link
+                  to="/contact?sujet=Question%20sur%20les%20offres%20et%20tarifs&origine=tarifs"
+                  className="underline underline-offset-2 hover:text-background-50 cursor-pointer"
+                >
+                  Écrivez-nous
+                </Link>{" "}
+                — un artisan, pas un robot, vous répond.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Encart « Besoin d'aide ? » : repris en bas de page, là où les questions de prix se posent. */}
+        <section className="w-full bg-background-50 border-t border-background-200">
+          <div className="w-full px-4 md:px-8 lg:px-12 py-12 md:py-16">
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-5">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700">
+                  <i className="ri-customer-service-2-line"></i>
+                  Une hésitation sur le prix ?
+                </span>
+                <p className="mt-2 text-sm text-foreground-600">
+                  Parlez-nous de votre activité : on vous aide à choisir l'offre qui colle à vos besoins.
+                </p>
+              </div>
+              <EncartBesoinAide variante="clair" />
             </div>
           </div>
         </section>
@@ -553,12 +610,16 @@ export default function TarifsPage() {
 
       <Footer />
 
-      <AbonnementCheckoutModal
-        open={abonnementState.open}
-        plan={abonnementState.plan}
-        period={abonnementState.period}
-        onClose={closeAbonnement}
-      />
+      {abonnementState.open && (
+        <Suspense fallback={null}>
+          <AbonnementCheckoutModal
+            open
+            plan={abonnementState.plan}
+            period={abonnementState.period}
+            onClose={closeAbonnement}
+          />
+        </Suspense>
+      )}
 
       {comparaison ? (
         <ComparerOffresModal

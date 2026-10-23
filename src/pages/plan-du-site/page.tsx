@@ -34,14 +34,28 @@ const pagesPrincipales = [
     icon: "ri-hammer-line",
     label: "Les métiers du bâtiment",
     description:
-      "Le hub qui regroupe les 8 corps d'état couverts par ArtiFlow-pro et leurs conseils dédiés.",
+      "Le hub qui regroupe les 9 corps d'état couverts par ArtiFlow-pro et leurs conseils dédiés.",
+  },
+  {
+    to: "/metiers/recapitulatif",
+    icon: "ri-list-check-2",
+    label: "Récapitulatif des métiers",
+    description:
+      "La synthèse des 9 fiches métiers : type de devis, unités fréquentes et guides associés, pour naviguer d'un corps d'état à l'autre.",
+  },
+  {
+    to: "/zones-intervention",
+    icon: "ri-map-2-line",
+    label: "Zones d'intervention",
+    description:
+      "Les grandes villes couvertes (Paris, Lyon, Marseille, Toulouse, Bordeaux, Lille, Nantes, Nice, Strasbourg, Montpellier, Rennes, Grenoble) et leur page dédiée.",
   },
   {
     to: "/ressources",
     icon: "ri-book-open-line",
     label: "Ressources par métier",
     description:
-      "Les 16 guides pratiques, à filtrer par mot-clé ou par corps d'état.",
+      "Les 20 guides pratiques, à filtrer par mot-clé ou par corps d'état.",
   },
   {
     to: "/ressources/sujets",
@@ -77,6 +91,13 @@ const pagesPrincipales = [
     label: "Nouveautés",
     description:
       "Le journal des mises à jour produit : nouvelles fonctions, améliorations et correctifs livrés par l'équipe.",
+  },
+  {
+    to: "/nouveautes/recapitulatif",
+    icon: "ri-gallery-line",
+    label: "Récapitulatif des annonces",
+    description:
+      "Toutes les livraisons du journal en images, avec leur visuel de partage, filtrables par catégorie et par année.",
   },
   {
     to: "/nous-rejoindre",
@@ -133,7 +154,7 @@ export default function PlanDuSitePage() {
 
   usePageMeta(
     "Plan du site ArtiFlow-pro · Pages, métiers et guides",
-    "Retrouvez toutes les pages d'ArtiFlow-pro au même endroit : les 8 métiers du bâtiment, les 16 guides, les tarifs et les ressources par sujet.",
+    "Retrouvez toutes les pages d'ArtiFlow-pro au même endroit : les métiers du bâtiment, les 20 guides, les tarifs et les ressources par sujet.",
     {
       image:
         "https://readdy.ai/api/search-image?query=Stylized%20abstract%20banner%20representing%20a%20website%20sitemap%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%2C%20abstract%20connected%20node%20and%20grid%20shapes%2C%20blueprint%20lines%20on%20deep%20charcoal%20background%2C%20cinematic%20minimal%20editorial%20lighting%2C%20premium%20clean%20composition%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-plan&orientation=landscape",
@@ -187,7 +208,7 @@ export default function PlanDuSitePage() {
                 Toutes les pages d'ArtiFlow-pro, au même endroit
               </h1>
               <p className="mt-4 text-base md:text-lg text-foreground-600 leading-relaxed">
-                Un plan d'ensemble pour vous repérer en un coup d'œil : les pages clés, les 8 métiers du
+                Un plan d'ensemble pour vous repérer en un coup d'œil : les pages clés, les métiers du
                 bâtiment et l'ensemble des guides classés par thème.
               </p>
             </div>

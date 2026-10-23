@@ -58,7 +58,7 @@ export default function RgpdPage() {
       title="RGPD & données personnelles"
       intro="Chez ArtiFlow-pro, vos données et celles de vos clients n'appartiennent qu'à vous. Voici, en clair, quelles données nous traitons, pourquoi, combien de temps, et comment exercer vos droits."
       updatedAt="1 octobre 2026"
-      metaTitle="RGPD & données personnelles · ArtiFlow-pro"
+      metaTitle="RGPD et données personnelles : vos droits · ArtiFlow-pro"
       metaDescription="Politique de confidentialité d'ArtiFlow-pro : données traitées, finalités, durées de conservation, cookies et exercice de vos droits RGPD."
       metaImage={IMAGE_PARTAGE_RGPD}
       breadcrumbLabel="RGPD & données"

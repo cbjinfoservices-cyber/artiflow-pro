@@ -25,7 +25,7 @@ const FORMATS: { valeur: FormatExportDonnees; label: string; aide: string }[] = 
  * l'ensemble de ses données (une archive ZIP, un CSV par catégorie et/ou un JSON structuré).
  * Les lectures sont filtrées par le Backend : seules les données du compte connecté sont exportées.
  */
-export default function ExportDonneesCard() {
+export default function ExportDonneesCard({ sansCadre = false }: { sansCadre?: boolean }) {
   // Format pré-sélectionné : on reprend le dernier choix mémorisé par l'artisan.
   const [format, setFormat] = useState<FormatExportDonnees>(() => lireFormatExportPrefere());
   const [toast, setToast] = useState<string | null>(null);
@@ -43,23 +43,34 @@ export default function ExportDonneesCard() {
     }
   };
 
+  // Dans la section « Mes droits RGPD », le bloc est intégré sans son propre cadre.
+  const Wrapper = (sansCadre ? "div" : "section") as "section";
+
   return (
-    <section className="p-5 md:p-6 rounded-lg bg-background-100 border border-background-200">
-      <div className="flex items-start gap-3">
-        <span className="w-9 h-9 shrink-0 flex items-center justify-center rounded-md bg-primary-100 text-primary-700">
-          <i className="ri-download-cloud-2-line"></i>
-        </span>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-heading font-semibold text-base text-foreground-950">
-            Sauvegarde de vos données
-          </h3>
-          <p className="text-xs text-foreground-500 mt-0.5 leading-relaxed">
-            Téléchargez l'ensemble de vos données (clients, devis, factures, chantiers, relances…) dans
-            une archive ZIP. Seules les données de votre compte sont incluses. À conserver en lieu sûr —
-            l'archive contient des coordonnées de clients.
-          </p>
+    <Wrapper className={sansCadre ? "flex flex-col" : "p-5 md:p-6 rounded-lg bg-background-100 border border-background-200"}>
+      {sansCadre ? (
+        <p className="text-xs text-foreground-500 leading-relaxed">
+          Téléchargez l'ensemble de vos données (clients, devis, factures, chantiers, relances…) dans
+          une archive ZIP. Seules les données de votre compte sont incluses. À conserver en lieu sûr —
+          l'archive contient des coordonnées de clients.
+        </p>
+      ) : (
+        <div className="flex items-start gap-3">
+          <span className="w-9 h-9 shrink-0 flex items-center justify-center rounded-md bg-primary-100 text-primary-700">
+            <i className="ri-download-cloud-2-line"></i>
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-heading font-semibold text-base text-foreground-950">
+              Sauvegarde de vos données
+            </h3>
+            <p className="text-xs text-foreground-500 mt-0.5 leading-relaxed">
+              Téléchargez l'ensemble de vos données (clients, devis, factures, chantiers, relances…) dans
+              une archive ZIP. Seules les données de votre compte sont incluses. À conserver en lieu sûr —
+              l'archive contient des coordonnées de clients.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Choix du format : CSV (lisible), JSON (préparé pour un futur réimport), ou les deux. */}
       <div className="mt-4">
@@ -142,6 +153,6 @@ export default function ExportDonneesCard() {
       {historiqueOpen && (
         <SauvegardeDonneesModal ongletInitial="historique" onClose={() => setHistoriqueOpen(false)} />
       )}
-    </section>
+    </Wrapper>
   );
 }

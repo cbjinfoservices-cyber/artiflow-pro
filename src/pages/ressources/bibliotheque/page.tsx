@@ -233,7 +233,7 @@ export default function BibliothequePage() {
   );
 
   usePageMeta(
-    "Ma bibliothèque : favoris et notes de vos guides | ArtiFlow-pro",
+    "Ma bibliothèque : favoris et notes | ArtiFlow-pro",
     "Retrouvez en un seul endroit tous vos guides mis en favori et vos notes personnelles, avec recherche unifiée et édition rapide des notes.",
     {
       image:

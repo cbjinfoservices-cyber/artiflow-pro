@@ -393,6 +393,138 @@ export async function updateDevisModele(
   if (error) throw error;
 }
 
+/* --------------------- MODÈLES DE FACTURES --------------------- */
+
+export interface FactureModele {
+  id: number;
+  nom: string;
+  objet: string;
+  lignes: LigneInput[];
+  created_at: string;
+  /** Modèle archivé : masqué de la liste active mais conservé. */
+  archive: boolean;
+}
+
+/** Liste les modèles de factures personnalisés enregistrés par l'artisan. */
+export async function fetchFactureModeles(userId: string): Promise<FactureModele[]> {
+  const { data, error } = await supabase
+    .from("facture_modeles")
+    .select("id, nom, objet, lignes, created_at, archive")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+    id: Number(row.id),
+    nom: String(row.nom ?? "Modèle"),
+    objet: String(row.objet ?? ""),
+    lignes: parseModeleLignes(row.lignes),
+    created_at: String(row.created_at ?? ""),
+    archive: Boolean(row.archive),
+  }));
+}
+
+/** Enregistre un nouveau modèle de facture à partir d'un objet et de lignes. */
+export async function createFactureModele(
+  userId: string,
+  payload: { nom: string; objet: string; lignes: LigneInput[] },
+): Promise<number> {
+  const { data, error } = await supabase
+    .from("facture_modeles")
+    .insert({ user_id: userId, nom: payload.nom, objet: payload.objet, lignes: payload.lignes })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return Number((data as { id: number }).id);
+}
+
+/**
+ * Enregistre une facture existante comme modèle réutilisable.
+ * L'objet (repris du devis d'origine) et les lignes de la facture sont copiés.
+ */
+export async function createFactureModeleFromFacture(
+  userId: string,
+  factureId: number,
+  nom: string,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("factures")
+    .select("devis_id, lignes")
+    .eq("id", factureId)
+    .maybeSingle();
+  if (error) throw error;
+  const row = (data ?? {}) as { devis_id?: number | null; lignes?: unknown };
+  const devisId = row.devis_id ?? null;
+  let objet = "";
+  if (devisId) {
+    const { data: devisRow } = await supabase.from("devis").select("objet").eq("id", devisId).maybeSingle();
+    objet = String((devisRow as Record<string, unknown> | null)?.objet ?? "");
+  }
+  const lignes =
+    Array.isArray(row.lignes) && row.lignes.length > 0
+      ? parseModeleLignes(row.lignes)
+      : devisId
+        ? await fetchDevisLignes(devisId)
+        : [];
+  await createFactureModele(userId, { nom, objet, lignes });
+}
+
+/** Supprime un modèle de facture. */
+export async function deleteFactureModele(modeleId: number): Promise<void> {
+  const { error } = await supabase.from("facture_modeles").delete().eq("id", modeleId);
+  if (error) throw error;
+}
+
+/** Archive ou désarchive un modèle de facture (conservé mais masqué de la liste active). */
+export async function setFactureModeleArchive(modeleId: number, archive: boolean): Promise<void> {
+  const { error } = await supabase.from("facture_modeles").update({ archive }).eq("id", modeleId);
+  if (error) throw error;
+}
+
+/** Renomme / édite un modèle de facture existant (nom, objet et lignes). */
+export async function updateFactureModele(
+  modeleId: number,
+  payload: { nom: string; objet: string; lignes: LigneInput[] },
+): Promise<void> {
+  const { error } = await supabase
+    .from("facture_modeles")
+    .update({ nom: payload.nom, objet: payload.objet, lignes: payload.lignes })
+    .eq("id", modeleId);
+  if (error) throw error;
+}
+
+/**
+ * Génère une facture à partir d'un modèle : les lignes du modèle sont copiées et figées
+ * sur la nouvelle facture (statut « Émise »), éventuellement rattachée à un client.
+ */
+export async function createFactureFromModele(
+  userId: string,
+  modele: { objet: string; lignes: LigneInput[] },
+  clientId: number | null,
+  echeanceJours = 30,
+): Promise<number> {
+  const numero = await nextDocumentNumero(userId, "FAC");
+  const now = new Date();
+  const { ht, ttc } = computeTotaux(modele.lignes);
+  const { data, error } = await supabase
+    .from("factures")
+    .insert({
+      user_id: userId,
+      devis_id: null,
+      client_id: clientId,
+      numero,
+      statut: "Émise",
+      total_ht: ht,
+      total_ttc: ttc,
+      date_emission: toISODate(now),
+      date_echeance: toISODate(addDays(now, echeanceJours)),
+      lignes: modele.lignes,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return Number((data as { id: number }).id);
+}
+
 export interface ModeleUsage {
   /** Nombre de devis réellement créés depuis ce modèle. */
   utilisations: number;
@@ -492,6 +624,8 @@ export interface ChantierPayload {
   client_id: number | null;
   /** Intervenant qui pilote le chantier, ou null si personne n'est désigné. */
   intervenant_id?: number | null;
+  /** Bloc note libre attaché au chantier, ou null. */
+  note?: string | null;
 }
 
 export async function createChantier(userId: string, payload: ChantierPayload): Promise<void> {
@@ -502,6 +636,11 @@ export async function createChantier(userId: string, payload: ChantierPayload): 
 export async function updateChantier(chantierId: number, payload: Partial<ChantierPayload>): Promise<void> {
   const { error } = await supabase.from("chantiers").update(payload).eq("id", chantierId);
   if (error) throw error;
+}
+
+/** Enregistre le bloc note libre d'un chantier (libellé vide autorisé, enregistré comme null). */
+export async function updateChantierNote(chantierId: number, note: string): Promise<void> {
+  await updateChantier(chantierId, { note: note.trim() ? note.trim() : null });
 }
 
 export async function deleteChantier(chantierId: number): Promise<void> {
@@ -524,6 +663,37 @@ export async function deleteEtape(etapeId: number): Promise<void> {
   if (error) throw error;
 }
 
+/** Champs de suivi client modifiables sur un chantier. */
+export interface ChantierSuiviPatch {
+  suivi_actif?: boolean;
+  message_client?: string | null;
+  suivi_maj_at?: string;
+}
+
+/** Met à jour le partage du suivi (lien client actif, message visible par le client…). */
+export async function updateChantierSuivi(chantierId: number, patch: ChantierSuiviPatch): Promise<void> {
+  const { error } = await supabase.from("chantiers").update(patch).eq("id", chantierId);
+  if (error) throw error;
+}
+
+/** Horodate la dernière modification visible sur la page de suivi du client. */
+export async function marquerSuiviModifie(chantierId: number): Promise<void> {
+  await updateChantierSuivi(chantierId, { suivi_maj_at: new Date().toISOString() });
+}
+
+/** Champs de suivi client modifiables sur une étape. */
+export interface EtapeSuiviPatch {
+  visible_client?: boolean;
+  photo_url?: string | null;
+  note_client?: string | null;
+}
+
+/** Met à jour ce que le client voit d'une étape (photo, commentaire, visibilité). */
+export async function updateEtapeSuivi(etapeId: number, patch: EtapeSuiviPatch): Promise<void> {
+  const { error } = await supabase.from("etapes_chantier").update(patch).eq("id", etapeId);
+  if (error) throw error;
+}
+
 /* ----------------------------- PLANNING ------------------------------ */
 
 export interface CreneauPayload {
@@ -534,11 +704,31 @@ export interface CreneauPayload {
   chantier_id: number | null;
   /** Intervenant affecté au créneau, ou null si non attribué. */
   intervenant_id?: number | null;
+  /** Statut du créneau (« confirmee » / « provisoire » / « faite »), « confirmee » par défaut. */
+  statut?: string;
+  /** Note libre attachée au créneau, ou null. */
+  note?: string | null;
 }
 
-export async function createCreneau(userId: string, payload: CreneauPayload): Promise<void> {
-  const { error } = await supabase.from("planning_creneaux").insert({ user_id: userId, ...payload });
+export async function createCreneau(userId: string, payload: CreneauPayload): Promise<number> {
+  const { data, error } = await supabase
+    .from("planning_creneaux")
+    .insert({
+      user_id: userId,
+      date: payload.date,
+      heure: payload.heure,
+      libelle: payload.libelle,
+      ville: payload.ville,
+      chantier_id: payload.chantier_id,
+      intervenant_id: payload.intervenant_id ?? null,
+      statut: payload.statut ?? "confirmee",
+      note: payload.note?.trim() || null,
+    })
+    .select("id")
+    .single();
   if (error) throw error;
+  // L'identifiant servi à détecter un éventuel conflit de congé juste après la création.
+  return Number((data as { id: number }).id);
 }
 
 export async function deleteCreneau(creneauId: number): Promise<void> {

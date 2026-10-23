@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import Navbar from "@/components/feature/Navbar";
 import Footer from "@/components/feature/Footer";
+import BlocTexteSeo from "@/components/feature/BlocTexteSeo";
 import ArticleCard from "@/components/feature/ArticleCard";
 import EpisodeCard from "@/pages/podcast/components/EpisodeCard";
 import NotFound from "@/pages/NotFound";
@@ -13,6 +14,7 @@ import { equipe, membreParId } from "@/mocks/equipe";
 import { articlesDuMembre } from "@/mocks/auteurs";
 import { episodesDuMembre } from "@/mocks/podcasts";
 import { interventionsDuMembre } from "@/mocks/interventions";
+import FaqAuteur from "@/pages/auteur/components/FaqAuteur";
 
 const toneChip: Record<string, string> = {
   primary: "bg-primary-100 text-primary-700",
@@ -37,10 +39,8 @@ export default function AuteurPage() {
   const { openDemo } = useDemoModal();
 
   usePageMeta(
-    membre ? `${membre.name} · ${membre.role} chez ArtiFlow-pro` : "Membre de l'équipe · ArtiFlow-pro",
-    membre
-      ? `Découvrez ${membre.name}, ${membre.role} chez ArtiFlow-pro, ainsi que ses guides, ses interventions publiques (conférences, webinaires) et ses épisodes podcast. ${membre.bio}`
-      : undefined,
+    membre ? membre.seoTitre ?? `${membre.name} · ${membre.role} chez ArtiFlow-pro` : "Membre de l'équipe · ArtiFlow-pro",
+    membre ? membre.seoDescription : undefined,
     { type: "profile", image: membre?.shareImage ?? membre?.photo }
   );
 
@@ -99,6 +99,10 @@ export default function AuteurPage() {
                   src={membre.photo}
                   alt={`Portrait de ${membre.name}, ${membre.role} chez ArtiFlow-pro`}
                   title={`${membre.name} · ${membre.role}`}
+                  width={320}
+                  height={400}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover object-top"
                 />
               </div>
@@ -231,6 +235,89 @@ export default function AuteurPage() {
             </div>
           </div>
         </section>
+
+        <BlocTexteSeo
+          id="portrait"
+          eyebrow="En savoir plus"
+          eyebrowIcon="ri-user-heart-line"
+          ton="secondary"
+          fond="bg-background-100"
+          colonnes={1}
+          titre={`${membre.name}, ${membre.role.toLowerCase()} chez ArtiFlow-pro`}
+          intro={`${membre.name} fait partie de l'équipe d'ArtiFlow-pro depuis ${membre.depuis} et intervient depuis ${membre.ville}. Au quotidien, ${membre.name.split(" ")[0]} contribue à faire gagner du temps aux artisans du bâtiment.`}
+          blocs={[
+            {
+              sousTitre: "Le rôle au quotidien",
+              paragraphes: [
+                `${membre.bio} Chez ArtiFlow-pro, chaque personne reste proche du terrain : les décisions se prennent à partir de situations réelles de chantier, et non de principes théoriques.`,
+                `Le travail de ${membre.name.split(" ")[0]} consiste à traduire les besoins des artisans en solutions simples, utilisables sur un chantier, parfois avec des gants, souvent dans l'urgence, toujours avec le souci du détail juste. C'est cette exigence qui guide aussi les guides et ressources publiés sous sa signature.`,
+              ],
+            },
+            {
+              sousTitre: "Ses domaines de prédilection",
+              paragraphes: [
+                `Au fil du temps, ${membre.name.split(" ")[0]} a développé une expertise sur plusieurs sujets clés pour les artisans. Voici les thèmes sur lesquels échanger, ou sur lesquels s'appuyer pour aller plus vite :`,
+              ],
+              liste: membre.expertises,
+            },
+            {
+              sousTitre: "Pourquoi écrire pour les artisans",
+              paragraphes: [
+                "Rédiger un guide, c'est prolonger un échange commencé sur le terrain. L'objectif n'est jamais de faire joli, mais d'être utile : aider un artisan à chiffrer plus juste, à relancer au bon moment ou à organiser sa semaine sans y passer ses soirées.",
+                `Si vous avez une question à poser à ${membre.name.split(" ")[0]}, ou si vous souhaitez échanger sur l'un de ses sujets de prédilection, n'hésitez pas : l'équipe d'ArtiFlow-pro reste joignable et répond volontiers aux professionnels du bâtiment.`,
+              ],
+            },
+          ]}
+        />
+
+        <BlocTexteSeo
+          id="methode"
+          eyebrow="Sa méthode de travail"
+          eyebrowIcon="ri-compasses-2-line"
+          ton="accent"
+          fond="bg-background-50"
+          colonnes={1}
+          titre={`Travailler avec ${membre.name.split(" ")[0]} : une méthode qui part du chantier`}
+          intro={`Au-delà de son rôle de ${membre.role.toLowerCase()}, ${membre.name.split(" ")[0]} applique au quotidien la même exigence : comprendre une situation réelle, la simplifier, puis vérifier sur le terrain que le résultat tient. Voici comment cela se traduit concrètement chez ArtiFlow-pro.`}
+          blocs={[
+            {
+              sousTitre: "Écouter avant de construire",
+              paragraphes: [
+                `Chez ArtiFlow-pro, ${membre.name.split(" ")[0]} passe autant de temps à écouter des artisans qu'à travailler sur l'outil. Un appel qui remonte un blocage, un devis qui prend trop de temps à rédiger, une relance qui n'est jamais partie : ce sont ces moments-là qui définissent les priorités, bien plus que n'importe quelle réunion de planification.`,
+                `Ce que ${membre.name.split(" ")[0]} cherche dans ces échanges, ce n'est pas une fonctionnalité à ajouter mais un problème à supprimer. La question posée est toujours la même : qu'est-ce qui, dans cette situation, fait perdre du temps à l'artisan sans rien apporter à son client ? Cette discipline évite d'empiler des options inutiles et de confondre richesse fonctionnelle et utilité réelle.`,
+              ],
+            },
+            {
+              sousTitre: "Des sujets de prédilection, mais des décisions concrètes",
+              paragraphes: [
+                `Le périmètre de ${membre.name.split(" ")[0]} couvre plusieurs domaines complémentaires : ${membre.expertises.slice(0, 4).join(", ")}. Ce ne sont pas des étiquettes posées sur une fiche : chacun correspond à des arbitrages pris chaque semaine, entre ce qui aide un artisan sur un chantier et ce qui alourdit l'interface pour tout le monde.`,
+                `Sur ces sujets, la règle est constante : une amélioration doit être vérifiable. Soit elle fait gagner du temps de façon mesurable, soit elle clarifie une décision, soit elle ne sort pas. C'est aussi ce qui guide la rédaction des guides publiés sous sa signature, où chaque conseil doit pouvoir être appliqué dès le lendemain matin.`,
+              ],
+            },
+            {
+              sousTitre: `Ce que ${membre.name.split(" ")[0]} conseille aux artisans`,
+              paragraphes: [
+                "Les recommandations qui reviennent le plus souvent ne portent pas sur l'outil lui-même, mais sur l'organisation du travail. Un artisan bien organisé tire dix fois plus d'un logiciel qu'un artisan qui découvre ses priorités en ouvrant sa boîte mail le matin. Voici les conseils les plus fréquemment partagés :",
+              ],
+              liste: [
+                "Chiffrer au plus près du chantier, pendant que les détails sont encore frais : un devis rédigé trois jours plus tard oublie toujours quelque chose.",
+                "Envoyer le devis le jour même quand c'est possible : la signature suit beaucoup plus vite sur un client encore impliqué dans le projet.",
+                "Programmer la relance au moment de l'envoi, plutôt que de compter sur sa mémoire dans une semaine chargée.",
+                "Garder un modèle par type de chantier et l'ajuster au fil des retours clients, plutôt que de repartir d'une page blanche.",
+                "Bloquer un créneau administratif fixe dans la semaine : une heure planifiée vaut mieux qu'une soirée improvisée.",
+                "Facturer dès la fin des travaux, pendant que le client est satisfait et que les photos du chantier sont encore sur le téléphone.",
+              ],
+            },
+            {
+              sousTitre: "Les trois conversations qui reviennent le plus souvent",
+              paragraphes: [
+                `La première porte presque toujours sur le prix : « combien je facture pour ça ? ». Ce n'est pas une question de tarif mais de méthode. ${membre.name.split(" ")[0]} part systématiquement du temps réel passé sur le chantier, du déplacement et de la préparation, avant d'ajouter les fournitures. Un devis juste est un devis dont chaque ligne peut être expliquée au client sans hésiter — pas un devis dont le total tombe rond.`,
+                `La deuxième concerne les devis qui restent sans réponse. Dans la grande majorité des cas observés depuis ${membre.ville}, le client n'a pas refusé : il a simplement laissé passer le message, ou attendu un complément. La relance n'est donc pas un rappel de paiement déguisé, c'est un service rendu à un client qui a oublié de répondre. Ce changement de regard suffit souvent à faire envoyer la première relance.`,
+                `La troisième touche à l'organisation : comment tenir un chantier, un devis et une relance dans la même journée. ${membre.name.split(" ")[0]} défend une réponse simple : ne jamais traiter deux choses à la fois, et bloquer un créneau fixe pour l'administratif. Cela paraît anodin, mais c'est ce qui différencie un artisan qui termine sa semaine sereinement d'un artisan qui repasse ses devis le dimanche soir.`,
+              ],
+            },
+          ]}
+        />
 
         {/* Ses guides */}
         <section className="w-full bg-background-100 border-b border-background-200">
@@ -385,6 +472,13 @@ export default function AuteurPage() {
           </section>
         )}
 
+        <FaqAuteur
+          membre={membre}
+          nombreGuides={guides.length}
+          nombreEpisodes={episodes.length}
+          nombreInterventions={interventions.length}
+        />
+
         {/* Autres membres */}
         <section className="w-full bg-background-100 border-b border-background-200">
           <div className="w-full px-4 md:px-8 lg:px-12 py-14 md:py-18">
@@ -408,8 +502,12 @@ export default function AuteurPage() {
                   <span className="w-14 h-14 shrink-0 rounded-full overflow-hidden bg-background-100">
                     <img
                       src={autre.photo}
-                      alt={`Portrait de ${autre.name}`}
-                      title={`${autre.name} · ${autre.role}`}
+                      alt={`Portrait de ${autre.name}, ${autre.role} chez ArtiFlow-pro`}
+                      title={`${autre.name} · ${autre.role} · ArtiFlow-pro`}
+                      width={320}
+                      height={400}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-top"
                     />
                   </span>

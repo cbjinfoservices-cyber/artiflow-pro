@@ -243,8 +243,8 @@ export default function RessourcesSujetsPage() {
   const infoTri = tri === "sujet" ? null : TRIS_INFO[tri];
 
   usePageMeta(
-    "Ressources artisans par sujet : relances, chiffrage, planning",
-    "Explorez les guides ArtiFlow-pro par thème : chiffrage, relances clients et planning, avec les articles qui répondent à une question précise, quel que soit votre métier.",
+    "Ressources par sujet : chiffrage & relances | ArtiFlow-pro",
+    "Explorez les guides ArtiFlow-pro par thème : chiffrage, relances clients et planning, avec un article pour chaque question de métier.",
     {
       image:
         "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20illustrating%20construction%20resources%20sorted%20by%20topic%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20geometric%20shapes%2C%20floating%20tag%20and%20folder%20silhouettes%2C%20blueprint%20grid%20lines%20over%20a%20deep%20charcoal%20background%2C%20cinematic%20soft%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-sujets-n1&orientation=landscape",

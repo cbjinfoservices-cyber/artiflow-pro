@@ -35,6 +35,121 @@ function escapeHtml(value: unknown): string {
     .replace(/"/g, "&quot;");
 }
 
+type EnvoiEmailOptions = {
+  nom: string;
+  to: string[];
+  cc?: string[];
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; content: string }>;
+};
+
+type ResultatEnvoiEmail = {
+  ok: boolean;
+  fournisseur: "brevo" | "resend" | "aucun";
+  repli: boolean;
+  id?: string;
+  error?: string;
+};
+
+/**
+ * Expédie un email en essayant Brevo, puis bascule automatiquement sur Resend si Brevo
+ * refuse l'envoi ou ne répond pas. Les deux CSV restent joints dans les deux cas.
+ * Chaque tentative est tracée pour la carte « Suivi des envois ».
+ */
+async function envoyerEmailAvecRepli(
+  fonction: string,
+  opts: EnvoiEmailOptions,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+): Promise<ResultatEnvoiEmail> {
+  const tracer = async (fournisseur: string, statut: string, repli: boolean, message?: string) => {
+    if (!admin) return;
+    try {
+      await admin
+        .from("envoi_fournisseur_historique")
+        .insert({ fonction, fournisseur, statut, repli, message: message ?? null });
+    } catch {
+      /* la trace ne doit jamais bloquer un envoi */
+    }
+  };
+
+  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.fr";
+  let erreurBrevo = "";
+
+  if (brevoKey) {
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: { "api-key": brevoKey, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          sender: { name: opts.nom, email: brevoFrom },
+          to: opts.to.map((email) => ({ email })),
+          cc: opts.cc && opts.cc.length ? opts.cc.map((email) => ({ email })) : undefined,
+          subject: opts.subject,
+          htmlContent: opts.html,
+          attachment:
+            opts.attachments && opts.attachments.length
+              ? opts.attachments.map((a) => ({ name: a.filename, content: a.content }))
+              : undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as { messageId?: string; message?: string } | null;
+      if (res.ok) {
+        await tracer("brevo", "succes", false);
+        return { ok: true, fournisseur: "brevo", repli: false, id: data?.messageId };
+      }
+      erreurBrevo = data?.message || `Brevo a refusé l'envoi (code ${res.status}).`;
+      await tracer("brevo", "echec", false, erreurBrevo);
+    } catch (e) {
+      erreurBrevo = e instanceof Error ? e.message : "Brevo est injoignable.";
+      await tracer("brevo", "echec", false, erreurBrevo);
+    }
+  } else {
+    erreurBrevo = "Clé API Brevo absente.";
+  }
+
+  const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+  const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+
+  if (resendKey && fromDomain) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: `${opts.nom} <noreply@${fromDomain}>`,
+          to: opts.to,
+          cc: opts.cc && opts.cc.length ? opts.cc : undefined,
+          subject: opts.subject,
+          html: opts.html,
+          attachments: opts.attachments && opts.attachments.length ? opts.attachments : undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as { id?: string; message?: string } | null;
+      if (res.ok) {
+        await tracer("resend", "succes", false);
+        return { ok: true, fournisseur: "resend", repli: true, id: data?.id };
+      }
+      const erreur = data?.message || `Resend a refusé l'envoi (code ${res.status}).`;
+      await tracer("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    } catch (e) {
+      const erreur = e instanceof Error ? e.message : "Resend est injoignable.";
+      await tracer("resend", "echec", false, erreur);
+      return { ok: false, fournisseur: "resend", repli: false, error: erreur };
+    }
+  }
+
+  return {
+    ok: false,
+    fournisseur: "aucun",
+    repli: true,
+    error: "Aucun service d'envoi configuré (Resend non paramétré).",
+  };
+}
+
 /** Heure courante (0-23) à l'heure de Paris. */
 function parisHour(): number {
   try {
@@ -229,8 +344,10 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
+    const envoiConfigure = Boolean(brevoKey || (resendKey && fromDomain));
 
     if (!supabaseUrl || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
@@ -291,13 +408,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!resendKey || !fromDomain) {
+    if (!envoiConfigure) {
       return json({
         ok: true,
         configured: false,
         sent: 0,
         skipped: 0,
-        reason: "Resend non configuré (clé API + domaine d'envoi).",
+        reason: "Aucun service d'envoi configuré (Brevo ou Resend).",
       });
     }
 
@@ -374,54 +491,46 @@ Deno.serve(async (req) => {
       const escaladeCsv = buildEscaladeCsv(escalade);
       const subject = "Vos exports CSV mensuels — réessais & escalade";
 
-      const payload: Record<string, unknown> = {
-        from: `${nom} <noreply@${fromDomain}>`,
-        to: [email],
-        subject,
-        html: buildEmailHtml(nom, reessais.length, escalade.length, reessaisName, escaladeName, ccList),
-        attachments: [
-          { filename: reessaisName, content: textToBase64(reessaisCsv), content_type: "text/csv" },
-          { filename: escaladeName, content: textToBase64(escaladeCsv), content_type: "text/csv" },
-        ],
-      };
-      // Destinataires en copie (ex. le comptable) pour archivage.
-      if (ccList.length > 0) payload.cc = ccList;
+      const envoi = await envoyerEmailAvecRepli(
+        "export-csv-mensuel",
+        {
+          nom,
+          to: [email],
+          cc: ccList,
+          subject,
+          html: buildEmailHtml(nom, reessais.length, escalade.length, reessaisName, escaladeName, ccList),
+          attachments: [
+            { filename: reessaisName, content: textToBase64(reessaisCsv) },
+            { filename: escaladeName, content: textToBase64(escaladeCsv) },
+          ],
+        },
+        admin,
+      );
 
-      try {
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (res.ok) {
-          sent += 1;
-          await admin
-            .from("profiles")
-            .update({ export_csv_mensuel_dernier_envoi: new Date().toISOString() })
-            .eq("id", userId);
-          // Consigne l'envoi dans l'historique (best effort).
-          try {
-            await admin.from("export_csv_mensuel_historique").insert({
-              user_id: userId,
-              destinataires: email,
-              cc: ccList.length ? ccList.join(", ") : null,
-              nb_reessais: reessais.length,
-              nb_passages: escalade.length,
-              test: force,
-              statut: "envoye",
-            });
-          } catch {
-            /* l'historique ne bloque pas l'envoi */
-          }
-          details.push({ userId, sent: true, reessais: reessais.length, passages: escalade.length });
-        } else {
-          const errData = (await res.json().catch(() => null)) as { message?: string } | null;
-          skipped += 1;
-          details.push({ userId, sent: false, reason: errData?.message || "Refus de Resend." });
+      if (envoi.ok) {
+        sent += 1;
+        await admin
+          .from("profiles")
+          .update({ export_csv_mensuel_dernier_envoi: new Date().toISOString() })
+          .eq("id", userId);
+        // Consigne l'envoi dans l'historique (best effort).
+        try {
+          await admin.from("export_csv_mensuel_historique").insert({
+            user_id: userId,
+            destinataires: email,
+            cc: ccList.length ? ccList.join(", ") : null,
+            nb_reessais: reessais.length,
+            nb_passages: escalade.length,
+            test: force,
+            statut: "envoye",
+          });
+        } catch {
+          /* l'historique ne bloque pas l'envoi */
         }
-      } catch (e) {
+        details.push({ userId, sent: true, reessais: reessais.length, passages: escalade.length });
+      } else {
         skipped += 1;
-        details.push({ userId, sent: false, reason: e instanceof Error ? e.message : "Erreur d'envoi." });
+        details.push({ userId, sent: false, reason: envoi.error || "Envoi impossible." });
       }
     }
 

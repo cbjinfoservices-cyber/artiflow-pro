@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import BadgeNouveau from "@/components/base/BadgeNouveau";
 import Navbar from "@/components/feature/Navbar";
 import Footer from "@/components/feature/Footer";
+import BandeauAppMobile from "@/components/feature/BandeauAppMobile";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { estNouveau, libelleFraicheur } from "@/lib/dates";
+import { useQuoiDeNeuf } from "@/hooks/useQuoiDeNeuf";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import { useStructuredData } from "@/hooks/useStructuredData";
 import {
@@ -14,6 +18,7 @@ import {
 
 const categorieTone: Record<string, string> = {
   devis: "bg-primary-100 text-primary-700",
+  clients: "bg-accent-100 text-accent-800",
   relances: "bg-accent-100 text-accent-800",
   planning: "bg-secondary-100 text-secondary-800",
   comptabilite: "bg-primary-100 text-primary-700",
@@ -35,11 +40,27 @@ function categorieLabel(key: string): string {
 
 export default function NouveautesPage() {
   const [active, setActive] = useState("toutes");
+  const [recentOnly, setRecentOnly] = useState(false);
+  // Arriver sur le journal vaut lecture : le bandeau, le compteur de l'en-tête et la cloche
+  // retombent dans le même mouvement, sans que l'artisan ait à fermer quoi que ce soit.
+  const { marquerToutVu } = useQuoiDeNeuf();
 
-  const filtered = active === "toutes" ? nouveautes : nouveautes.filter((n) => n.categorie === active);
+  useEffect(() => {
+    marquerToutVu();
+  }, [marquerToutVu]);
+
+  // La mise à jour la plus récente, pour afficher sa date et sa fraîcheur dans le bandeau.
+  const derniere = [...nouveautes].sort((a, b) => b.dateIso.localeCompare(a.dateIso))[0];
+
+  const filtered = nouveautes.filter((n) => {
+    const matchCategorie = active === "toutes" || n.categorie === active;
+    const matchRecent = !recentOnly || estNouveau(n.dateIso, 7);
+    return matchCategorie && matchRecent;
+  });
+  const nbRecentes = nouveautes.filter((n) => estNouveau(n.dateIso, 7)).length;
 
   usePageMeta(
-    "Nouveautés ArtiFlow-pro · Journal des mises à jour produit",
+    "Nouveautés ArtiFlow-pro · Journal des mises à jour",
     "Suivez les nouveautés d'ArtiFlow-pro : devis, relances, planning, comptabilité et offres. Le journal des mises à jour, transparent et mis à jour régulièrement.",
     {
       image:
@@ -102,8 +123,8 @@ export default function NouveautesPage() {
                 {nouveautes.length} mises à jour publiées
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-100 text-secondary-800 text-[11px] font-semibold whitespace-nowrap">
-                <i className="ri-refresh-line"></i>
-                Mise à jour régulière
+                <i className="ri-history-line"></i>
+                Dernière mise à jour : {derniere.dateLabel} · {libelleFraicheur(derniere.dateIso)}
               </span>
               <a
                 href="/nouveautes/rss.xml"
@@ -114,12 +135,88 @@ export default function NouveautesPage() {
                 <i className="ri-rss-line"></i>
                 S'abonner au flux RSS
               </a>
+              <Link
+                to="/nouveautes/recapitulatif"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-background-300 bg-background-50 text-foreground-700 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:border-primary-400 hover:text-primary-700 transition-colors"
+              >
+                <i className="ri-gallery-line"></i>
+                Toutes les annonces en images
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Application mobile : disponible sur Google Play, iOS en préparation. */}
+        <section className="w-full bg-background-50 border-b border-background-200">
+          <div className="w-full px-4 md:px-8 lg:px-12 py-6 md:py-8">
+            <div className="max-w-5xl mx-auto">
+              <BandeauAppMobile variante="large" />
             </div>
           </div>
         </section>
 
         <section className="w-full bg-background-50">
           <div className="w-full px-4 md:px-8 lg:px-12 py-12 md:py-16">
+            {/* Annonces à la une : les deux dossiers de fond (identité des documents et suivi des
+                emails clients), avec leur page dédiée et leur mode d'emploi. */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+              <Link
+                to="/nouveautes/personnalisation-documents"
+                className="group flex flex-col gap-4 p-5 md:p-6 rounded-lg bg-accent-950 text-background-50 hover:bg-accent-900 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  <span className="w-12 h-12 shrink-0 flex items-center justify-center rounded-lg bg-accent-500 text-background-50 text-xl">
+                    <i className="ri-palette-line"></i>
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background-50/15 text-background-50 text-[11px] font-bold uppercase tracking-wide">
+                      <i className="ri-megaphone-line"></i>
+                      Annonce à la une
+                    </span>
+                    <h2 className="mt-2.5 font-heading font-bold text-lg md:text-xl">
+                      Des documents à votre image, partout
+                    </h2>
+                    <p className="mt-1.5 text-sm text-background-200/85 leading-relaxed">
+                      Couleur d'accent, logo, paiement et pied de page repris sur vos devis, factures, emails et
+                      pages de signature.
+                    </p>
+                  </div>
+                </div>
+                <span className="mt-auto inline-flex items-center gap-2 h-10 px-4 self-start rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap group-hover:gap-3 transition-all">
+                  Lire l'annonce
+                  <i className="ri-arrow-right-line"></i>
+                </span>
+              </Link>
+
+              <Link
+                to="/nouveautes/suivi-emails-clients"
+                className="group flex flex-col gap-4 p-5 md:p-6 rounded-lg bg-foreground-950 text-background-50 hover:bg-foreground-900 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  <span className="w-12 h-12 shrink-0 flex items-center justify-center rounded-lg bg-primary-500 text-background-50 text-xl">
+                    <i className="ri-mail-check-line"></i>
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background-50/15 text-background-50 text-[11px] font-bold uppercase tracking-wide">
+                      <i className="ri-camera-line"></i>
+                      Annonce + mode d'emploi
+                    </span>
+                    <h2 className="mt-2.5 font-heading font-bold text-lg md:text-xl">
+                      Savoir ce qui est vraiment parti
+                    </h2>
+                    <p className="mt-1.5 text-sm text-background-200/85 leading-relaxed">
+                      Refus expliqué, adresse vérifiée, emails partis listés et relance différée de 24 h :
+                      captures et mode d'emploi pas à pas.
+                    </p>
+                  </div>
+                </div>
+                <span className="mt-auto inline-flex items-center gap-2 h-10 px-4 self-start rounded-md bg-background-50/10 border border-background-50/30 text-background-50 text-sm font-semibold whitespace-nowrap group-hover:gap-3 transition-all">
+                  Voir l'annonce
+                  <i className="ri-arrow-right-line"></i>
+                </span>
+              </Link>
+            </div>
+
             <div className="flex flex-wrap items-center gap-2 mb-10">
               {categoriesNouveautes.map((cat) => {
                 const isActive = active === cat.key;
@@ -139,16 +236,51 @@ export default function NouveautesPage() {
                   </button>
                 );
               })}
+
+              <span className="hidden sm:block w-px h-6 bg-background-200 mx-1" />
+
+              <button
+                type="button"
+                onClick={() => setRecentOnly((v) => !v)}
+                aria-pressed={recentOnly}
+                className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors border ${
+                  recentOnly
+                    ? "bg-accent-500 text-background-50 border-accent-500"
+                    : "bg-accent-100 text-accent-800 border-accent-200 hover:bg-accent-200"
+                }`}
+              >
+                <i className="ri-sparkling-2-line"></i>
+                Uniquement les nouveautés récentes
+                <span
+                  className={`inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold ${
+                    recentOnly ? "bg-background-50/20 text-background-50" : "bg-accent-200 text-accent-900"
+                  }`}
+                >
+                  {nbRecentes}
+                </span>
+              </button>
             </div>
 
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-16 rounded-lg bg-background-100 border border-background-200">
                 <span className="w-14 h-14 flex items-center justify-center rounded-full bg-background-200 text-foreground-500 text-2xl">
-                  <i className="ri-search-line"></i>
+                  <i className={recentOnly ? "ri-sparkling-2-line" : "ri-search-line"}></i>
                 </span>
                 <p className="mt-4 text-sm text-foreground-600">
-                  Aucune mise à jour dans cette catégorie pour le moment.
+                  {recentOnly
+                    ? "Aucune nouveauté récente (moins de 7 jours) pour le moment."
+                    : "Aucune mise à jour dans cette catégorie pour le moment."}
                 </p>
+                {recentOnly && (
+                  <button
+                    type="button"
+                    onClick={() => setRecentOnly(false)}
+                    className="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-md bg-background-50 border border-background-200 text-foreground-800 text-sm font-semibold whitespace-nowrap cursor-pointer hover:border-primary-400 hover:text-primary-700 transition-colors"
+                  >
+                    <i className="ri-arrow-go-back-line"></i>
+                    Voir toutes les mises à jour
+                  </button>
+                )}
               </div>
             ) : (
               <ol className="relative flex flex-col gap-6 md:gap-8">
@@ -163,6 +295,7 @@ export default function NouveautesPage() {
                         <i className="ri-calendar-line"></i>
                         <time dateTime={n.dateIso}>{n.dateLabel}</time>
                       </span>
+                      <BadgeNouveau dateISO={n.dateIso} jours={7} />
                     </div>
 
                     <article className="rounded-lg border border-background-200 bg-background-50 p-5 md:p-6 transition-colors hover:border-primary-300">
@@ -190,6 +323,16 @@ export default function NouveautesPage() {
                           </li>
                         ))}
                       </ul>
+
+                      {n.lien && (
+                        <Link
+                          to={n.lien}
+                          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:gap-3 transition-all cursor-pointer"
+                        >
+                          {n.lienLabel ?? "En savoir plus"}
+                          <i className="ri-arrow-right-line"></i>
+                        </Link>
+                      )}
                     </article>
                   </li>
                 ))}

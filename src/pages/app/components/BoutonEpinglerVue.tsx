@@ -11,10 +11,14 @@ import {
  * Bouton « Épingler comme vue favorite » : à placer à côté de l'indicateur « vue partagée ».
  * Un clic mémorise la vue affichée (adresse + filtres) pour la rejouer en un clic depuis le tableau de bord.
  * Un second clic la retire des favoris.
+ *
+ * `chemin` permet de forcer l'adresse épinglée : la vue « Professionnels » du carnet de clients
+ * est un mode mémorisé qui ne figure pas toujours dans la barre d'adresse, on lui donne donc
+ * explicitement son adresse complète.
  */
-export default function BoutonEpinglerVue({ label }: { label: string }) {
+export default function BoutonEpinglerVue({ label, chemin: cheminForce }: { label: string; chemin?: string }) {
   const location = useLocation();
-  const chemin = `${location.pathname}${location.search}`;
+  const chemin = cheminForce ?? `${location.pathname}${location.search}`;
   const [epinglee, setEpinglee] = useState(() => estVueFavorite(chemin));
   const [notice, setNotice] = useState(false);
 

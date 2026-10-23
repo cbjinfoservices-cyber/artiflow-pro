@@ -23,11 +23,15 @@ export interface PdfEmetteur {
   metier: string;
   telephone: string;
   email: string;
+  /** Forme juridique de l'entreprise (auto-entrepreneur, EI, EURL, SARL, SASU/SAS). */
+  formeJuridique?: string | null;
   logo?: string | null;
   siret?: string | null;
   tva?: string | null;
   assurance?: string | null;
   penalitesRetard?: string | null;
+  /** Escompte pour paiement anticipé (texte libre), repris sur les factures. */
+  escompte?: string | null;
 }
 
 export interface PdfClient {
@@ -41,6 +45,29 @@ export interface PdfSignature {
   nom: string;
   dateLabel: string;
   image?: string | null;
+}
+
+/** Apparence personnalisable des documents (issue du profil de l'artisan). */
+export interface PdfDocumentStyle {
+  /** Couleur d'accent (barre du bloc total, coordonnées de paiement), en RGB. */
+  accent?: [number, number, number];
+  /** Afficher le logo de l'entreprise en en-tête (vrai par défaut). */
+  afficherLogo?: boolean;
+  /** Coordonnées de paiement (IBAN / BIC, conditions), affichées sur les factures. */
+  paiement?: string | null;
+  /** Message de pied de page libre, affiché en bas de tous les documents (devis & factures). */
+  piedPage?: string | null;
+  /**
+   * Modèle de mise en page du tableau des lignes :
+   * - « standard » : une colonne par information (Désignation · Qté · P.U. HT · TVA · Total HT) ;
+   * - « compact » : quantité + unité réunies et P.U. HT + Total HT regroupés dans une même colonne,
+   *   idéal quand les désignations sont courtes et qu'on veut densifier le document.
+   */
+  modeleDocument?: "standard" | "compact";
+  /** Ajouter la mention « facture émise au format électronique » (art. 289 bis du CGI). */
+  mentionElectronique?: boolean;
+  /** Mentions complémentaires libres ajoutées au pied de page. */
+  mentionsSupplementaires?: string[];
 }
 
 export interface PdfDocumentInput {
@@ -57,6 +84,8 @@ export interface PdfDocumentInput {
   echeanceLabel?: string;
   reference?: string;
   signature?: PdfSignature | null;
+  /** Apparence personnalisée (couleur d'accent, logo, coordonnées de paiement). */
+  style?: PdfDocumentStyle;
 }
 
 const INK: [number, number, number] = [32, 30, 27];
@@ -90,6 +119,10 @@ export async function buildDocumentPdf(input: PdfDocumentInput): Promise<jsPDF> 
   const margin = 48;
   const isAvoir = input.type === "facture" && input.numero.startsWith("AV");
   const title = input.type === "devis" ? "DEVIS" : isAvoir ? "AVOIR" : "FACTURE";
+  // Couleur d'accent du document (personnalisable depuis le profil), orange « cuivre » par défaut.
+  const accent: [number, number, number] = input.style?.accent ?? [196, 120, 58];
+  // Le logo peut être masqué depuis le profil, même s'il est enregistré.
+  const afficherLogo = input.style?.afficherLogo !== false;
 
   // Bandeau supérieur
   doc.setFillColor(38, 36, 33);
@@ -97,7 +130,7 @@ export async function buildDocumentPdf(input: PdfDocumentInput): Promise<jsPDF> 
 
   // Logo (facultatif) + émetteur
   let textX = margin;
-  const logo = input.emetteur.logo;
+  const logo = afficherLogo ? input.emetteur.logo : null;
   if (logo && logo.startsWith("data:image")) {
     const size = await loadImageSize(logo);
     if (size) {
@@ -177,21 +210,39 @@ export async function buildDocumentPdf(input: PdfDocumentInput): Promise<jsPDF> 
   doc.text(input.objet || "—", margin + 14, y + 27);
   y += 34 + 16;
 
-  // Tableau des lignes
-  const body = input.lignes.map((l) => [
-    l.designation,
-    String(l.quantite),
-    l.unite,
-    euros(l.prix_unitaire),
-    tvaRateLabel(l.taux_tva),
-    euros(l.quantite * l.prix_unitaire),
-  ]);
+  // Tableau des lignes.
+  // Quantité et unité sont réunies dans une même cellule (« 3 m² », « 2 intervention »).
+  // Modèle standard : une colonne par information. Modèle compact : on regroupe en plus
+  // P.U. HT et Total HT dans une seule colonne (P.U. en haut, Total en dessous), ce qui
+  // densifie le document quand les lignes sont courtes.
+  const compact = input.style?.modeleDocument === "compact";
+  const tableHead = compact
+    ? [["Désignation", "Qté", "P.U. HT\nTotal HT"]]
+    : [["Désignation", "Qté", "P.U. HT", "TVA", "Total HT"]];
+  const tableBody = input.lignes.map((l) =>
+    compact
+      ? [
+          l.designation,
+          `${l.quantite} ${l.unite}`.trim(),
+          `${euros(l.prix_unitaire)}\n${euros(l.quantite * l.prix_unitaire)}`,
+        ]
+      : [
+          l.designation,
+          `${l.quantite} ${l.unite}`.trim(),
+          euros(l.prix_unitaire),
+          tvaRateLabel(l.taux_tva),
+          euros(l.quantite * l.prix_unitaire),
+        ],
+  );
+  const tableBodyVide = compact
+    ? [["Aucune ligne détaillée", "", ""]]
+    : [["Aucune ligne détaillée", "", "", "", ""]];
 
   autoTable(doc, {
     startY: y,
     margin: { left: margin, right: margin },
-    head: [["Désignation", "Qté", "Unité", "P.U. HT", "TVA", "Total HT"]],
-    body: body.length ? body : [["Aucune ligne détaillée", "", "", "", "", ""]],
+    head: tableHead,
+    body: tableBody.length ? tableBody : tableBodyVide,
     styles: {
       font: "helvetica",
       fontSize: 9.5,
@@ -202,13 +253,17 @@ export async function buildDocumentPdf(input: PdfDocumentInput): Promise<jsPDF> 
     },
     headStyles: { fillColor: [38, 36, 33], textColor: [249, 247, 244], fontStyle: "bold" },
     alternateRowStyles: { fillColor: [250, 249, 247] },
-    columnStyles: {
-      1: { halign: "right", cellWidth: 36 },
-      2: { cellWidth: 48 },
-      3: { halign: "right", cellWidth: 70 },
-      4: { halign: "right", cellWidth: 48 },
-      5: { halign: "right", cellWidth: 78 },
-    },
+    columnStyles: compact
+      ? {
+          1: { halign: "right", cellWidth: 84 },
+          2: { halign: "right", cellWidth: 132 },
+        }
+      : {
+          1: { halign: "right", cellWidth: 84 },
+          2: { halign: "right", cellWidth: 74 },
+          3: { halign: "right", cellWidth: 46 },
+          4: { halign: "right", cellWidth: 82 },
+        },
   });
 
   const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;
@@ -219,7 +274,7 @@ export async function buildDocumentPdf(input: PdfDocumentInput): Promise<jsPDF> 
   const tvaTotal = input.totalTTC - input.totalHT;
   doc.setFillColor(SOFT_BG[0], SOFT_BG[1], SOFT_BG[2]);
   doc.roundedRect(boxX, totalsY, boxW, 86, 6, 6, "F");
-  doc.setFillColor(196, 120, 58);
+  doc.setFillColor(accent[0], accent[1], accent[2]);
   doc.rect(boxX, totalsY, 4, 86, "F");
 
   doc.setFont("helvetica", "normal");
@@ -270,27 +325,76 @@ export async function buildDocumentPdf(input: PdfDocumentInput): Promise<jsPDF> 
     doc.text(`Signé par ${input.signature.nom} le ${input.signature.dateLabel}`, margin + 14, sigY + 86);
   }
 
-  // Mentions légales (SIRET / TVA / assurance / pénalités de retard)
+  // Coordonnées de paiement (factures uniquement, si renseignées dans le profil).
+  const paiement = input.style?.paiement?.trim();
+  if (input.type === "facture" && paiement) {
+    let payY = input.signature ? totalsY + 86 + 26 + 96 + 20 : totalsY + 86 + 26;
+    const payLines = doc.splitTextToSize(paiement, pageW - margin * 2 - 32) as string[];
+    const payH = 30 + payLines.length * 12;
+    if (payY + payH > pageH - 80) {
+      doc.addPage();
+      payY = margin + 20;
+    }
+    doc.setFillColor(SOFT_BG[0], SOFT_BG[1], SOFT_BG[2]);
+    doc.roundedRect(margin, payY, pageW - margin * 2, payH, 6, 6, "F");
+    doc.setFillColor(accent[0], accent[1], accent[2]);
+    doc.rect(margin, payY, 4, payH, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+    doc.text("COORDONNÉES DE PAIEMENT", margin + 16, payY + 16);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(80, 74, 70);
+    payLines.forEach((line, i) => {
+      doc.text(line, margin + 16, payY + 32 + i * 12);
+    });
+  }
+
+  // Mentions légales (forme juridique / SIRET / TVA / assurance / pénalités de retard)
   const mentions: string[] = [];
+  if (input.emetteur.formeJuridique) mentions.push(`Forme juridique : ${input.emetteur.formeJuridique}`);
   if (input.emetteur.siret) mentions.push(`SIRET : ${input.emetteur.siret}`);
   if (input.emetteur.tva) mentions.push(`N° TVA intracommunautaire : ${input.emetteur.tva}`);
   if (input.emetteur.assurance) mentions.push(`Assurance : ${input.emetteur.assurance}`);
   if (input.type === "facture" && input.emetteur.penalitesRetard) {
     mentions.push(`Pénalités de retard : ${input.emetteur.penalitesRetard}`);
   }
+  if (input.type === "facture") {
+    // Mentions obligatoires depuis la réforme de la facturation électronique.
+    mentions.push("Indemnité forfaitaire pour frais de recouvrement en cas de retard : 40 €");
+    if (input.emetteur.escompte) mentions.push(`Escompte pour paiement anticipé : ${input.emetteur.escompte}`);
+    if (input.style?.mentionElectronique) {
+      mentions.push("Facture émise sous forme électronique (Factur-X) — art. 289 bis du CGI");
+    }
+  }
+  (input.style?.mentionsSupplementaires ?? []).forEach((m) => {
+    if (m && m.trim()) mentions.push(m.trim());
+  });
 
   // Pied de page
   doc.setDrawColor(LINE[0], LINE[1], LINE[2]);
   doc.setLineWidth(1);
   doc.line(margin, pageH - 60, pageW - margin, pageH - 60);
 
-  if (mentions.length) {
+  // Message de pied de page libre (facultatif) puis mentions légales, empilés au-dessus de la ligne.
+  const piedPage = input.style?.piedPage?.trim();
+  const footerLines: string[] = [];
+  if (piedPage || mentions.length) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
+  }
+  if (piedPage) {
+    const wrapped = doc.splitTextToSize(piedPage, pageW - margin * 2) as string[];
+    footerLines.push(...wrapped);
+    if (mentions.length) footerLines.push("");
+  }
+  footerLines.push(...mentions);
+  if (footerLines.length) {
     doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
-    const startY = pageH - 60 - 12 - (mentions.length - 1) * 10;
-    mentions.forEach((line, i) => {
-      doc.text(line, margin, startY + i * 10);
+    const startY = pageH - 60 - 14 - (footerLines.length - 1) * 10;
+    footerLines.forEach((line, i) => {
+      if (line) doc.text(line, margin, startY + i * 10);
     });
   }
 
@@ -538,12 +642,15 @@ export async function buildClientFichePdf(input: PdfFicheClientInput): Promise<j
     y = finalY + 28;
   };
 
+  // Largeurs de colonnes explicites, sur la même logique que le tableau du devis/facture :
+  // les colonnes de texte (Objet, Statut, Chantier) gardent assez de place pour ne pas être
+  // tronquées, et les montants restent alignés à droite sur une largeur fixe.
   drawSection(
     "Devis",
     input.devis.length,
     ["Numéro", "Objet", "Date", "Statut", "Total HT"],
     input.devis.map((d) => [d.numero, d.objet ?? "—", d.dateLabel, d.statut, euros(d.totalHT)]),
-    { 4: { halign: "right", cellWidth: 82 } },
+    { 0: { cellWidth: 74 }, 2: { cellWidth: 76 }, 3: { cellWidth: 82 }, 4: { halign: "right", cellWidth: 84 } },
   );
 
   drawSection(
@@ -551,7 +658,7 @@ export async function buildClientFichePdf(input: PdfFicheClientInput): Promise<j
     input.chantiers.length,
     ["Chantier", "Début", "Statut", "Montant"],
     input.chantiers.map((c) => [c.libelle ?? "Chantier", c.dateLabel, c.statut, euros(c.montant)]),
-    { 1: { cellWidth: 92 }, 3: { halign: "right", cellWidth: 84 } },
+    { 1: { cellWidth: 92 }, 2: { cellWidth: 82 }, 3: { halign: "right", cellWidth: 86 } },
   );
 
   drawSection(
@@ -559,7 +666,7 @@ export async function buildClientFichePdf(input: PdfFicheClientInput): Promise<j
     input.factures.length,
     ["Numéro", "Émise le", "Statut", "Total TTC"],
     input.factures.map((f) => [f.numero, f.dateLabel, f.statut, euros(f.totalTTC)]),
-    { 1: { cellWidth: 92 }, 3: { halign: "right", cellWidth: 84 } },
+    { 1: { cellWidth: 92 }, 2: { cellWidth: 82 }, 3: { halign: "right", cellWidth: 86 } },
   );
 
   // Pied de page sur toutes les pages
@@ -586,6 +693,10 @@ export interface PdfAbonnementRow {
   ville: string | null;
   offre: string;
   statut: string;
+  /** Forme juridique de l'entreprise (libellé lisible), ou null si non renseignée. */
+  statut_juridique: string | null;
+  /** Taille de l'entreprise (libellé lisible), ou null si non renseignée. */
+  taille_entreprise: string | null;
   montant_mensuel: number;
   date_echeance: string | null;
 }
@@ -601,6 +712,15 @@ export interface PdfAbonnementsArchiveInput {
     parc: number;
   };
   repartition: { offre: string; count: number; pct: number; mrr: number }[];
+  /**
+   * Répartition par entreprise (statut juridique + taille), dessinée sous forme de barres
+   * empilées et d'un tableau, juste après les indicateurs. Facultative.
+   */
+  repartitionEntreprise?: {
+    total: number;
+    statut: { label: string; count: number; pct: number }[];
+    taille: { label: string; count: number; pct: number }[];
+  };
   mrrEvolution: { label: string; mrr: number }[];
   abonnements: PdfAbonnementRow[];
   filtreLabel: string;
@@ -679,6 +799,82 @@ export async function buildAbonnementsArchivePdf(input: PdfAbonnementsArchiveInp
     fontStyle: "bold" as const,
   };
 
+  // Répartition par entreprise (statut juridique + taille) : barres empilées + tableau de
+  // répartition, placés juste à côté des indicateurs, sur la même page que la synthèse.
+  const repEnt = input.repartitionEntreprise;
+  if (repEnt && (repEnt.statut.length > 0 || repEnt.taille.length > 0)) {
+    const ENT_COLORS: [number, number, number][] = [
+      [196, 120, 58],
+      [69, 63, 56],
+      [120, 150, 110],
+      [150, 120, 170],
+      [180, 150, 90],
+      [123, 124, 120],
+    ];
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(INK[0], INK[1], INK[2]);
+    doc.text("Répartition par entreprise", margin, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+    doc.text("Statut juridique et taille des abonnements de la sélection", pageW - margin, y, { align: "right" });
+    y += 18;
+
+    const contW = pageW - margin * 2;
+    const barH = 16;
+    const totalEnt = repEnt.total > 0 ? repEnt.total : 1;
+    const blocs: { titre: string; lignes: { label: string; count: number; pct: number }[] }[] = [
+      { titre: "Statut juridique", lignes: repEnt.statut },
+      { titre: "Taille de l'entreprise", lignes: repEnt.taille },
+    ];
+    blocs.forEach((bloc) => {
+      if (bloc.lignes.length === 0) return;
+      if (y > pageH - 150) {
+        doc.addPage();
+        y = margin + 10;
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(INK[0], INK[1], INK[2]);
+      doc.text(bloc.titre, margin, y);
+      y += 8;
+
+      // Barre empilée proportionnelle aux effectifs (remplit toute la largeur utile).
+      let cx = margin;
+      bloc.lignes.forEach((l, i) => {
+        const w = (l.count / totalEnt) * contW;
+        if (w <= 0) return;
+        const c = ENT_COLORS[i % ENT_COLORS.length];
+        doc.setFillColor(c[0], c[1], c[2]);
+        doc.rect(cx, y, w, barH, "F");
+        cx += w;
+      });
+      y += barH + 6;
+
+      // Tableau de répartition (la cellule « Valeur » reprend la couleur de la barre).
+      autoTable(doc, {
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [["Valeur", "Pros", "Part"]] as string[][],
+        body: bloc.lignes.map((l) => [l.label, String(l.count), `${l.pct} %`]),
+        styles: { ...tableStyles, fontSize: 8, cellPadding: 4 },
+        headStyles,
+        alternateRowStyles: { fillColor: [250, 249, 247] },
+        columnStyles: { 1: { halign: "right", cellWidth: 70 }, 2: { halign: "right", cellWidth: 70 } },
+        didParseCell: (data) => {
+          if (data.section === "body" && data.column.index === 0) {
+            const c = ENT_COLORS[data.row.index % ENT_COLORS.length];
+            data.cell.styles.fillColor = c;
+            data.cell.styles.textColor = [249, 247, 244];
+            data.cell.styles.fontStyle = "bold";
+          }
+        },
+      });
+      y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 24;
+    });
+  }
+
   // Répartition des offres
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -733,25 +929,29 @@ export async function buildAbonnementsArchivePdf(input: PdfAbonnementsArchiveInp
   autoTable(doc, {
     startY: y + 6,
     margin: { left: margin, right: margin },
-    head: [["Entreprise", "Contact", "Offre", "Statut", "MRR", "Échéance"]] as string[][],
+    head: [["Entreprise", "Contact", "Offre", "Statut", "Statut jur.", "Taille", "MRR", "Échéance"]] as string[][],
     body: input.abonnements.length
       ? input.abonnements.map((a) => [
           a.entreprise,
           [a.metier, a.ville].filter(Boolean).join(" · ") || a.email || "—",
           a.offre,
           a.statut,
+          a.statut_juridique || "—",
+          a.taille_entreprise || "—",
           a.montant_mensuel > 0 ? euros(a.montant_mensuel) : "—",
           a.date_echeance ? a.date_echeance : "—",
         ])
-      : [["Aucun abonnement", "", "", "", "", ""]],
-    styles: tableStyles,
+      : [["Aucun abonnement", "", "", "", "", "", "", ""]],
+    styles: { ...tableStyles, fontSize: 8, cellPadding: 4 },
     headStyles,
     alternateRowStyles: { fillColor: [250, 249, 247] },
     columnStyles: {
-      2: { cellWidth: 62 },
-      3: { cellWidth: 62 },
-      4: { halign: "right", cellWidth: 66 },
-      5: { cellWidth: 72 },
+      2: { cellWidth: 46 },
+      3: { cellWidth: 44 },
+      4: { cellWidth: 76 },
+      5: { cellWidth: 62 },
+      6: { halign: "right", cellWidth: 54 },
+      7: { cellWidth: 58 },
     },
   });
 

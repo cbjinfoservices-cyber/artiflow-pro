@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { originePublique } from "@/lib/site";
 
 export type PageSection = { id: string; label: string; icon: string; count?: number };
 
@@ -57,7 +58,7 @@ export default function PageSectionNav({ sections, ariaLabel }: PageSectionNavPr
   };
 
   const copyLink = async () => {
-    const url = `${window.location.origin}${window.location.pathname}#${active}`;
+    const url = `${originePublique()}${window.location.pathname}#${active}`;
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);

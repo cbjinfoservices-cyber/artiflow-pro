@@ -44,6 +44,31 @@ function escapeHtml(value: unknown): string {
     .replace(/"/g, "&quot;");
 }
 
+interface DocIdentite {
+  accent: string;
+  logoHtml: string;
+  piedHtml: string;
+}
+
+/**
+ * Identité visuelle des documents reprise du profil de l'artisan : couleur d'accent,
+ * logo (optionnel) et message de pied de page. Reprise dans les relances automatiques
+ * pour une identité cohérente avec les PDF et les devis.
+ */
+function docIdentite(p: Record<string, unknown>): DocIdentite {
+  const nom = String(p?.entreprise ?? p?.metier ?? "Votre artisan");
+  const accent = /^#[0-9a-fA-F]{6}$/.test(String(p?.doc_couleur ?? "")) ? String(p?.doc_couleur) : "#C4783A";
+  const logoUrl = p?.doc_afficher_logo !== false ? String(p?.logo_url ?? "").trim() : "";
+  const logoHtml = logoUrl
+    ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(nom)}" style="max-height:44px;max-width:180px;display:block;margin:0 0 10px;">`
+    : "";
+  const pied = String(p?.doc_pied_page ?? "").trim();
+  const piedHtml = pied
+    ? `<p style="margin:10px 0 0;font-size:11px;color:#a1a1aa;">${escapeHtml(pied).replace(/\n/g, "<br>")}</p>`
+    : "";
+  return { accent, logoHtml, piedHtml };
+}
+
 /** Montant en euros (ex. « 1 250,00 € »). */
 function frEuro(value: unknown): string {
   const n = Number(value);
@@ -94,12 +119,15 @@ function buildReminderHtml(
   echeance: string,
   jours: number,
   introHtml: string,
+  identite: DocIdentite,
 ): string {
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
       <div style="padding:24px;border-bottom:1px solid #eee;">
+        ${identite.logoHtml}
         <p style="margin:0;font-size:20px;font-weight:700;">${escapeHtml(emetteurNom)}</p>
         ${contactLine ? `<p style="margin:6px 0 0;font-size:13px;color:#71717a;">${contactLine}</p>` : ""}
       </div>
@@ -120,7 +148,8 @@ function buildReminderHtml(
         </p>
       </div>
       <div style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#a1a1aa;text-align:center;">
-        Rappel envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.
+        <p style="margin:0;">Rappel envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.</p>
+        ${identite.piedHtml}
       </div>
     </div>
   </div>
@@ -137,6 +166,7 @@ function buildFactureReminder(params: {
   montant: string;
   echeance: string;
   jours: number;
+  identite: DocIdentite;
 }): { subject: string; html: string } {
   const templateValues: Record<string, string> = {
     client: params.clientNom,
@@ -162,6 +192,7 @@ function buildFactureReminder(params: {
     params.echeance,
     params.jours,
     introHtml,
+    params.identite,
   );
   return { subject, html };
 }
@@ -185,6 +216,7 @@ function buildClientBalancePdf(params: {
   contactLine: string;
   clientNom: string;
   lignes: Array<{ numero: string; echeance: string | null; montant: number; jours: number }>;
+  accent: string;
 }): Uint8Array {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -194,6 +226,11 @@ function buildClientBalancePdf(params: {
   const MUTED: [number, number, number] = [124, 117, 111];
   const LINE: [number, number, number] = [232, 228, 222];
   const SOFT_BG: [number, number, number] = [247, 245, 241];
+
+  const accentMatch = /^#?([0-9a-f]{6})$/i.exec(String(params.accent ?? "").trim());
+  const accentRgb: [number, number, number] = accentMatch
+    ? [(Number.parseInt(accentMatch[1], 16) >> 16) & 255, (Number.parseInt(accentMatch[1], 16) >> 8) & 255, Number.parseInt(accentMatch[1], 16) & 255]
+    : [196, 120, 58];
 
   doc.setFillColor(38, 36, 33);
   doc.rect(0, 0, pageW, 6, "F");
@@ -233,7 +270,7 @@ function buildClientBalancePdf(params: {
 
   doc.setFillColor(SOFT_BG[0], SOFT_BG[1], SOFT_BG[2]);
   doc.roundedRect(margin, 152, pageW - margin * 2, 48, 6, 6, "F");
-  doc.setFillColor(196, 120, 58);
+  doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
   doc.rect(margin, 152, 4, 48, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
@@ -331,12 +368,15 @@ function buildClientGroupedReminderHtml(
   clientNom: string,
   nbFactures: number,
   total: string,
+  identite: DocIdentite,
 ): string {
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
   <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
+      <div style="height:6px;background:${identite.accent};"></div>
       <div style="padding:24px;border-bottom:1px solid #eee;">
+        ${identite.logoHtml}
         <p style="margin:0;font-size:20px;font-weight:700;">${escapeHtml(emetteurNom)}</p>
         ${contactLine ? `<p style="margin:6px 0 0;font-size:13px;color:#71717a;">${contactLine}</p>` : ""}
       </div>
@@ -355,7 +395,8 @@ function buildClientGroupedReminderHtml(
         </p>
       </div>
       <div style="padding:16px 24px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#a1a1aa;text-align:center;">
-        Rappel envoy\u00e9 via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.
+        <p style="margin:0;">Rappel envoyé via ArtiFlow-pro pour ${escapeHtml(emetteurNom)}.</p>
+        ${identite.piedHtml}
       </div>
     </div>
   </div>
@@ -390,7 +431,7 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await admin
       .from("profiles")
-      .select("entreprise, metier, telephone, email, email_sujet_relance, relance_facture_delai_min")
+      .select("entreprise, metier, telephone, email, logo_url, doc_couleur, doc_afficher_logo, doc_pied_page, email_sujet_relance, relance_facture_delai_min")
       .eq("id", scopeUserId)
       .maybeSingle();
     const p = (profile ?? {}) as Record<string, unknown>;
@@ -524,6 +565,7 @@ Deno.serve(async (req) => {
         montant,
         echeance,
         jours,
+        identite: docIdentite(p),
       });
       return json({
         ok: true,
@@ -579,7 +621,7 @@ Deno.serve(async (req) => {
           jours: joursDepuis(f.date_echeance),
         }));
         const totalMontant = lignes.reduce((s, l) => s + l.montant, 0);
-        const pdfBytes = buildClientBalancePdf({ emetteurNom, contactLine, clientNom, lignes });
+        const pdfBytes = buildClientBalancePdf({ emetteurNom, contactLine, clientNom, lignes, accent: docIdentite(p).accent });
         const pdfBase64 = toBase64(pdfBytes);
         const slug = clientNom
           .toLowerCase()
@@ -593,6 +635,7 @@ Deno.serve(async (req) => {
           clientNom,
           lignes.length,
           frEuro(totalMontant),
+          docIdentite(p),
         );
         try {
           const res = await fetch("https://api.resend.com/emails", {
@@ -682,6 +725,7 @@ Deno.serve(async (req) => {
         montant,
         echeance,
         jours,
+        identite: docIdentite(p),
       });
 
       try {

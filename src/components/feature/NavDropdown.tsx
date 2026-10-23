@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -40,6 +41,7 @@ export default function NavDropdown({
 }: NavDropdownProps) {
   const [open, setOpen] = useState(false);
   const [focusTarget, setFocusTarget] = useState<"first" | "last" | null>(null);
+  const panelId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLAnchorElement>(null);
@@ -157,6 +159,7 @@ export default function NavDropdown({
         className={baseClass}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls={panelId}
         onKeyDown={onTriggerKeyDown}
       >
         {label}
@@ -175,6 +178,7 @@ export default function NavDropdown({
         }`}
       >
         <div
+          id={panelId}
           role="menu"
           aria-label={menuLabel}
           className={`${panelClassName} rounded-2xl border border-background-200 bg-background-50 p-2`}

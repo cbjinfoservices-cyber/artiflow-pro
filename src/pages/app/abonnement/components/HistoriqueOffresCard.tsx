@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { formatEuros } from "@/lib/format";
 import { statutMeta } from "@/lib/monAbonnement";
 import { todayISO } from "@/lib/dates";
-import { buildHistoriqueAbonnementPdf, savePdf } from "@/lib/pdf";
+import { buildHistoriqueAbonnementPdf } from "@/lib/pdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
+import useApercuPdf from "@/hooks/useApercuPdf";
 import { useHistoriqueAbonnement } from "@/hooks/useHistoriqueAbonnement";
 import type { MonAbonnement } from "@/hooks/useMonAbonnement";
 import type { AbonnementHistoriqueItem } from "@/lib/abonnementsApi";
@@ -80,6 +82,7 @@ export default function HistoriqueOffresCard({ abonnement }: { abonnement: MonAb
   const [query, setQuery] = useState("");
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const { apercu: apercuPdf, ouvrirApercuPdf, fermerApercuPdf } = useApercuPdf();
   const [compare, setCompare] = useState<{ a: string; b: string; abonnementId: number } | null>(null);
 
   const nbOffres = useMemo(() => historique.filter((h) => h.type === "offre").length, [historique]);
@@ -129,26 +132,31 @@ export default function HistoriqueOffresCard({ abonnement }: { abonnement: MonAb
     }
     setExporting(true);
     try {
-      const doc = await buildHistoriqueAbonnementPdf({
-        emetteur: {
-          entreprise: abonnement.entreprise,
-          email: abonnement.email,
-          metier: abonnement.metier,
-          ville: abonnement.ville,
-        },
-        offre: abonnement.offre,
-        statut: statutMeta(abonnement.statut).label,
-        montantMensuel: abonnement.montant_mensuel,
-        dateDebut: abonnement.date_debut,
-        dateEcheance: abonnement.date_echeance,
-        entrees: filtered.map((item) => {
-          const v = presenter(item);
-          return { dateLabel: v.date, titre: v.titre, detail: v.detail, montant: v.montant };
-        }),
-        filtreLabel,
+      const filename = `historique-abonnement-${todayISO()}.pdf`;
+      ouvrirApercuPdf({
+        title: "Aperçu · Historique de l'abonnement",
+        filename,
+        note: `${filtered.length} étape${filtered.length > 1 ? "s" : ""} · ${filtreLabel}`,
+        build: () =>
+          buildHistoriqueAbonnementPdf({
+            emetteur: {
+              entreprise: abonnement.entreprise,
+              email: abonnement.email,
+              metier: abonnement.metier,
+              ville: abonnement.ville,
+            },
+            offre: abonnement.offre,
+            statut: statutMeta(abonnement.statut).label,
+            montantMensuel: abonnement.montant_mensuel,
+            dateDebut: abonnement.date_debut,
+            dateEcheance: abonnement.date_echeance,
+            entrees: filtered.map((item) => {
+              const v = presenter(item);
+              return { dateLabel: v.date, titre: v.titre, detail: v.detail, montant: v.montant };
+            }),
+            filtreLabel,
+          }),
       });
-      savePdf(doc, `historique-abonnement-${todayISO()}.pdf`);
-      setToast("Historique exporté en PDF");
     } catch {
       setToast("L'export PDF a échoué. Réessayez.");
     } finally {
@@ -350,6 +358,16 @@ export default function HistoriqueOffresCard({ abonnement }: { abonnement: MonAb
           offreB={compare.b}
           abonnementId={compare.abonnementId}
           onClose={() => setCompare(null)}
+        />
+      )}
+      {apercuPdf && (
+        <ApercuPdfModal
+          title={apercuPdf.title}
+          subtitle={apercuPdf.subtitle}
+          filename={apercuPdf.filename}
+          docBuilder={apercuPdf.build}
+          note={apercuPdf.note}
+          onClose={fermerApercuPdf}
         />
       )}
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}

@@ -14,6 +14,7 @@ export const articlesParAuteur: Record<string, string[]> = {
     "devis-chaudiere-en-5-minutes",
     "relance-apres-depannage-urgent",
     "chiffrer-extension-sans-erreur-metres",
+    "chiffrer-pose-split-climatisation",
   ],
   "antoine-lefevre": [
     "organiser-chantiers-par-zone",
@@ -37,6 +38,9 @@ export const articlesParAuteur: Record<string, string[]> = {
   "julien-barbier": [
     "pourquoi-devis-facade-partent-trop-tard",
     "devis-sinistre-assurance-clair",
+    "relancer-devis-pompe-a-chaleur",
+    "contrat-entretien-climatisation",
+    "facture-electronique-ce-qui-change-artisan",
   ],
 };
 

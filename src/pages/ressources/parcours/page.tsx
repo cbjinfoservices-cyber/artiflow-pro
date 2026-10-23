@@ -9,6 +9,7 @@ import { useLectureVersion } from "@/hooks/useLectureStatut";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useBreadcrumbSchema } from "@/hooks/useBreadcrumbSchema";
 import { useItemListSchema } from "@/hooks/useItemListSchema";
+import ProgressionParcoursGlobale from "@/pages/ressources/components/ProgressionParcoursGlobale";
 
 /**
  * Page d'un parcours guidé : liste ordonnée de ses étapes, avec l'état de
@@ -20,7 +21,7 @@ export default function ParcoursPage() {
   const parcours = getParcours(slug);
 
   usePageMeta(
-    parcours ? `${parcours.name} — Parcours guidé | ArtiFlow-pro` : "Parcours guidé | ArtiFlow-pro",
+    parcours ? `${parcours.name} · Parcours ArtiFlow-pro` : "Parcours guidé | ArtiFlow-pro",
     parcours?.description,
     parcours ? { image: parcours.shareImage } : undefined
   );
@@ -136,6 +137,8 @@ export default function ParcoursPage() {
             </div>
           </div>
         </section>
+
+        <ProgressionParcoursGlobale actif={parcours.slug} />
 
         <section className="w-full bg-background-50">
           <div className="w-full px-4 md:px-8 lg:px-12 py-12 md:py-16">

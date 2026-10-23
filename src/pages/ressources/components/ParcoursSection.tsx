@@ -11,8 +11,13 @@ import { useLectureVersion } from "@/hooks/useLectureStatut";
 export default function ParcoursSection() {
   const version = useLectureVersion();
 
+  const slugsParcours = Array.from(new Set(parcours.flatMap((p) => p.articleSlugs)));
+  const totalGlobal = slugsParcours.length;
+  const lusGlobal = slugsParcours.filter((slug) => getStatut(slug) === "lu").length;
+  const pctGlobal = totalGlobal > 0 ? Math.round((lusGlobal / totalGlobal) * 100) : 0;
+
   return (
-    <section className="w-full bg-background-50 border-t border-background-200">
+    <section id="parcours" className="w-full bg-background-50 border-t border-background-200 scroll-mt-28">
       <div className="w-full px-4 md:px-8 lg:px-12 py-12 md:py-16">
         <div className="mb-7">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-accent-700">
@@ -26,6 +31,17 @@ export default function ParcoursSection() {
             Des enchaînements de guides pensés pour progresser dans le bon ordre, du premier devis à la
             relance qui conclut.
           </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-100 border border-secondary-200 text-xs font-semibold text-secondary-900 whitespace-nowrap">
+              <i className="ri-bar-chart-box-line"></i>
+              Progression globale : {lusGlobal}/{totalGlobal} guides
+              <span className="text-secondary-700 tabular-nums">{pctGlobal}%</span>
+            </span>
+            <span className="inline-flex items-center gap-2 text-xs text-foreground-500">
+              <i className="ri-route-line"></i>
+              {parcours.length} parcours guidés
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

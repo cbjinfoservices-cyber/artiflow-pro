@@ -1,5 +1,6 @@
 import { useStructuredData } from "@/hooks/useStructuredData";
 import { getSiteOrigin } from "@/lib/site";
+import { metiersZones } from "@/mocks/metiers";
 
 export type MetierSchemaInput = {
   slug: string;
@@ -14,8 +15,11 @@ export type MetierSchemaInput = {
  * Ajoute les données structurées Schema.org d'une page métier :
  * - Service (métier proposé par ArtiFlow-pro) pour viser les extraits enrichis par corps d'état,
  *   avec une offre tarifaire (Offer) par niveau d'abonnement ;
- * - FAQPage (à partir de la FAQ visible de la page) pour viser les rich snippets ;
- * - BreadcrumbList (fil d'Ariane Accueil > Métiers > métier).
+ * - FAQPage (à partir de la FAQ visible de la page) pour viser les rich snippets.
+ *
+ * Le BreadcrumbList n'est volontairement plus produit ici : il est injecté par
+ * le composant `FilAriane`, à partir de la même liste que le fil visible. Une
+ * seule source de vérité, donc aucun risque d'écart entre les deux.
  */
 export function useMetierSchema(metier: MetierSchemaInput | null) {
   const origin = getSiteOrigin();
@@ -45,7 +49,18 @@ export function useMetierSchema(metier: MetierSchemaInput | null) {
         description: metier.intro,
         url: `${origin}/metiers/${metier.slug}`,
         inLanguage: "fr-FR",
-        areaServed: { "@type": "Country", name: "France" },
+        areaServed: [
+          { "@type": "Country", name: "France" },
+          ...metiersZones.map((zone) => ({
+            "@type": "AdministrativeArea",
+            name: zone.name,
+          })),
+        ],
+        availableChannel: {
+          "@type": "ServiceChannel",
+          serviceUrl: `${origin}/metiers/${metier.slug}`,
+          availableLanguage: ["fr-FR"],
+        },
         audience: { "@type": "BusinessAudience", name: metier.name },
         provider: {
           "@type": "Organization",
@@ -109,34 +124,6 @@ export function useMetierSchema(metier: MetierSchemaInput | null) {
       }
     : null;
 
-  const breadcrumbData = metier
-    ? {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "Accueil",
-            item: `${origin}/`,
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Métiers",
-            item: `${origin}/metiers`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: metier.name,
-            item: `${origin}/metiers/${metier.slug}`,
-          },
-        ],
-      }
-    : null;
-
   useStructuredData("artiflow-metier-service-schema", serviceData);
   useStructuredData("artiflow-metier-faq-schema", faqData);
-  useStructuredData("artiflow-metier-breadcrumb-schema", breadcrumbData);
 }

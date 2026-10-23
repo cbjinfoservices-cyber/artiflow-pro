@@ -3,7 +3,7 @@
   <url>
     <loc>https://artiflow-pro.fr/</loc>
     <image:image>
-      <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20with%20warm%20amber%20orange%20and%20deep%20teal%20green%20geometric%20shapes%2C%20blueprint%20line%20patterns%20and%20artisan%20tool%20silhouettes%20floating%20over%20a%20deep%20charcoal%20background%2C%20cinematic%20soft%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-2&orientation=landscape&nocache=true</image:loc>
+      <image:loc>https://public.readdy.ai/ai/img_res/8e3ba55f81d58fbfb413ad69b5686b01.webp</image:loc>
       <image:title>ArtiFlow-pro — assistant IA pour artisans du bâtiment</image:title>
     </image:image>
   </url>
@@ -12,30 +12,99 @@
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/plombier-chauffagiste</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/electricien</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/macon</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/peintre-finitions</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/menuisier</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/carreleur</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/couvreur</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/metiers/platrier</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/metiers/installateur-climatisation</loc>
+    <lastmod>2026-10-22</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/metiers/recapitulatif</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/paris</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/lyon</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/marseille</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/toulouse</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/bordeaux</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/lille</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/nantes</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/nice</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/strasbourg</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/montpellier</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/rennes</loc>
+    <lastmod>2026-10-19</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/zones-intervention/grenoble</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources</loc>
@@ -53,71 +122,107 @@
     <loc>https://artiflow-pro.fr/ressources/parcours/chiffrer-sans-perdre-de-marge</loc>
   </url>
   <url>
+    <loc>https://artiflow-pro.fr/ressources/parcours/devis-et-paiement</loc>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/ressources/parcours/facturation-et-relances</loc>
+  </url>
+  <url>
     <loc>https://artiflow-pro.fr/ressources/parcours/relancer-et-conclure</loc>
   </url>
   <url>
+    <loc>https://artiflow-pro.fr/ressources/parcours/devis-climatisation</loc>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/ressources/parcours/facturer-et-transmettre</loc>
+  </url>
+  <url>
     <loc>https://artiflow-pro.fr/ressources/devis-chaudiere-en-5-minutes</loc>
-    <lastmod>2026-10-02</lastmod>
+    <lastmod>2026-09-18</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/relance-apres-depannage-urgent</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-10</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/devis-mise-aux-normes-postes-oublies</loc>
-    <lastmod>2026-09-29</lastmod>
-  </url>
-  <url>
-    <loc>https://artiflow-pro.fr/ressources/messages-relance-devis-electricite</loc>
     <lastmod>2026-09-22</lastmod>
   </url>
   <url>
+    <loc>https://artiflow-pro.fr/ressources/messages-relance-devis-electricite</loc>
+    <lastmod>2026-09-14</lastmod>
+  </url>
+  <url>
     <loc>https://artiflow-pro.fr/ressources/chiffrer-extension-sans-erreur-metres</loc>
-    <lastmod>2026-10-01</lastmod>
+    <lastmod>2026-09-20</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/organiser-chantiers-par-zone</loc>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-08</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/devis-peinture-au-m2-methode-simple</loc>
-    <lastmod>2026-10-03</lastmod>
+    <lastmod>2026-09-24</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/pourquoi-devis-facade-partent-trop-tard</loc>
-    <lastmod>2026-09-19</lastmod>
+    <lastmod>2026-09-12</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/variantes-materiaux-dans-un-seul-devis</loc>
-    <lastmod>2026-09-27</lastmod>
+    <lastmod>2026-09-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/suivre-commande-sur-mesure-du-devis-a-la-pose</loc>
-    <lastmod>2026-09-13</lastmod>
+    <lastmod>2026-09-06</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/calculer-reserve-chutes-carrelage</loc>
-    <lastmod>2026-09-30</lastmod>
+    <lastmod>2026-09-21</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/devis-salle-de-bain-structurer</loc>
-    <lastmod>2026-09-16</lastmod>
+    <lastmod>2026-09-09</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/apres-orage-prioriser-urgences-toiture</loc>
-    <lastmod>2026-10-04</lastmod>
+    <lastmod>2026-09-23</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/devis-sinistre-assurance-clair</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-11</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/devis-faux-plafond-sans-erreur</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-09-17</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/ressources/renovation-appartement-piece-par-piece</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-09-05</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/ressources/acompte-ou-arrhes-devis</loc>
+    <lastmod>2026-10-17</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/ressources/chiffrer-pose-split-climatisation</loc>
+    <lastmod>2026-10-21</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/ressources/relancer-devis-pompe-a-chaleur</loc>
+    <lastmod>2026-10-22</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/ressources/contrat-entretien-climatisation</loc>
+    <lastmod>2026-10-22</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/ressources/facture-electronique-ce-qui-change-artisan</loc>
+    <lastmod>2026-10-22</lastmod>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/guide/mot-de-passe-solide</loc>
+    <lastmod>2026-10-13</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/contact</loc>
@@ -130,31 +235,55 @@
     <lastmod>2026-10-03</lastmod>
     <image:image>
       <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20conference%20keynote%20stage%20cover%20about%20artificial%20intelligence%20for%20craftspeople%2C%20a%20speaker%20silhouette%20at%20a%20lectern%20with%20glowing%20blueprint%20lines%20and%20tool%20shapes%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1280&height=720&seq=artiflow-interv-batir-connect&orientation=landscape</image:loc>
-      <image:title>Conférence — L'IA au service des artisans : la keynote (Bâtir Connect 2026)</image:title>
+      <image:title>Conférence — L&apos;IA au service des artisans : la keynote (Bâtir Connect 2026)</image:title>
     </image:image>
     <image:image>
       <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20webinar%20cover%20about%20data%20privacy%20for%20construction%20software%2C%20a%20screen%20and%20microphone%20silhouette%20with%20a%20shield%20and%20padlock%20made%20of%20subtle%20circuit%20lines%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1280&height=720&seq=artiflow-interv-rgpd-webinaire&orientation=landscape</image:loc>
-      <image:title>Webinaire — RGPD : ce que votre logiciel de chantier fait de vos données</image:title>
+      <image:title>Webinaire — RGPD : ce que votre logiciel de chantier fait de vos données (Les Mercredis de l&apos;Artisan)</image:title>
     </image:image>
     <image:image>
       <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20webinar%20cover%20about%20AI-assisted%20construction%20estimating%2C%20a%20laptop%20screen%20showing%20a%20quote%20table%20silhouette%20with%20a%20calculator%20and%20ruler%20shapes%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1280&height=720&seq=artiflow-interv-chiffrage-webinaire&orientation=landscape</image:loc>
-      <image:title>Webinaire — Chiffrer juste avec l'IA : démonstration pas à pas</image:title>
+      <image:title>Webinaire — Chiffrer juste avec l&apos;IA : démonstration pas à pas (Rendez-vous du Chiffrage)</image:title>
     </image:image>
     <image:image>
       <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20round%20table%20discussion%20cover%20about%20technology%20and%20manual%20trades%2C%20several%20seated%20silhouettes%20around%20an%20oval%20table%20with%20subtle%20digital%20node%20lines%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1280&height=720&seq=artiflow-interv-tech-for-good&orientation=landscape</image:loc>
-      <image:title>Table ronde — Métiers manuels et numérique : réconcilier les deux</image:title>
+      <image:title>Table ronde — Métiers manuels et numérique : réconcilier les deux (Tech for Good Forum)</image:title>
     </image:image>
     <image:image>
       <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20masterclass%20cover%20about%20designing%20software%20for%20construction%20workers%2C%20a%20chalkboard%20silhouette%20with%20sketches%2C%20a%20pencil%20and%20blueprint%20lines%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1280&height=720&seq=artiflow-interv-product-masterclass&orientation=landscape</image:loc>
-      <image:title>Masterclass — Concevoir un produit pour le terrain</image:title>
+      <image:title>Masterclass — Concevoir un produit pour le terrain : la masterclass (Product Stories)</image:title>
     </image:image>
     <image:image>
       <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20interview%20cover%20about%20growing%20and%20teaching%20around%20construction%20software%2C%20an%20armchair%20and%20microphone%20silhouette%20with%20a%20rising%20bar%20chart%20and%20speech%20bubble%20shapes%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1280&height=720&seq=artiflow-interv-growth-interview&orientation=landscape</image:loc>
-      <image:title>Interview — Rendre un logiciel du bâtiment vraiment pédagogique</image:title>
+      <image:title>Interview — Rendre un logiciel du bâtiment vraiment pédagogique (Growth TPE)</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/nouveautes</loc>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/nouveautes/personnalisation-documents</loc>
+    <lastmod>2026-10-16</lastmod>
+    <image:image>
+      <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20unified%20brand%20identity%20for%20construction%20documents%2C%20overlapping%20quote%20and%20invoice%20cards%20with%20a%20color%20swatch%20palette%20and%20an%20envelope%20silhouette%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-personnalisation-documents&orientation=landscape</image:loc>
+      <image:title>ArtiFlow-pro — des documents à votre image, partout (annonce)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/nouveautes/suivi-emails-clients</loc>
+    <lastmod>2026-10-23</lastmod>
+    <image:image>
+      <image:loc>https://readdy.ai/api/search-image?query=Stylized%20editorial%20illustration%20of%20email%20delivery%20tracking%20for%20a%20construction%20business%2C%20a%20stylized%20envelope%20with%20a%20green%20check%20beside%20a%20red%20crossed%20envelope%2C%20a%20small%20countdown%20clock%20and%20a%20notification%20card%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20subtle%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-suivi-emails&orientation=landscape</image:loc>
+      <image:title>ArtiFlow-pro — suivi des emails clients : refus, vérification et renvoi différé (annonce)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://artiflow-pro.fr/nouveautes/recapitulatif</loc>
+    <lastmod>2026-10-23</lastmod>
+    <image:image>
+      <image:loc>https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20showing%20a%20timeline%20of%20product%20announcement%20cards%20with%20sharing%20thumbnails%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-recap-nouveautes&orientation=landscape</image:loc>
+      <image:title>ArtiFlow-pro — toutes les annonces du journal, en images</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/nous-rejoindre</loc>
@@ -179,9 +308,7 @@
   </url>
   <url>
     <loc>https://artiflow-pro.fr/plan-du-site</loc>
-  </url>
-  <url>
-    <loc>https://artiflow-pro.fr/guide/mot-de-passe-solide</loc>
+    <lastmod>2026-10-19</lastmod>
   </url>
   <url>
     <loc>https://artiflow-pro.fr/mentions-legales</loc>

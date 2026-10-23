@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { originePublique } from "@/lib/site";
 
 export interface PublicDevisData {
   devis: {
@@ -23,13 +24,16 @@ export interface PublicDevisData {
     siret: string | null;
     tva: string | null;
     assurance: string | null;
+    doc_couleur: string | null;
+    doc_afficher_logo: boolean | null;
+    doc_pied_page: string | null;
   } | null;
 }
 
 /** Base publique du site (gère le sous-chemin de déploiement). */
 export function publicBaseUrl(): string {
   const base = (__BASE_PATH__ || "").replace(/\/+$/, "");
-  return `${window.location.origin}${base}`;
+  return `${originePublique()}${base}`;
 }
 
 /** Lien à envoyer au client pour qu'il signe le devis en ligne. */

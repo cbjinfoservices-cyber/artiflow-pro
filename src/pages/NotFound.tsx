@@ -173,6 +173,10 @@ export default function NotFound() {
                       src={metier.cardImage}
                       alt={`ArtiFlow-pro pour les ${metier.name.toLowerCase()}s`}
                       title={`${metier.name} · ArtiFlow-pro`}
+                      width={400}
+                      height={300}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>

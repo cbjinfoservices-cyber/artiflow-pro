@@ -91,6 +91,41 @@ export default function AbonnementsCharts({ abos, onOffreClick }: Props) {
   const delta = mrrActuel - mrrPrecedent;
   const deltaPct = mrrPrecedent > 0 ? Math.round((delta / mrrPrecedent) * 100) : null;
 
+  // Parc totalement vide : on affiche deux cartes avec un message clair plutôt que
+  // des barres à zéro, pour que la page reste lisible sans aucun abonnement.
+  if (abos.length === 0) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3 p-4 rounded-lg bg-background-100 border border-background-200">
+          <p className="text-[11px] font-semibold text-foreground-500 uppercase tracking-wide inline-flex items-center gap-1.5">
+            <i className="ri-donut-chart-line text-accent-600"></i>
+            Répartition des offres
+          </p>
+          <div className="flex flex-col items-center justify-center text-center gap-2 py-10">
+            <span className="w-11 h-11 flex items-center justify-center rounded-full bg-background-200 text-foreground-500 text-xl">
+              <i className="ri-pie-chart-2-line"></i>
+            </span>
+            <p className="text-sm text-foreground-500">Aucune offre à répartir pour l'instant.</p>
+            <p className="text-[11px] text-foreground-400">La répartition apparaîtra dès le premier abonnement enregistré.</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 p-4 rounded-lg bg-background-100 border border-background-200">
+          <p className="text-[11px] font-semibold text-foreground-500 uppercase tracking-wide inline-flex items-center gap-1.5">
+            <i className="ri-line-chart-line text-primary-600"></i>
+            Évolution du MRR
+          </p>
+          <div className="flex flex-col items-center justify-center text-center gap-2 py-10">
+            <span className="w-11 h-11 flex items-center justify-center rounded-full bg-background-200 text-foreground-500 text-xl">
+              <i className="ri-line-chart-line"></i>
+            </span>
+            <p className="text-sm text-foreground-500">Pas encore de revenu récurrent à tracer.</p>
+            <p className="text-[11px] text-foreground-400">La courbe du MRR se construira au fil des abonnements actifs.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
       {/* Répartition des offres */}

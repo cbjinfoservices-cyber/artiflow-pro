@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ajouterLienCopie } from "@/lib/liensCopiesMemoire";
+import { originePublique } from "@/lib/site";
 
 /**
  * Bouton « Partager » réutilisable : ouvre un petit menu proposant de copier un lien
@@ -50,7 +51,7 @@ export default function BoutonPartager({
   // Adresse complète et partageable de la vue (origine + préfixe de publication + chemin).
   const urlPartageable = () => {
     const base = (__BASE_PATH__ || "").replace(/\/+$/, "");
-    return `${window.location.origin}${base}${chemin}`;
+    return `${originePublique()}${base}${chemin}`;
   };
 
   const copier = async () => {

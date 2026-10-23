@@ -3,6 +3,7 @@ import { useSectionNav } from "@/hooks/useSectionNav";
 import { useDemoModal } from "@/hooks/useDemoModal";
 import { openCookieConsent } from "@/components/feature/CookieConsent";
 import { reseauxSociaux } from "@/mocks/social";
+import EncartBesoinAide from "@/components/feature/EncartBesoinAide";
 
 type FooterLink = { label: string; to?: string; section?: string };
 
@@ -24,7 +25,10 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { label: "Plombiers chauffagistes", to: "/metiers/plombier-chauffagiste" },
       { label: "Électriciens", to: "/metiers/electricien" },
       { label: "Maçons", to: "/metiers/macon" },
+      { label: "Frigoristes climaticiens", to: "/metiers/installateur-climatisation" },
       { label: "Voir tous les métiers", to: "/metiers" },
+      { label: "Récapitulatif des métiers", to: "/metiers/recapitulatif" },
+      { label: "Zones d'intervention", to: "/zones-intervention" },
     ],
   },
   {
@@ -36,6 +40,8 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { label: "À propos", to: "/a-propos#equipe" },
       { label: "Podcast", to: "/podcast" },
       { label: "Nouveautés produit", to: "/nouveautes" },
+      { label: "Récapitulatif des annonces", to: "/nouveautes/recapitulatif" },
+      { label: "Personnalisation des documents", to: "/nouveautes/personnalisation-documents" },
       { label: "Plan du site", to: "/plan-du-site" },
       { label: "Mentions légales", to: "/mentions-legales" },
       { label: "CGV & CGU", to: "/cgv" },
@@ -86,6 +92,9 @@ export default function Footer() {
                 </a>
               ))}
             </div>
+
+            {/* Encart d'aide : accès direct au contact + horaires de disponibilité de l'équipe. */}
+            <EncartBesoinAide variante="sombre" className="mt-6" />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-10">

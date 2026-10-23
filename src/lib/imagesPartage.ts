@@ -67,3 +67,15 @@ export const IMAGE_PARTAGE_AUTEUR_CAMILLE =
 /** Julien Barbier — croissance, contenu et SEO. */
 export const IMAGE_PARTAGE_AUTEUR_JULIEN =
   "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20growth%2C%20content%20and%20visibility%20for%20a%20construction%20software%20brand%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%2C%20abstract%20rising%20curves%2C%20megaphone%20and%20article%20page%20silhouettes%2C%20blueprint%20lines%20over%20a%20deep%20charcoal%20background%2C%20cinematic%20soft%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-auteur-julien-n1&orientation=landscape";
+
+/** Guide pratique — créer un mot de passe solide (page autonome /guide/mot-de-passe-solide). */
+export const IMAGE_PARTAGE_GUIDE_MOT_DE_PASSE =
+  "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20creating%20a%20strong%20password%2C%20a%20large%20padlock%20and%20floating%20key%20shapes%20with%20subtle%20data%20patterns%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=guide-mdp-solide-og&orientation=landscape";
+
+/** Récapitulatif du journal — toutes les annonces et leurs visuels de partage. */
+export const IMAGE_PARTAGE_RECAP_NOUVEAUTES =
+  "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20showing%20a%20timeline%20of%20product%20announcement%20cards%20with%20sharing%20thumbnails%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-recap-nouveautes&orientation=landscape";
+
+/** Annonce produit — personnalisation des documents (identité unifiée). */
+export const IMAGE_PARTAGE_PERSONNALISATION =
+  "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20unified%20brand%20identity%20for%20construction%20documents%2C%20overlapping%20quote%20and%20invoice%20cards%20with%20a%20color%20swatch%20palette%20and%20an%20envelope%20silhouette%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-personnalisation-documents&orientation=landscape";

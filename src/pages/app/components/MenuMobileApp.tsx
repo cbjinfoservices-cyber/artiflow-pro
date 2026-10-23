@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import EspaceArtisanNav from "@/pages/app/components/EspaceArtisanNav";
+import CompteurQuoiDeNeufTiroir from "@/pages/app/components/CompteurQuoiDeNeufTiroir";
+import type { EcheancesDuJour } from "@/hooks/useEcheancesDuJour";
+import { formatEuros } from "@/lib/format";
 
 /** Un onglet de la barre fixe du bas. */
 interface OngletMobile {
@@ -14,6 +17,20 @@ interface OngletMobile {
   badge?: number;
   /** Couleur de la pastille. */
   badgeTone?: "rouge" | "accent";
+  /** Infobulle / description longue (non affichée sur mobile, utile aux lecteurs d'écran). */
+  title?: string;
+  /** Petite ligne chiffrée sous le libellé (ex. montant à encaisser), visible sans survol. */
+  detail?: { text: string; tone: "rouge" | "accent" };
+}
+
+/** Montant compact pour la barre du bas (ex. « 740 € », « 1,2 k€ »). */
+function montantCompact(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (value >= 1000) {
+    const milliers = value / 1000;
+    return `${milliers.toFixed(milliers >= 10 ? 0 : 1).replace(".", ",")} k€`;
+  }
+  return `${Math.round(value)} €`;
 }
 
 /** Pile de propriétés alimentée par `AppLayout`, qui calcule déjà tous les compteurs. */
@@ -29,9 +46,21 @@ export interface MenuMobileAppProps {
   retardProgramme: number;
   envoisAutoAttention: number;
   biblio: number;
+  /** Échéances du jour : mêmes compteurs que le bloc « Aujourd'hui » de la barre latérale. */
+  echeancesJour: EcheancesDuJour;
+  /** Nombre d'entreprises au carnet : pastille de la sous-entrée « Entreprises ». */
+  clientsPro: number;
+  /** Nombre de particuliers au carnet : pastille de la sous-entrée « Particuliers ». */
+  clientsParticuliers: number;
+  /** Chantiers silencieux (client sans nouvelles depuis 14 jours) : pastille du menu Chantiers. */
+  chantiersSansNouvelles: number;
   moisManquants: number;
   voirComptabilite: boolean;
   isGestionnaire: boolean;
+  /** Nombre total de pros inscrits (pastille de l'entrée du menu). */
+  prosInscrits: number;
+  /** Nouvelles inscriptions du mois, rappelées dans l'infobulle de la pastille. */
+  prosInscritsNouveaux: number;
   gestionnairesCount: number;
   compteLink: string;
   displayName: string;
@@ -109,9 +138,15 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
     retardProgramme,
     envoisAutoAttention,
     biblio,
+    echeancesJour,
+    clientsPro,
+    clientsParticuliers,
+    chantiersSansNouvelles,
     moisManquants,
     voirComptabilite,
     isGestionnaire,
+    prosInscrits,
+    prosInscritsNouveaux,
     gestionnairesCount,
     compteLink,
     displayName,
@@ -156,18 +191,40 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
       base.push({ to: "/app/mon-compte-gestionnaire", icon: "ri-shield-user-line", label: "Compte", badge: gestionnairesCount, badgeTone: "accent" });
       return base;
     }
+    const echeancesFactures = echeancesJour.facturesJour + echeancesJour.facturesRetard;
     return [
       { to: "/app", end: true, icon: "ri-dashboard-line", label: "Accueil" },
       { to: "/app/devis", icon: "ri-file-text-line", label: "Devis" },
-      { to: "/app/factures", icon: "ri-receipt-line", label: "Factures" },
+      {
+        // Quand des échéances du jour existent, l'onglet ouvre directement la liste filtrée
+        // (et déjà triée par échéance la plus ancienne) au lieu de la vue complète.
+        to: echeancesFactures > 0 ? "/app/factures?encaisser=jour" : "/app/factures",
+        icon: "ri-receipt-line",
+        label: "Factures",
+        badge: echeancesFactures,
+        badgeTone: echeancesJour.facturesRetard > 0 ? "rouge" : "accent",
+        detail:
+          echeancesJour.montant > 0
+            ? {
+                text: montantCompact(echeancesJour.montant),
+                tone: echeancesJour.facturesRetard > 0 ? "rouge" : "accent",
+              }
+            : undefined,
+        title:
+          echeancesFactures > 0
+            ? `${formatEuros(echeancesJour.montant)} à encaisser · ${echeancesFactures} facture${
+                echeancesFactures > 1 ? "s" : ""
+              } : ${echeancesJour.facturesJour} aujourd'hui, ${echeancesJour.facturesRetard} en retard. Ouvre la liste filtrée.`
+            : "Factures",
+      },
       { to: "/app/relances", icon: "ri-notification-3-line", label: "Relances", badge: enRetard, badgeTone: "rouge" },
     ];
-  }, [backOfficeOnly, voirComptabilite, moisManquants, gestionnairesCount, enRetard]);
+  }, [backOfficeOnly, voirComptabilite, moisManquants, gestionnairesCount, enRetard, echeancesJour]);
 
   // Signale discrètement, sur le bouton « Plus », qu'une alerte se cache dans le menu.
   const alertesMasquees = backOfficeOnly
     ? 0
-    : envoisAutoAttention + relancesProgrammees + biblio;
+    : envoisAutoAttention + relancesProgrammees + biblio + echeancesJour.relancesJour + chantiersSansNouvelles;
 
   return (
     <>
@@ -181,6 +238,8 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
             key={o.to}
             to={o.to}
             end={o.end}
+            title={o.title}
+            aria-label={o.title}
             className={({ isActive }) =>
               `flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1 rounded-md cursor-pointer transition-colors ${
                 isActive ? "text-primary-700" : "text-foreground-400"
@@ -192,6 +251,15 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
               {o.badge ? <PastilleOnglet count={o.badge} tone={o.badgeTone} /> : null}
             </span>
             <span className="text-[10px] font-medium truncate max-w-full px-0.5">{o.label}</span>
+            {o.detail ? (
+              <span
+                className={`text-[9px] font-bold tabular-nums leading-none truncate max-w-full px-0.5 ${
+                  o.detail.tone === "rouge" ? "text-red-600" : "text-accent-700"
+                }`}
+              >
+                {o.detail.text}
+              </span>
+            ) : null}
           </NavLink>
         ))}
         <button
@@ -231,11 +299,15 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
           >
             <div className="shrink-0 flex items-center gap-3 px-4 h-14 border-b border-background-200">
               <span className="font-heading font-bold text-base text-foreground-950">Menu</span>
+              {/* Même compteur que la barre latérale et l'en-tête : une seule mémoire pour les trois. */}
+              <span className="ml-auto">
+                <CompteurQuoiDeNeufTiroir onNavigate={() => setOpen(false)} />
+              </span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Fermer"
-                className="ml-auto w-9 h-9 flex items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 cursor-pointer"
+                className="w-9 h-9 flex items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 cursor-pointer"
               >
                 <i className="ri-close-line text-xl"></i>
               </button>
@@ -271,6 +343,13 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
                     retardProgramme={retardProgramme}
                     envoisAutoAttention={envoisAutoAttention}
                     biblio={biblio}
+                    echeancesJour={echeancesJour}
+                    clientsPro={clientsPro}
+                    clientsParticuliers={clientsParticuliers}
+                    chantiersSansNouvelles={chantiersSansNouvelles}
+                    moisManquants={moisManquants}
+                    voirComptabilite={voirComptabilite}
+                    masquerQuoiDeNeuf
                   />
                 </div>
               )}
@@ -293,6 +372,24 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
                   >
                     <i className="ri-money-euro-circle-line text-lg text-foreground-400"></i>
                     Abonnements
+                  </NavLink>
+                  <NavLink
+                    to="/app/pros-inscrits"
+                    onClick={() => setOpen(false)}
+                    title={`${prosInscrits} pro${prosInscrits > 1 ? "s" : ""} inscrit${prosInscrits > 1 ? "s" : ""}${
+                      prosInscritsNouveaux > 0
+                        ? ` · ${prosInscritsNouveaux} nouveau${prosInscritsNouveaux > 1 ? "x" : ""} ce mois-ci`
+                        : ""
+                    }`}
+                    className="flex items-center gap-3 h-11 px-3 rounded-md text-sm font-medium text-foreground-700 hover:bg-background-100 cursor-pointer"
+                  >
+                    <i className="ri-user-star-line text-lg text-foreground-400"></i>
+                    Pros inscrits
+                    {prosInscrits > 0 && (
+                      <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold tabular-nums">
+                        {prosInscrits > 99 ? "99+" : prosInscrits}
+                      </span>
+                    )}
                   </NavLink>
                   {voirComptabilite && (
                     <NavLink

@@ -24,7 +24,7 @@ export default function RejoindrePage() {
 
   usePageMeta(
     "Nous rejoindre · Carrières ArtiFlow-pro",
-    "Rejoignez l'équipe ArtiFlow-pro : postes ouverts en tech, data, support et croissance. Télétravail, impact concret et équipe à taille humaine. Candidature en 5 minutes.",
+    "Rejoignez l'équipe ArtiFlow-pro : postes ouverts en tech, data, support et croissance. Impact concret, équipe à taille humaine, candidature en 5 minutes.",
     {
       image:
         "https://readdy.ai/api/search-image?query=Stylized%20abstract%20banner%20about%20joining%20a%20small%20tech%20team%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%2C%20abstract%20people%20and%20handshake%20silhouettes%2C%20blueprint%20line%20patterns%2C%20deep%20charcoal%20background%2C%20cinematic%20minimal%20editorial%20lighting%2C%20premium%20composition%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-rejoindre&orientation=landscape",

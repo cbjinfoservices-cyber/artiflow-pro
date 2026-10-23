@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import type { jsPDF } from "jspdf";
 import { formatShortDate } from "@/lib/dates";
 import { toCsv, downloadCsv } from "@/lib/csv";
-import { savePdf, pdfToBase64 } from "@/lib/pdf";
+import { pdfToBase64 } from "@/lib/pdf";
+import ApercuPdfModal from "@/components/feature/ApercuPdfModal";
 import {
   buildFacturesAbonnementPdf,
   buildRelevePrelevementsPdf,
@@ -156,6 +158,12 @@ export default function FacturesAbonnementCard({ abonnement }: { abonnement: Mon
   const [packLoading, setPackLoading] = useState(false);
   const [releveLoading, setReleveLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; fileName?: string } | null>(null);
+  // Aperçu avant téléchargement des documents PDF de l'abonnement (factures, relevé).
+  const [apercuDoc, setApercuDoc] = useState<{
+    title: string;
+    filename: string;
+    build: () => Promise<jsPDF>;
+  } | null>(null);
   const [comptableEmail, setComptableEmail] = useState("");
   const [comptableCc, setComptableCc] = useState("");
   const [natureEnvoiComptable, setNatureEnvoiComptable] = useState<"pack" | "releve">("pack");
@@ -417,20 +425,22 @@ export default function FacturesAbonnementCard({ abonnement }: { abonnement: Mon
   };
 
   const exporterPdf = () => {
-    savePdf(construirePdf(), `${nomBase}.pdf`);
-    notifier(`PDF généré : ${nomBase}.pdf`, `${nomBase}.pdf`);
+    // Aperçu avant téléchargement : on contrôle le récap par exercice et le détail des lignes.
+    setApercuDoc({
+      title: "Aperçu · Factures d'abonnement",
+      filename: `${nomBase}.pdf`,
+      build: async () => construirePdf(),
+    });
   };
 
   // Relevé des prélèvements seul, à côté des autres exports.
   const exporterRelevePdf = () => {
-    setReleveLoading(true);
-    try {
-      const nom = `releve-prelevements-${nomBase}.pdf`;
-      savePdf(construireReleve(), nom);
-      notifier(`Relevé des prélèvements généré : ${nom}`, nom);
-    } finally {
-      setReleveLoading(false);
-    }
+    setReleveLoading(false);
+    setApercuDoc({
+      title: "Aperçu · Relevé des prélèvements",
+      filename: `releve-prelevements-${nomBase}.pdf`,
+      build: async () => construireReleve(),
+    });
   };
 
   const exporterZip = async () => {
@@ -1521,6 +1531,16 @@ export default function FacturesAbonnementCard({ abonnement }: { abonnement: Mon
       )}
 
       <ApercuRappelModal open={apercuOpen} html={apercuHtml} onClose={() => setApercuOpen(false)} />
+      {apercuDoc && (
+        <ApercuPdfModal
+          title={apercuDoc.title}
+          subtitle="Vérifiez la mise en page (colonnes, libellés, totaux) avant de télécharger le PDF."
+          filename={apercuDoc.filename}
+          docBuilder={apercuDoc.build}
+          note="Aucun fichier n'est enregistré tant que vous n'avez pas cliqué sur « Télécharger le PDF »."
+          onClose={() => setApercuDoc(null)}
+        />
+      )}
       <ApercuEmailComptableModal
         open={apercuEmailOpen}
         apercu={apercuEmail}

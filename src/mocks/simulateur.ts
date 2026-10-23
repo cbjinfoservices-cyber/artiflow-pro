@@ -71,4 +71,36 @@ export const simulateurMetiers = [
     tauxSignatureApres: 42,
     panierMoyen: 2600,
   },
+  {
+    slug: "installateur-climatisation",
+    name: "Frigoriste climaticien",
+    minutesAvant: 26,
+    minutesApres: 3,
+    tauxSignatureAvant: 31,
+    tauxSignatureApres: 39,
+    panierMoyen: 4200,
+  },
+];
+
+/**
+ * Exemples de lignes de devis climatisation que l'IA propose à partir de la
+ * bibliothèque de prix de l'artisan. Servent d'aperçu concret sous le
+ * simulateur de la page d'accueil.
+ */
+export const simulateurLignesClimatisation = [
+  {
+    designation: "Pose split 2,5 kW R32, support mural et liaisons",
+    unite: "forfait",
+    prix: 1690,
+  },
+  {
+    designation: "Gainable 4 pièces, réseau de gaines et plénum",
+    unite: "forfait",
+    prix: 7450,
+  },
+  {
+    designation: "Mise en service et contrôle d'étanchéité",
+    unite: "intervention",
+    prix: 240,
+  },
 ];

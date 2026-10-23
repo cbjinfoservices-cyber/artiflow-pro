@@ -1,3 +1,4 @@
+import { originePublique } from "@/lib/site";
 /**
  * Adresse absolue et partageable d'une vue filtrée de la page Média.
  *
@@ -21,5 +22,5 @@ export function lienVueMedia(filtres: {
   }
   if (filtres.tri && filtres.tri !== "recent") params.set("tri", filtres.tri);
   const requete = params.toString();
-  return `${window.location.origin}${base}/podcast${requete ? `?${requete}` : ""}`;
+  return `${originePublique()}${base}/podcast${requete ? `?${requete}` : ""}`;
 }

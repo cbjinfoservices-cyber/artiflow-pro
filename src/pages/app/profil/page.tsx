@@ -9,11 +9,18 @@ import SuiviAbonnement from "@/pages/app/profil/components/SuiviAbonnement";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecapQuotidien } from "@/hooks/useRecapQuotidien";
 import { METIERS, metierLabel } from "@/lib/metiers";
+import { STATUTS_JURIDIQUES, TAILLES_ENTREPRISE, statutJuridiqueLabel, tailleEntrepriseLabel } from "@/lib/entreprise";
+import { ACCENT_DEFAUT, ACCENTS_DOCUMENTS } from "@/lib/documentStyle";
 import { CANAUX, RECAP_DEVIS_SEUIL_OPTIONS, RECAP_RELANCE_FACTURE_SEUIL_OPTIONS, RELANCE_FACTURE_DELAI_OPTIONS } from "@/lib/relances";
 import { updateComptableOverrideEmailDefaut, updateComptableOverrideAdresses } from "@/lib/artisanApi";
 import HistoriqueRelancesFactures from "@/pages/app/components/HistoriqueRelancesFactures";
 import ApercuAutoRelanceModal from "@/pages/app/profil/components/ApercuAutoRelanceModal";
+import ApercuDocument from "@/pages/app/profil/components/ApercuDocument";
+import ApercuEmail from "@/pages/app/profil/components/ApercuEmail";
 import CarteSecuriteMotDePasse from "@/components/feature/CarteSecuriteMotDePasse";
+import SupprimerCompteCard from "@/pages/app/profil/components/SupprimerCompteCard";
+import MesDroitsRgpdCard from "@/pages/app/profil/components/MesDroitsRgpdCard";
+import HistoriqueSuppressionsCard from "@/pages/app/profil/components/HistoriqueSuppressionsCard";
 import GuidePremiereVisite from "@/components/base/GuidePremiereVisite";
 import { guidePremiereVisiteVu, marquerGuidePremiereVisiteVu } from "@/lib/guidePremiereVisite";
 
@@ -56,12 +63,21 @@ export default function AppProfil() {
 
   const [entreprise, setEntreprise] = useState("");
   const [metier, setMetier] = useState("");
+  const [statutJuridique, setStatutJuridique] = useState("");
+  const [tailleEntreprise, setTailleEntreprise] = useState("");
   const [telephone, setTelephone] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [siret, setSiret] = useState("");
   const [tva, setTva] = useState("");
   const [assurance, setAssurance] = useState("");
   const [penalitesRetard, setPenalitesRetard] = useState("");
+  // Apparence personnalisable des documents (devis & factures) : couleur, logo, coordonnées de paiement.
+  const [docCouleur, setDocCouleur] = useState(ACCENT_DEFAUT);
+  const [docAfficherLogo, setDocAfficherLogo] = useState(true);
+  const [docPaiement, setDocPaiement] = useState("");
+  const [docPiedPage, setDocPiedPage] = useState("");
+  // Modèle de mise en page des documents : standard (colonnes séparées) ou compact (P.U. + Total regroupés).
+  const [docModele, setDocModele] = useState<"standard" | "compact">("standard");
   const [emailSujetDevis, setEmailSujetDevis] = useState("");
   const [emailCorpsDevis, setEmailCorpsDevis] = useState("");
   const [emailSujetFacture, setEmailSujetFacture] = useState("");
@@ -128,12 +144,19 @@ export default function AppProfil() {
     if (profile) {
       setEntreprise(profile.entreprise ?? "");
       setMetier(profile.metier ?? "");
+      setStatutJuridique(profile.statut_juridique ?? "");
+      setTailleEntreprise(profile.taille_entreprise ?? "");
       setTelephone(profile.telephone ?? "");
       setLogoUrl(profile.logo_url ?? null);
       setSiret(profile.siret ?? "");
       setTva(profile.tva ?? "");
       setAssurance(profile.assurance ?? "");
       setPenalitesRetard(profile.penalites_retard ?? "");
+      setDocCouleur(profile.doc_couleur ?? ACCENT_DEFAUT);
+      setDocAfficherLogo(profile.doc_afficher_logo !== false);
+      setDocPaiement(profile.doc_paiement ?? "");
+      setDocPiedPage(profile.doc_pied_page ?? "");
+      setDocModele(profile.doc_modele === "compact" ? "compact" : "standard");
       setEmailSujetDevis(profile.email_sujet_devis ?? "");
       setEmailCorpsDevis(profile.email_corps_devis ?? "");
       setEmailSujetFacture(profile.email_sujet_facture ?? "");
@@ -158,14 +181,21 @@ export default function AppProfil() {
     return (
       (profile.entreprise ?? "") !== entreprise.trim() ||
       (profile.metier ?? "") !== metier ||
+      (profile.statut_juridique ?? "") !== statutJuridique ||
+      (profile.taille_entreprise ?? "") !== tailleEntreprise ||
       (profile.telephone ?? "") !== telephone.trim() ||
       (profile.logo_url ?? null) !== logoUrl ||
       (profile.siret ?? "") !== siret.trim() ||
       (profile.tva ?? "") !== tva.trim() ||
       (profile.assurance ?? "") !== assurance.trim() ||
-      (profile.penalites_retard ?? "") !== penalitesRetard.trim()
+      (profile.penalites_retard ?? "") !== penalitesRetard.trim() ||
+      (profile.doc_couleur ?? ACCENT_DEFAUT) !== docCouleur ||
+      (profile.doc_afficher_logo !== false) !== docAfficherLogo ||
+      (profile.doc_paiement ?? "") !== docPaiement.trim() ||
+      (profile.doc_pied_page ?? "") !== docPiedPage.trim() ||
+      (profile.doc_modele === "compact" ? "compact" : "standard") !== docModele
     );
-  }, [profile, entreprise, metier, telephone, logoUrl, siret, tva, assurance, penalitesRetard]);
+  }, [profile, entreprise, metier, statutJuridique, tailleEntreprise, telephone, logoUrl, siret, tva, assurance, penalitesRetard, docCouleur, docAfficherLogo, docPaiement, docPiedPage, docModele]);
 
   const emailsDirty = useMemo(() => {
     if (!profile) return false;
@@ -255,12 +285,19 @@ export default function AppProfil() {
     const result = await updateProfile({
       entreprise: entreprise.trim(),
       metier,
+      statut_juridique: statutJuridique,
+      taille_entreprise: tailleEntreprise,
       telephone: telephone.trim(),
       logo_url: logoUrl,
       siret: siret.trim(),
       tva: tva.trim(),
       assurance: assurance.trim(),
       penalites_retard: penalitesRetard.trim(),
+      doc_couleur: docCouleur,
+      doc_afficher_logo: docAfficherLogo,
+      doc_paiement: docPaiement.trim(),
+      doc_pied_page: docPiedPage.trim(),
+      doc_modele: docModele,
       email_sujet_devis: emailSujetDevis.trim(),
       email_corps_devis: emailCorpsDevis.trim(),
       email_sujet_facture: emailSujetFacture.trim(),
@@ -287,12 +324,19 @@ export default function AppProfil() {
     if (!profile) return;
     setEntreprise(profile.entreprise ?? "");
     setMetier(profile.metier ?? "");
+    setStatutJuridique(profile.statut_juridique ?? "");
+    setTailleEntreprise(profile.taille_entreprise ?? "");
     setTelephone(profile.telephone ?? "");
     setLogoUrl(profile.logo_url ?? null);
     setSiret(profile.siret ?? "");
     setTva(profile.tva ?? "");
     setAssurance(profile.assurance ?? "");
     setPenalitesRetard(profile.penalites_retard ?? "");
+    setDocCouleur(profile.doc_couleur ?? ACCENT_DEFAUT);
+    setDocAfficherLogo(profile.doc_afficher_logo !== false);
+    setDocPaiement(profile.doc_paiement ?? "");
+    setDocPiedPage(profile.doc_pied_page ?? "");
+    setDocModele(profile.doc_modele === "compact" ? "compact" : "standard");
     setError(null);
     setSaved(false);
   };
@@ -596,6 +640,39 @@ export default function AppProfil() {
             </label>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-foreground-700">Statut juridique</span>
+              <select
+                value={statutJuridique}
+                onChange={(e) => setStatutJuridique(e.target.value)}
+                className={`${inputCls} cursor-pointer`}
+              >
+                <option value="">Sélectionnez votre statut juridique</option>
+                {STATUTS_JURIDIQUES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-foreground-700">Taille de l'entreprise</span>
+              <select
+                value={tailleEntreprise}
+                onChange={(e) => setTailleEntreprise(e.target.value)}
+                className={`${inputCls} cursor-pointer`}
+              >
+                <option value="">Combien de personnes travaillent avec vous ?</option>
+                {TAILLES_ENTREPRISE.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-foreground-700">Adresse email</span>
             <input value={email} readOnly className={`${inputCls} opacity-70 cursor-not-allowed`} />
@@ -648,10 +725,216 @@ export default function AppProfil() {
           </span>
         </label>
       </div>
+
+      {/* Apparence des documents */}
+      <div id="profil-apparence" className="p-5 md:p-6 rounded-lg bg-background-100 border border-background-200">
+        <div className="flex items-center gap-2 mb-5">
+          <span className="w-9 h-9 flex items-center justify-center rounded-md bg-secondary-100 text-secondary-700">
+            <i className="ri-palette-line"></i>
+          </span>
+          <div>
+            <h3 className="font-heading font-semibold text-base text-foreground-950">Apparence des documents</h3>
+            <p className="text-xs text-foreground-500">
+              Personnalisez vos devis et factures PDF : couleur, logo et coordonnées de paiement.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="p-3 rounded-md bg-background-50 border border-background-200">
+            <p className="text-sm font-medium text-foreground-900">Couleur d'accent</p>
+            <p className="text-[11px] text-foreground-500 mt-0.5">Utilisée sur le bloc des totaux et les coordonnées de paiement.</p>
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              {ACCENTS_DOCUMENTS.map((c) => {
+                const on = docCouleur.toLowerCase() === c.value.toLowerCase();
+                return (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => {
+                      setDocCouleur(c.value);
+                      setSaved(false);
+                    }}
+                    aria-pressed={on}
+                    title={c.label}
+                    className={`inline-flex items-center gap-2 h-9 pl-1.5 pr-3 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors border ${
+                      on ? "border-primary-400 bg-background-100" : "border-background-200 bg-background-50 hover:bg-background-100"
+                    }`}
+                  >
+                    <span
+                      className="w-6 h-6 rounded-full border border-black/10"
+                      style={{ backgroundColor: c.value }}
+                      aria-hidden="true"
+                    ></span>
+                    {c.label}
+                  </button>
+                );
+              })}
+              <label className="inline-flex items-center gap-2 h-9 pl-1.5 pr-3 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer border border-background-200 bg-background-50 hover:bg-background-100">
+                <input
+                  type="color"
+                  value={docCouleur}
+                  onChange={(e) => {
+                    setDocCouleur(e.target.value);
+                    setSaved(false);
+                  }}
+                  className="w-6 h-6 rounded-full border border-black/10 cursor-pointer bg-transparent p-0"
+                  aria-label="Couleur personnalisée"
+                />
+                Personnalisée
+              </label>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 p-3 rounded-md bg-background-50 border border-background-200">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground-900">Afficher le logo sur les documents</p>
+              <p className="text-[11px] text-foreground-500 mt-0.5">
+                Le logo enregistré apparaît en haut de vos devis et factures PDF.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={docAfficherLogo}
+              onClick={() => {
+                setDocAfficherLogo((v) => !v);
+                setSaved(false);
+              }}
+              className={`inline-flex items-center gap-2 h-8 px-3 rounded-full text-[11px] font-semibold whitespace-nowrap cursor-pointer transition-colors shrink-0 ${
+                docAfficherLogo ? "bg-primary-500 text-background-50" : "bg-background-100 text-foreground-500 border border-background-200"
+              }`}
+            >
+              <i className="ri-toggle-line text-base"></i>
+              {docAfficherLogo ? "Affiché" : "Masqué"}
+            </button>
+          </div>
+
+          {/* Modèle de mise en page des documents : standard ou compact. */}
+          <div className="flex flex-col gap-2 p-3 rounded-md bg-background-50 border border-background-200">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground-900">Modèle de document</p>
+              <p className="text-[11px] text-foreground-500 mt-0.5">
+                Choisissez la densité du tableau de vos devis et factures.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              {([
+                {
+                  key: "standard" as const,
+                  label: "Standard",
+                  icone: "ri-table-line",
+                  desc: "Une colonne par information : Désignation · Qté · P.U. HT · TVA · Total HT.",
+                },
+                {
+                  key: "compact" as const,
+                  label: "Compact",
+                  icone: "ri-layout-4-line",
+                  desc: "P.U. HT et Total HT regroupés dans une seule colonne : idéal quand les lignes sont courtes.",
+                },
+              ]).map((m) => {
+                const on = docModele === m.key;
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => {
+                      setDocModele(m.key);
+                      setSaved(false);
+                    }}
+                    className={`flex-1 text-left p-3 rounded-md border cursor-pointer transition-colors ${
+                      on ? "border-primary-400 bg-background-100" : "border-background-200 bg-background-50 hover:bg-background-100"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={`w-7 h-7 flex items-center justify-center rounded-md ${
+                          on ? "bg-primary-500 text-background-50" : "bg-background-100 text-foreground-500"
+                        }`}
+                      >
+                        <i className={m.icone}></i>
+                      </span>
+                      <span className="text-sm font-semibold text-foreground-950">{m.label}</span>
+                      {on && <i className="ri-checkbox-circle-line text-primary-600 ml-auto"></i>}
+                    </span>
+                    <span className="block text-[11px] text-foreground-500 mt-1.5">{m.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-foreground-700">Coordonnées de paiement (affichées sur vos factures)</span>
+            <textarea
+              value={docPaiement}
+              onChange={(e) => {
+                setDocPaiement(e.target.value);
+                setSaved(false);
+              }}
+              rows={3}
+              placeholder={"Ex. : Règlement par virement\nIBAN : FR76 1234 5678 9012 3456 7890 123\nBIC : ABCDFRPP\nPaiement à 30 jours."}
+              className="px-3 py-2 rounded-md bg-background-100 border border-background-200 text-sm text-foreground-800 outline-none focus:border-primary-400 resize-none"
+            />
+            <span className="text-[11px] text-foreground-400">
+              Reprises dans un bloc « Coordonnées de paiement » en bas de chaque facture. Laissez vide pour ne rien afficher.
+            </span>
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-foreground-700">Message de pied de page (devis & factures)</span>
+            <textarea
+              value={docPiedPage}
+              onChange={(e) => {
+                setDocPiedPage(e.target.value);
+                setSaved(false);
+              }}
+              rows={2}
+              placeholder="Ex. : Merci de votre confiance · Devis gratuit sous 48 h · Retrouvez-nous sur artiflow-pro.fr"
+              className="px-3 py-2 rounded-md bg-background-100 border border-background-200 text-sm text-foreground-800 outline-none focus:border-primary-400 resize-none"
+            />
+            <span className="text-[11px] text-foreground-400">
+              Un texte libre affiché en bas de <strong className="font-medium">tous</strong> vos documents (devis et factures), hors coordonnées de paiement. Laissez vide pour ne rien afficher.
+            </span>
+          </label>
+
+          {/* Aperçu en direct : reflète l'apparence choisie sans générer de PDF. */}
+          <div className="pt-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-7 h-7 flex items-center justify-center rounded-md bg-accent-100 text-accent-700">
+                <i className="ri-eye-line text-sm"></i>
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-foreground-900">Aperçu en direct</p>
+                <p className="text-[11px] text-foreground-500">Voici le rendu de vos factures avec les réglages ci-dessus.</p>
+              </div>
+            </div>
+            <ApercuDocument
+              entreprise={entreprise}
+              couleur={docCouleur}
+              afficherLogo={docAfficherLogo}
+              logoUrl={logoUrl}
+              paiement={docPaiement}
+              piedPage={docPiedPage}
+              metier={metierLabel(metier)}
+              modele={docModele}
+            />
+          </div>
+        </div>
+      </div>
         </>
       )}
 
-      {tab === "securite" && <CarteSecuriteMotDePasse />}
+      {tab === "securite" && (
+        <>
+          <CarteSecuriteMotDePasse />
+          <MesDroitsRgpdCard />
+          <SupprimerCompteCard />
+          <HistoriqueSuppressionsCard />
+        </>
+      )}
 
       {tab === "automatismes" && (
         <>
@@ -1300,6 +1583,35 @@ export default function AppProfil() {
           </p>
         </div>
       </div>
+
+      {/* Aperçu en direct des emails envoyés au client (couleur + logo du profil) */}
+      {emailTab !== "recontact" && (
+        <div className="p-5 md:p-6 rounded-lg bg-background-100 border border-background-200">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-9 h-9 flex items-center justify-center rounded-md bg-accent-100 text-accent-700">
+              <i className="ri-mail-open-line"></i>
+            </span>
+            <div>
+              <h3 className="font-heading font-semibold text-base text-foreground-950">Aperçu en direct de l'email</h3>
+              <p className="text-xs text-foreground-500">
+                Voici le rendu reçu par votre client, avec votre couleur d'accent et votre logo. Les brouillons ci-dessus sont repris en direct.
+              </p>
+            </div>
+          </div>
+          <ApercuEmail
+            type={emailTab}
+            entreprise={entreprise}
+            couleur={docCouleur}
+            afficherLogo={docAfficherLogo}
+            logoUrl={logoUrl}
+            metier={metierLabel(metier)}
+            telephone={profile?.telephone ?? ""}
+            sujetDraft={emailTab === "devis" ? emailSujetDevis : emailTab === "facture" ? emailSujetFacture : emailSujetRelance}
+            corpsDraft={emailTab === "devis" ? emailCorpsDevis : emailTab === "facture" ? emailCorpsFacture : emailCorpsRelance}
+            piedPage={docPiedPage}
+          />
+        </div>
+      )}
 
         </>
       )}

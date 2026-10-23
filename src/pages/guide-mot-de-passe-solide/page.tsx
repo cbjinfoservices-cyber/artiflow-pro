@@ -2,7 +2,11 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/feature/Navbar";
 import Footer from "@/components/feature/Footer";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import FilAriane from "@/components/feature/FilAriane";
+import { IMAGE_PARTAGE_GUIDE_MOT_DE_PASSE } from "@/lib/imagesPartage";
+import { useStructuredData } from "@/hooks/useStructuredData";
 import { useDemoModal } from "@/hooks/useDemoModal";
+import { getSiteOrigin } from "@/lib/site";
 import ALireEnsuiteGuide from "@/pages/guide-mot-de-passe-solide/components/ALireEnsuiteGuide";
 
 /** Un ingrédient d'un mot de passe solide. */
@@ -11,6 +15,19 @@ interface Ingredient {
   titre: string;
   texte: string;
 }
+
+const CHEMIN = "/guide/mot-de-passe-solide";
+
+const TITRE = "Créer un mot de passe solide | ArtiFlow-pro";
+
+const DESCRIPTION =
+  "Le guide simple pour choisir un mot de passe vraiment solide : longueur, variété, unicité et méthode de la phrase de passe, avec la checklist à garder en tête.";
+
+const IMAGE_PARTAGE =
+  "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20creating%20a%20strong%20password%2C%20a%20large%20padlock%20and%20floating%20key%20shapes%20with%20subtle%20data%20patterns%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=guide-mdp-solide-og&orientation=landscape";
+
+/** Dernière révision réelle du contenu du guide. */
+const DATE_REVISION = "2026-10-13";
 
 const INGREDIENTS: Ingredient[] = [
   {
@@ -56,15 +73,51 @@ const ERREURS = [
 
 export default function GuideMotDePasseSolidePage() {
   const { openDemo } = useDemoModal();
+  const origin = getSiteOrigin();
 
-  usePageMeta(
-    "Créer un mot de passe solide | ArtiFlow-pro",
-    "Le guide simple pour choisir un mot de passe vraiment solide : longueur, variété, unicité et méthode de la phrase de passe, avec la checklist à garder en tête.",
-    {
-      image:
-        "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20creating%20a%20strong%20password%2C%20a%20large%20padlock%20and%20floating%20key%20shapes%20with%20subtle%20data%20patterns%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=guide-mdp-solide-og&orientation=landscape",
-    }
-  );
+  usePageMeta(TITRE, DESCRIPTION, { image: IMAGE_PARTAGE_GUIDE_MOT_DE_PASSE });
+
+  // Article : page éditoriale autonome, signée par l'organisation (pas de
+  // signature individuelle affichée sur la page, donc pas d'entité Person).
+  useStructuredData("artiflow-guide-mdp-article", {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: "Créer un mot de passe solide",
+    description: DESCRIPTION,
+    inLanguage: "fr-FR",
+    image: IMAGE_PARTAGE_GUIDE_MOT_DE_PASSE,
+    dateModified: DATE_REVISION,
+    author: {
+      "@type": "Organization",
+      "@id": `${origin}/#organization`,
+      name: "ArtiFlow-pro",
+      url: origin,
+    },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${origin}/#organization`,
+      name: "ArtiFlow-pro",
+      url: origin,
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${origin}${CHEMIN}` },
+  });
+
+  // HowTo : reprend exactement la méthode affichée dans la page (quatre étapes).
+  useStructuredData("artiflow-guide-mdp-howto", {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "Créer un mot de passe solide",
+    description:
+      "La méthode de la phrase de passe, en quatre étapes, pour obtenir un mot de passe à la fois long, robuste et facile à retenir.",
+    inLanguage: "fr-FR",
+    totalTime: "PT5M",
+    step: METHODE.map((etape, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: `Étape ${index + 1}`,
+      text: etape,
+    })),
+  });
 
   return (
     <div className="w-full min-h-screen bg-background-50 pb-20 lg:pb-0">
@@ -72,22 +125,33 @@ export default function GuideMotDePasseSolidePage() {
 
       <main>
         <section className="relative w-full pt-16 md:pt-18 overflow-hidden bg-foreground-950">
+          <picture>
+            <source
+              media="(max-width: 767px)"
+              srcSet="https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20portrait%20scene%20about%20creating%20a%20strong%20password%2C%20a%20large%20padlock%20and%20floating%20key%20shapes%20with%20subtle%20data%20patterns%20and%20gentle%20glow%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=800&height=1000&seq=guide-mdp-solide-hero-mobile&orientation=portrait"
+            />
           <img
             src="https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20scene%20about%20creating%20a%20strong%20password%2C%20a%20large%20padlock%20and%20floating%20key%20shapes%20with%20subtle%20data%20patterns%20and%20gentle%20glow%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1600&height=900&seq=guide-mdp-solide-hero&orientation=landscape"
-            alt="Guide pour créer un mot de passe solide"
+            alt="Guide pour créer un mot de passe solide - ArtiFlow-pro"
             title="Créer un mot de passe solide · ArtiFlow-pro"
+            width={1600}
+            height={900}
+            fetchPriority="high"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover object-top"
           />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-foreground-950/85 via-foreground-950/75 to-foreground-950/92"></div>
 
           <div className="relative w-full px-4 md:px-8 lg:px-12 pt-12 md:pt-16 pb-12 md:pb-16">
-            <nav className="flex flex-wrap items-center gap-2 text-xs text-background-200/80 mb-6">
-              <Link to="/" className="hover:text-background-50 cursor-pointer">Accueil</Link>
-              <i className="ri-arrow-right-s-line"></i>
-              <Link to="/app/auth" className="hover:text-background-50 cursor-pointer">Connexion</Link>
-              <i className="ri-arrow-right-s-line"></i>
-              <span className="text-background-50">Créer un mot de passe solide</span>
-            </nav>
+            <FilAriane
+              items={[
+                { name: "Accueil", path: "/" },
+                { name: "Créer un mot de passe solide", path: CHEMIN },
+              ]}
+              variante="sombre"
+              schemaId="artiflow-guide-mdp-breadcrumb"
+            />
 
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500 text-background-50 text-xs font-semibold">

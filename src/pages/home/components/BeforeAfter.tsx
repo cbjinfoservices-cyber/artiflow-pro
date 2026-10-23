@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { avantApres } from "@/mocks/landing";
 import { useDemoModal } from "@/hooks/useDemoModal";
+import ComparatifRelanceDifferee from "@/components/feature/ComparatifRelanceDifferee";
 
 type Mode = "avant" | "apres";
 
@@ -16,9 +17,11 @@ export default function BeforeAfter() {
         <div className="grid grid-cols-2 gap-3">
           <div className="relative">
             <img
-              src="https://readdy.ai/api/search-image?query=Real%20documentary%20photograph%20of%20a%20residential%20construction%20site%20with%20several%20trades%20at%20work%2C%20bricklayer%20laying%20blocks%2C%20electrician%20running%20cables%20through%20conduits%2C%20plumber%20fitting%20pipes%2C%20scaffolding%20and%20professional%20tools%20on%20site%2C%20warm%20golden%20hour%20natural%20light%2C%20authentic%20realistic%20editorial%20photography%2C%20high%20detail&width=600&height=440&seq=artiflow-chantier-terrain&orientation=landscape"
+              src="https://readdy.ai/api/search-image?query=Real%20documentary%20photograph%20of%20a%20residential%20construction%20site%20with%20several%20trades%20at%20work%2C%20bricklayer%20laying%20blocks%2C%20electrician%20running%20cables%20through%20conduits%2C%20plumber%20fitting%20pipes%2C%20scaffolding%20and%20professional%20tools%20on%20site%2C%20warm%20golden%20hour%20natural%20light%2C%20authentic%20realistic%20editorial%20photography%2C%20high%20detail&width=440&height=320&seq=artiflow-chantier-terrain&orientation=landscape"
               alt="Chantier du bâtiment tout corps d'état en cours de travaux"
               title="Chantier tout corps d'état en cours de travaux suivi avec ArtiFlow-pro"
+              loading="lazy"
+              decoding="async"
               className="w-full h-[150px] object-cover object-center rounded-lg border border-background-200"
             />
             <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground-950/70 text-background-50 text-[10px] font-semibold">
@@ -27,9 +30,11 @@ export default function BeforeAfter() {
           </div>
           <div className="relative">
             <img
-              src="https://readdy.ai/api/search-image?query=Real%20documentary%20photograph%20of%20a%20fully%20finished%20renovated%20house%20interior%2C%20freshly%20painted%20white%20walls%2C%20polished%20wooden%20floor%2C%20neat%20tiling%20and%20installed%20fixtures%2C%20clean%20bright%20modern%20living%20space%20after%20construction%20completion%2C%20warm%20natural%20daylight%2C%20impeccable%20craftsmanship%2C%20realistic%20editorial%20photography%2C%20high%20detail&width=600&height=440&seq=artiflow-chantier-termine&orientation=landscape"
+              src="https://readdy.ai/api/search-image?query=Real%20documentary%20photograph%20of%20a%20fully%20finished%20renovated%20house%20interior%2C%20freshly%20painted%20white%20walls%2C%20polished%20wooden%20floor%2C%20neat%20tiling%20and%20installed%20fixtures%2C%20clean%20bright%20modern%20living%20space%20after%20construction%20completion%2C%20warm%20natural%20daylight%2C%20impeccable%20craftsmanship%2C%20realistic%20editorial%20photography%2C%20high%20detail&width=440&height=320&seq=artiflow-chantier-termine&orientation=landscape"
               alt="Logement rénové tout corps d'état une fois le chantier terminé"
               title="Chantier tout corps d'état terminé et livré, suivi avec ArtiFlow-pro"
+              loading="lazy"
+              decoding="async"
               className="w-full h-[150px] object-cover object-center rounded-lg border border-background-200"
             />
             <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-500 text-background-50 text-[10px] font-semibold">
@@ -41,7 +46,7 @@ export default function BeforeAfter() {
           Chantier tout corps d'état : du gros œuvre à la finition livrée.
         </figcaption>
       </figure>
-      <div className="relative w-full px-4 md:px-8 lg:px-12 py-16 md:py-24">
+      <div className="relative w-full px-4 md:px-8 lg:px-12 py-12 md:py-16">
         <div className="max-w-2xl mx-auto text-center">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700">
             <i className="ri-arrow-left-right-line"></i>
@@ -76,7 +81,7 @@ export default function BeforeAfter() {
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch max-w-6xl mx-auto">
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch max-w-6xl mx-auto">
           {(["avant", "apres"] as Mode[]).map((key) => {
             const data = avantApres[key];
             const active = mode === key;
@@ -163,7 +168,13 @@ export default function BeforeAfter() {
           })}
         </div>
 
-        <div className="mt-10 text-center">
+        {/* Zoom sur un cas très concret : un email client refusé et le renvoi différé de 24 h,
+            comparé point par point (avant / après) pour rendre le bénéfice tangible. */}
+        <div className="mt-8 max-w-6xl mx-auto">
+          <ComparatifRelanceDifferee />
+        </div>
+
+        <div className="mt-8 text-center">
           <button
             type="button"
             onClick={() => openDemo("avant-apres")}

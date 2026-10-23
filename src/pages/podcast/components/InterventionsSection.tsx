@@ -60,8 +60,12 @@ function InterventionCard({
       <div className="relative w-full h-48 overflow-hidden bg-background-100">
         <img
           src={intervention.thumbnailUrl}
-          alt={`${intervention.format} · ${intervention.title}`}
-          title={`${intervention.title} · ${intervention.event}`}
+          alt={`${intervention.format} · ${intervention.title} - prise de parole de l'équipe ArtiFlow-pro`}
+          title={`${intervention.title} · ArtiFlow-pro`}
+          width={1280}
+          height={720}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
         <span className={`absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${toneBadge[intervention.tone]}`}>

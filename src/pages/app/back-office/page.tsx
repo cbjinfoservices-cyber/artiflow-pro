@@ -9,6 +9,7 @@ import BackOfficeKpis from "@/pages/app/back-office/components/BackOfficeKpis";
 import RegulariteComptableCard from "@/pages/app/back-office/components/RegulariteComptableCard";
 import AccesGestionnairesCard from "@/pages/app/back-office/components/AccesGestionnairesCard";
 import NoteBackOfficeCard from "@/pages/app/back-office/components/NoteBackOfficeCard";
+import SuppressionsEnAttenteCard from "@/pages/app/back-office/components/SuppressionsEnAttenteCard";
 import BackOfficeEvolutionCard from "@/pages/app/back-office/components/BackOfficeEvolutionCard";
 import ControleAccesSecuriteCard from "@/pages/app/back-office/components/ControleAccesSecuriteCard";
 import JournalErreursChargementCard from "@/pages/app/back-office/components/JournalErreursChargementCard";
@@ -22,6 +23,9 @@ import EpisodePiloteCard from "@/pages/app/back-office/components/EpisodePiloteC
 import DureeEssaiCard from "@/pages/app/back-office/components/DureeEssaiCard";
 import TestAbonnementEssaiCard from "@/pages/app/back-office/components/TestAbonnementEssaiCard";
 import ApercuEmailEssaiCard from "@/pages/app/back-office/components/ApercuEmailEssaiCard";
+import SuiviEnvoisFournisseurCard from "@/pages/app/back-office/components/SuiviEnvoisFournisseurCard";
+import GuideDepannageEmailCard from "@/pages/app/back-office/components/GuideDepannageEmailCard";
+import AlerteTauxEnvoisCard from "@/pages/app/back-office/components/AlerteTauxEnvoisCard";
 
 /**
  * Page d'accueil du back-office, point d'arrivée d'un compte gestionnaire.
@@ -69,6 +73,12 @@ export default function AppBackOffice() {
       icon: "ri-money-euro-circle-line",
       titre: "Abonnements",
       texte: "Suivi des offres, MRR et impayés",
+    },
+    {
+      to: "/app/pros-inscrits",
+      icon: "ri-user-star-line",
+      titre: "Pros inscrits",
+      texte: "Les pros inscrits et le détail de leur inscription",
     },
     ...(voirComptabilite
       ? [
@@ -124,6 +134,8 @@ export default function AppBackOffice() {
 
       <NoteBackOfficeCard />
 
+      <SuppressionsEnAttenteCard />
+
       <DureeEssaiCard />
 
       <TestAbonnementEssaiCard />
@@ -131,6 +143,12 @@ export default function AppBackOffice() {
       <ApercuEmailEssaiCard />
 
       <ApercuEmailEssaiCard variant="essai-j1" />
+
+      <SuiviEnvoisFournisseurCard />
+
+      <GuideDepannageEmailCard />
+
+      <AlerteTauxEnvoisCard />
 
       <BackOfficeKpis abos={abos} loading={loading} error={error} onRetry={load} />
 
