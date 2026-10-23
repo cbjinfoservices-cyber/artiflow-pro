@@ -892,7 +892,7 @@ export default function AppProfil() {
                 setSaved(false);
               }}
               rows={2}
-              placeholder="Ex. : Merci de votre confiance · Devis gratuit sous 48 h · Retrouvez-nous sur artiflow-pro.fr"
+              placeholder="Ex. : Merci de votre confiance · Devis gratuit sous 48 h · Retrouvez-nous sur artiflow-pro.com"
               className="px-3 py-2 rounded-md bg-background-100 border border-background-200 text-sm text-foreground-800 outline-none focus:border-primary-400 resize-none"
             />
             <span className="text-[11px] text-foreground-400">

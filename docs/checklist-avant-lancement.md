@@ -16,7 +16,7 @@ Vérification faite directement côté Backend (fonctions déployées + tables e
 | Fonctions déployées et **actives** côté Backend | ✅ **18 / 18** |
 | Tables de trace des automatisations | ✅ présentes (`recap_recontact_envois`, `recap_alertes_artisan`, `escalade_journal`, `recap_envois`, `envois_email`, `envois_auto_tests`, `relances`, `relances_client`, `abonnements`, `profiles`) |
 | Colonnes de réglage des automatisations sur `profiles` | ✅ présentes (comptable auto + bilan annuel, récap hebdo envois, rappel relance, alertes mot de passe + récaps, comparatif annuel, dernier envoi hebdo) |
-| Clé Resend + domaine d'envoi vérifié | ✅ fait (`artiflow-pro.fr` vérifié) |
+| Clé Resend + domaine d'envoi vérifié | ✅ fait (`artiflow-pro.com` vérifié) |
 | Stripe connecté (abonnements) | ✅ fait |
 
 > ➡️ **Conclusion** : le câblage des automatisations est **confirmé branché**. Il reste à créer les **tâches planifiées** (étape 4) pour que tout parte **tout seul**, et à faire un dernier test « bout en bout » depuis l'écran **Envois automatiques**.
@@ -41,9 +41,9 @@ Vérification faite directement côté Backend (fonctions déployées + tables e
 
 ## 1. Domaine personnalisé  ✅
 
-**Pourquoi** : donner une adresse pro au site (`artiflow-pro.fr`) plutôt que l'URL technique.
+**Pourquoi** : donner une adresse pro au site (`artiflow-pro.com`) plutôt que l'URL technique.
 
-- [x] Domaine `artiflow-pro.fr` acheté et vérifié
+- [x] Domaine `artiflow-pro.com` acheté et vérifié
 - [x] Le site répond bien sur le domaine (page d'accueil + `/app`)
 
 ---
@@ -52,7 +52,7 @@ Vérification faite directement côté Backend (fonctions déployées + tables e
 
 **Pourquoi** : sans domaine vérifié, **aucun email réel ne part** (devis, factures, relances, récaps).
 
-- [x] Domaine d'envoi `artiflow-pro.fr` ajouté dans le panneau Resend
+- [x] Domaine d'envoi `artiflow-pro.com` ajouté dans le panneau Resend
 - [x] Enregistrements DNS (SPF / DKIM) configurés chez le registrar
 - [x] Statut **Verified** confirmé dans Resend
 

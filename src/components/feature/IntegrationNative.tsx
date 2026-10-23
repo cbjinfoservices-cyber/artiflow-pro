@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { actualiserPermissionNotifications } from "@/lib/notificationsSysteme";
 
 /**
- * Lien https://artiflow.pro/… ouvert dans l'application (lien magique, réinitialisation du mot
+ * Lien https://artiflow-pro.com/… ouvert dans l'application (lien magique, réinitialisation du mot
  * de passe, retour de paiement…). Les jetons d'authentification placés dans le fragment par
  * Supabase ouvrent la session ; le reste de l'adresse devient un chemin interne.
  */

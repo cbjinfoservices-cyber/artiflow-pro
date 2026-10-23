@@ -1,4 +1,5 @@
 import { todayISO } from "@/lib/dates";
+import { telechargerBlob } from "@/lib/telechargement";
 
 /** Données d'une barre mensuelle du mini-graphe des remplacements. */
 export interface RemplacementChartDatum {
@@ -424,14 +425,7 @@ export function exportRemplacementsHistoriqueImage(entries: RemplacementHistoriq
   if (!canvas) return;
   canvas.toBlob((blob) => {
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `remplacements-historique-mois-faibles-${todayISO()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    telechargerBlob(`remplacements-historique-mois-faibles-${todayISO()}.png`, blob);
   }, "image/png");
 }
 
@@ -467,14 +461,7 @@ export function exportRemplacementsChartImage(
   if (!canvas) return;
   canvas.toBlob((blob) => {
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
     const suffixeFaible = options?.highlightCle ? `-mois-faible-${options.highlightCle}` : "";
-    a.download = `remplacements-renvois-par-mois${suffixeFaible}-${todayISO()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    telechargerBlob(`remplacements-renvois-par-mois${suffixeFaible}-${todayISO()}.png`, blob);
   }, "image/png");
 }

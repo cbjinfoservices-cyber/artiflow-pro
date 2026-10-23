@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { jsPDF } from "jspdf";
+import { Capacitor } from "@capacitor/core";
 import { savePdf } from "@/lib/pdf";
 import Modal from "@/pages/app/components/Modal";
+import { telechargerUrl } from "@/lib/telechargement";
 
 /**
  * Fenêtre d'aperçu d'un PDF AVANT téléchargement.
@@ -14,6 +16,10 @@ import Modal from "@/pages/app/components/Modal";
  * Dans les deux cas le document s'affiche dans une iframe, puis l'utilisateur télécharge
  * le fichier depuis l'aperçu. Rien n'est enregistré tant qu'il n'a pas cliqué.
  */
+// La WebView de l'application mobile n'affiche pas les PDF dans une iframe : on propose
+// d'ouvrir le document avec la visionneuse du téléphone (feuille de partage).
+const APERCU_INTEGRE = !Capacitor.isNativePlatform();
+
 export default function ApercuPdfModal({
   title,
   subtitle,
@@ -87,12 +93,7 @@ export default function ApercuPdfModal({
       return;
     }
     if (!url) return;
-    const lien = document.createElement("a");
-    lien.href = url;
-    lien.download = filename;
-    document.body.appendChild(lien);
-    lien.click();
-    document.body.removeChild(lien);
+    telechargerUrl(filename, url);
   };
 
   return (
@@ -116,15 +117,15 @@ export default function ApercuPdfModal({
             disabled={loading || !url}
             className="inline-flex items-center gap-2 h-10 px-5 rounded-md bg-primary-500 text-background-50 text-sm font-semibold cursor-pointer hover:bg-primary-600 whitespace-nowrap transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <i className="ri-file-download-line"></i>
-            Télécharger le PDF
+            <i className={APERCU_INTEGRE ? "ri-file-download-line" : "ri-share-forward-line"}></i>
+            {APERCU_INTEGRE ? "Télécharger le PDF" : "Ouvrir ou partager le PDF"}
           </button>
         </>
       }
     >
       <div className="rounded-lg border border-background-200 overflow-hidden bg-background-100">
         {loading ? (
-          <div className="flex flex-col items-center justify-center gap-2 h-[70vh] min-h-[520px] text-foreground-500">
+          <div className={`flex flex-col items-center justify-center gap-2 text-foreground-500 ${APERCU_INTEGRE ? "h-[70vh] min-h-[520px]" : "py-12"}`}>
             <i className="ri-loader-4-line animate-spin text-2xl text-primary-600"></i>
             <p className="text-sm">Préparation de l'aperçu…</p>
           </div>
@@ -135,8 +136,19 @@ export default function ApercuPdfModal({
             </span>
             <p className="text-sm text-foreground-600">{error}</p>
           </div>
-        ) : (
+        ) : APERCU_INTEGRE ? (
           <iframe src={url ?? ""} title={title} className="w-full h-[70vh] min-h-[520px]" />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 py-12 px-6 text-center">
+            <span className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-100 text-primary-700">
+              <i className="ri-file-pdf-2-line text-xl"></i>
+            </span>
+            <p className="text-sm font-semibold text-foreground-900">Document prêt</p>
+            <p className="text-xs text-foreground-500">
+              Touchez « Ouvrir ou partager le PDF » pour l'afficher avec la visionneuse du téléphone, l'envoyer ou
+              l'enregistrer.
+            </p>
+          </div>
         )}
       </div>
       {note && (

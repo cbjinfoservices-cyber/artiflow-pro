@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { NavLink, Outlet, useLocation, Link, Navigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { useRobotsMeta } from "@/hooks/useRobotsMeta";
 import { useAuth } from "@/hooks/useAuth";
 import { useRelancesRetard } from "@/hooks/useRelancesRetard";
@@ -37,6 +38,7 @@ import MenuCompte from "@/pages/app/components/MenuCompte";
 import NavCompte, { classeLienCompte } from "@/pages/app/components/NavCompte";
 import EcranAbonnementResilie from "@/pages/app/components/EcranAbonnementResilie";
 import BandeauSuppressionProgrammee from "@/pages/app/components/BandeauSuppressionProgrammee";
+import { ACCUEIL_TERRAIN, MODE_TERRAIN, pageTerrain } from "@/lib/modeTerrain";
 
 // Les entrées de menu et leur découpage en sous-thèmes vivent dans `menuAppData` (partagés avec la
 // barre latérale artisan).
@@ -404,34 +406,37 @@ export default function AppLayout() {
             <i className="ri-logout-box-r-line"></i>
             Se déconnecter
           </button>
-          <Link to="/" className="mt-1 flex items-center gap-2 h-9 px-3 rounded-md text-xs font-medium text-foreground-500 hover:bg-background-200 cursor-pointer">
-            <i className="ri-arrow-left-line"></i>
-            Retour au site
-          </Link>
+          {!Capacitor.isNativePlatform() && (
+            <Link to="/" className="mt-1 flex items-center gap-2 h-9 px-3 rounded-md text-xs font-medium text-foreground-500 hover:bg-background-200 cursor-pointer">
+              <i className="ri-arrow-left-line"></i>
+              Retour au site
+            </Link>
+          )}
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 shrink-0 flex items-center justify-between gap-3 px-4 md:px-6 bg-background-50 border-b border-background-200">
+        <header className="h-16 shrink-0 flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 bg-background-50 border-b border-background-200">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex items-center gap-3 lg:hidden">
+            <div className="flex items-center gap-3 lg:hidden shrink-0">
               <span className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary-500 text-background-50">
                 <i className="ri-tools-fill text-lg"></i>
               </span>
             </div>
-            <h1 className="hidden lg:block font-heading font-bold text-xl text-foreground-950 truncate">{title}</h1>
-            {voirMonAbonnement && abonnement && ["Actif", "Essai"].includes(abonnement.statut) && (
+            {/* Sur téléphone aussi : le titre dit où l'on est (le menu latéral est masqué). */}
+            <h1 className="font-heading font-bold text-base sm:text-lg lg:text-xl text-foreground-950 truncate">{title}</h1>
+            {!MODE_TERRAIN && voirMonAbonnement && abonnement && ["Actif", "Essai"].includes(abonnement.statut) && (
               <Link
                 to="/app/profil?onglet=abonnement"
                 title={`Vous êtes abonné à l'offre ArtiFlow-pro ${abonnement.offre} — ouvrir votre abonnement`}
-                className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-accent-100 text-accent-800 text-[11px] font-bold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
+                className="hidden sm:inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-accent-100 text-accent-800 text-[11px] font-bold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
               >
                 <i className="ri-vip-crown-2-line text-[11px]"></i>
                 Abonné
               </Link>
             )}
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {!backOfficeOnly && (
               <>
                 {executionsImminentes.length > 0 && (
@@ -441,7 +446,8 @@ export default function AppLayout() {
                       .map((e) => `${e.item.nom} — ${libelleDans(e.dansMs)}`)
                       .join("\n")}`}
                     aria-label={`${executionsImminentes.length} traitement(s) imminent(s) — ouvrir les envois automatiques`}
-                    className="inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-accent-100 border border-accent-200 text-accent-800 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
+                    // Sur téléphone, la pastille de la cloche affiche déjà le nombre : on libère la place.
+                    className="hidden sm:inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-accent-100 border border-accent-200 text-accent-800 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
                   >
                     <span className="relative w-5 h-5 flex items-center justify-center">
                       <i className="ri-timer-flash-line text-sm"></i>
@@ -490,27 +496,34 @@ export default function AppLayout() {
                 to="/app/preferences#section-son"
                 title="Son de confirmation coupé — ouvrir les préférences d'affichage"
                 aria-label="Son de confirmation coupé"
-                className="inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-background-100 border border-background-200 text-foreground-500 text-xs font-semibold whitespace-nowrap cursor-pointer hover:border-primary-300 transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-background-100 border border-background-200 text-foreground-500 text-xs font-semibold whitespace-nowrap cursor-pointer hover:border-primary-300 transition-colors"
               >
                 <i className="ri-volume-mute-line text-sm"></i>
                 <span className="hidden sm:inline">Son coupé</span>
               </Link>
             )}
-            {!backOfficeOnly && (
+            {!backOfficeOnly && !MODE_TERRAIN && (
               <>
                 <div className="hidden md:flex items-center gap-2 px-3 h-10 rounded-md bg-background-100 border border-background-200 w-56">
                   <i className="ri-search-line text-foreground-400 text-sm"></i>
                   <span className="text-xs text-foreground-400">Rechercher…</span>
                 </div>
-                <span className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors">
+                <span className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors">
                   <i className="ri-magic-line"></i>
                   <span className="hidden sm:inline">Nouveau devis IA</span>
                 </span>
               </>
             )}
-            {!backOfficeOnly && <CompteurQuoiDeNeuf />}
+            {/* Compteur des nouveautés et synchro : secondaires, masqués sur téléphone. */}
+            {!backOfficeOnly && !MODE_TERRAIN && (
+              <div className="hidden sm:flex">
+                <CompteurQuoiDeNeuf />
+              </div>
+            )}
             <BoutonAide />
-            <IndicateurSynchroPublique />
+            <div className="hidden sm:flex">
+              <IndicateurSynchroPublique />
+            </div>
             <MenuCompte backOfficeOnly={backOfficeOnly} />
           </div>
         </header>
@@ -520,11 +533,15 @@ export default function AppLayout() {
             <EcranAbonnementResilie offre={abonnement?.offre} />
           ) : (
             <>
-              {!backOfficeOnly && <BandeauQuoiDeNeuf />}
+              {!backOfficeOnly && !MODE_TERRAIN && <BandeauQuoiDeNeuf />}
               <BandeauSuppressionProgrammee />
-              {!backOfficeOnly && <RelanceDuJourBanner refreshKey={location.pathname} />}
+              {!backOfficeOnly && !MODE_TERRAIN && <RelanceDuJourBanner refreshKey={location.pathname} />}
               {!backOfficeOnly && <BandeauRattachementIntervenant />}
-              <Outlet />
+              {MODE_TERRAIN && !backOfficeOnly && !pageTerrain(location.pathname) ? (
+                <Navigate to={ACCUEIL_TERRAIN} replace />
+              ) : (
+                <Outlet />
+              )}
             </>
           )}
         </main>

@@ -1,0 +1,30 @@
+# ArtiFlow-pro — site et espace artisan (application React, fichiers statiques).
+(site) {
+	root * /srv
+	encode zstd gzip
+	# Les fichiers de /assets portent une empreinte dans leur nom : mise en cache longue.
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		-Server
+	}
+	# Application monopage : toute adresse inconnue renvoie index.html (le routeur React prend le relais).
+	try_files {path} /index.html
+	file_server
+}
+
+artiflow-pro.com {
+	import site
+}
+
+www.artiflow-pro.com {
+	redir https://artiflow-pro.com{uri} permanent
+}
+
+# Accès direct par l'adresse IP (tests avant la propagation DNS).
+:80 {
+	import site
+}

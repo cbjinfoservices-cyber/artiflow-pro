@@ -9,7 +9,7 @@ voit Google, et ce que le sitemap annonce.
 
 ## 1. L'image servie au partage social
 
-1. Ouvrir <https://www.linkedin.com/post-inspector/> et coller `https://artiflow-pro.fr/`.
+1. Ouvrir <https://www.linkedin.com/post-inspector/> et coller `https://artiflow-pro.com/`.
 2. Lancer l'inspection.
 
 **Attendu**
@@ -28,7 +28,7 @@ Contrôle complémentaire, sans compte : <https://www.opengraph.xyz/>.
 ## 2. Le HTML réellement servi (sans JavaScript)
 
 ```
-curl -sL https://artiflow-pro.fr/ | grep -E 'og:image|twitter:image|canonical'
+curl -sL https://artiflow-pro.com/ | grep -E 'og:image|twitter:image|canonical'
 ```
 
 **Attendu**
@@ -46,16 +46,16 @@ curl -sL https://artiflow-pro.fr/ | grep -E 'og:image|twitter:image|canonical'
 
 ## 3. Les données structurées
 
-1. Ouvrir <https://search.google.com/test/rich-results?url=https%3A%2F%2Fartiflow-pro.fr%2F>
-2. Puis, pour un second avis : <https://validator.schema.org/#url=https%3A%2F%2Fartiflow-pro.fr%2F>
+1. Ouvrir <https://search.google.com/test/rich-results?url=https%3A%2F%2Fartiflow-pro.com%2F>
+2. Puis, pour un second avis : <https://validator.schema.org/#url=https%3A%2F%2Fartiflow-pro.com%2F>
 
 **Attendu sur le test Google (avec JS) — exactement 3 entités**
 
 | Entité              | `@id` attendu                     |
 | ------------------- | --------------------------------- |
-| Organization        | `https://artiflow-pro.fr/#organization` |
-| SoftwareApplication | `https://artiflow-pro.fr/#application`  |
-| WebSite             | `https://artiflow-pro.fr/#website`      |
+| Organization        | `https://artiflow-pro.com/#organization` |
+| SoftwareApplication | `https://artiflow-pro.com/#application`  |
+| WebSite             | `https://artiflow-pro.com/#website`      |
 
 - 0 erreur, aucune adresse `@id` en double ;
 - `publisher` pointe bien vers `#organization` ;
@@ -72,13 +72,13 @@ même `@id` dans le test Google, qui voit l'état réel de la page.
 ## 4. Le sitemap et les règles de crawl
 
 ```
-curl -s https://artiflow-pro.fr/sitemap.xml | head -40
-curl -s https://artiflow-pro.fr/robots.txt
+curl -s https://artiflow-pro.com/sitemap.xml | head -40
+curl -s https://artiflow-pro.com/robots.txt
 ```
 
 **Attendu**
 
-- `https://artiflow-pro.fr/` avec son `<image:loc>` égal à l'image de partage ;
+- `https://artiflow-pro.com/` avec son `<image:loc>` égal à l'image de partage ;
 - des `<lastmod>` **uniquement** sur les pages dont le contenu a réellement
   changé (jamais la date du jour de publication) ;
 - aucune URL en double, aucune URL d'espace connecté (`/app`, `/signature-devis`),

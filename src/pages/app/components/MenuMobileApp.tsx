@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import EspaceArtisanNav from "@/pages/app/components/EspaceArtisanNav";
 import CompteurQuoiDeNeufTiroir from "@/pages/app/components/CompteurQuoiDeNeufTiroir";
 import type { EcheancesDuJour } from "@/hooks/useEcheancesDuJour";
 import { formatEuros } from "@/lib/format";
+import { MODE_TERRAIN } from "@/lib/modeTerrain";
 
 /** Un onglet de la barre fixe du bas. */
 interface OngletMobile {
@@ -177,8 +179,8 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // Onglets principaux de la barre du bas : l'artisan garde les 4 gestes du quotidien,
-  // le gestionnaire retrouve les 3 écrans du back-office.
+  // Onglets principaux de la barre du bas : l'artisan garde les 5 gestes du quotidien (dont le
+  // planning, consulté sur le terrain), le gestionnaire retrouve les 3 écrans du back-office.
   const onglets: OngletMobile[] = useMemo(() => {
     if (backOfficeOnly) {
       const base: OngletMobile[] = [
@@ -191,9 +193,19 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
       base.push({ to: "/app/mon-compte-gestionnaire", icon: "ri-shield-user-line", label: "Compte", badge: gestionnairesCount, badgeTone: "accent" });
       return base;
     }
+    // Application mobile (version terrain) : les gestes du chantier, sans devis ni factures.
+    if (MODE_TERRAIN) {
+      return [
+        { to: "/app/planning", icon: "ri-calendar-2-line", label: "Planning" },
+        { to: "/app/chantiers", icon: "ri-building-2-line", label: "Chantiers" },
+        { to: "/app/clients", icon: "ri-contacts-book-2-line", label: "Clients" },
+        { to: "/app/pointages", icon: "ri-timer-line", label: "Pointages" },
+      ];
+    }
     const echeancesFactures = echeancesJour.facturesJour + echeancesJour.facturesRetard;
     return [
       { to: "/app", end: true, icon: "ri-dashboard-line", label: "Accueil" },
+      { to: "/app/planning", icon: "ri-calendar-2-line", label: "Planning" },
       { to: "/app/devis", icon: "ri-file-text-line", label: "Devis" },
       {
         // Quand des échéances du jour existent, l'onglet ouvre directement la liste filtrée
@@ -434,7 +446,9 @@ export default function MenuMobileApp(props: MenuMobileAppProps) {
                   />
                 )}
                 <LigneAction to="/app/preferences" icon="ri-equalizer-2-line" label="Préférences d'affichage" onClick={() => setOpen(false)} />
-                <LigneAction to="/" icon="ri-arrow-left-line" label="Retour au site" onClick={() => setOpen(false)} />
+                {!Capacitor.isNativePlatform() && (
+                  <LigneAction to="/" icon="ri-arrow-left-line" label="Retour au site" onClick={() => setOpen(false)} />
+                )}
                 <LigneAction
                   icon="ri-logout-box-r-line"
                   label="Se déconnecter"

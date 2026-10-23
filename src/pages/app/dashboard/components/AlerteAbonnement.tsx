@@ -1,9 +1,14 @@
 import { Link } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { useMonAbonnement } from "@/hooks/useMonAbonnement";
 import { useDureeEssai } from "@/hooks/useDureeEssai";
 import { formatEuros } from "@/lib/format";
 import { formatShortDate } from "@/lib/dates";
 import { finPeriodeEssai, joursAvant } from "@/lib/monAbonnement";
+import { ACHAT_ABONNEMENT_DISPONIBLE } from "@/lib/abonnementPaiement";
+
+// L'application mobile n'a pas de page d'accueil (elle ouvre l'espace artisan) : page Contact dédiée.
+const LIEN_CONTACT = Capacitor.isNativePlatform() ? "/contact" : "/#contact";
 
 /**
  * Bandeau d'alerte du tableau de bord sur l'abonnement de l'artisan. Il couvre trois
@@ -54,16 +59,18 @@ export default function AlerteAbonnement() {
             l'accès complet à vos devis, relances et à votre espace comptable.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
+            {ACHAT_ABONNEMENT_DISPONIBLE && (
+              <Link
+                to="/app/profil?onglet=abonnement"
+                title="Consulter votre abonnement et régulariser"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
+              >
+                <i className="ri-bank-card-line"></i>
+                Régulariser mon abonnement
+              </Link>
+            )}
             <Link
-              to="/app/profil?onglet=abonnement"
-              title="Consulter votre abonnement et régulariser"
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
-            >
-              <i className="ri-bank-card-line"></i>
-              Régulariser mon abonnement
-            </Link>
-            <Link
-              to="/#contact"
+              to={LIEN_CONTACT}
               title="Nous contacter au sujet de votre abonnement"
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-background-50 border border-red-200 text-red-700 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-red-100 transition-colors"
             >
@@ -133,16 +140,18 @@ export default function AlerteAbonnement() {
             </div>
           ) : null}
           <div className="mt-3 flex flex-wrap items-center gap-2">
+            {ACHAT_ABONNEMENT_DISPONIBLE && (
+              <Link
+                to="/app/profil?onglet=abonnement"
+                title="Choisir votre offre ArtiFlow-pro"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
+              >
+                <i className="ri-vip-crown-line"></i>
+                Choisir mon offre
+              </Link>
+            )}
             <Link
-              to="/app/profil?onglet=abonnement"
-              title="Choisir votre offre ArtiFlow-pro"
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
-            >
-              <i className="ri-vip-crown-line"></i>
-              Choisir mon offre
-            </Link>
-            <Link
-              to="/#contact"
+              to={LIEN_CONTACT}
               title="Parler à notre équipe de votre essai"
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-background-50 border border-accent-300 text-accent-800 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-100 transition-colors"
             >
@@ -172,16 +181,18 @@ export default function AlerteAbonnement() {
             le souhaitez pour retrouver l'accès complet à vos devis, relances et à votre espace comptable.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
+            {ACHAT_ABONNEMENT_DISPONIBLE && (
+              <Link
+                to="/app/profil?onglet=abonnement"
+                title="Réactiver votre abonnement ArtiFlow-pro"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
+              >
+                <i className="ri-restart-line"></i>
+                Réactiver mon abonnement
+              </Link>
+            )}
             <Link
-              to="/app/profil?onglet=abonnement"
-              title="Réactiver votre abonnement ArtiFlow-pro"
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors"
-            >
-              <i className="ri-restart-line"></i>
-              Réactiver mon abonnement
-            </Link>
-            <Link
-              to="/#contact"
+              to={LIEN_CONTACT}
               title="Nous contacter au sujet de votre résiliation"
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-background-50 border border-background-300 text-foreground-700 text-[11px] font-semibold whitespace-nowrap cursor-pointer hover:bg-background-200 transition-colors"
             >

@@ -2,6 +2,7 @@ import type { LienAuthTestEntree } from "@/lib/liensAuthTestsMemoire";
 import { calculerSemainesRegularite, libelleFenetre, nbSemainesFenetre, tendanceGlobale, type FenetreRegularite, type TendanceSemaine } from "@/lib/regulariteLiensAuth";
 import { slugAdresse } from "@/lib/recapLiensAuth";
 import { todayISO } from "@/lib/dates";
+import { telechargerBlob } from "@/lib/telechargement";
 
 const CHART_W = 820;
 const CHART_H = 420;
@@ -268,13 +269,6 @@ export function exportRegulariteChartImage(
   const nomFichier = nomFichierPngRegularite(semaineSelectionnee);
   canvas.toBlob((blob) => {
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = nomFichier;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    telechargerBlob(nomFichier, blob);
   }, "image/png");
 }

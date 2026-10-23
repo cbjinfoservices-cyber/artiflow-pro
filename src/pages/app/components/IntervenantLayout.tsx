@@ -1,4 +1,5 @@
 import { NavLink, Link, Outlet } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { useRobotsMeta } from "@/hooks/useRobotsMeta";
 import { useAuth } from "@/hooks/useAuth";
 import { couleurIntervenant } from "@/lib/intervenants";
@@ -97,13 +98,15 @@ export default function IntervenantLayout() {
             <i className="ri-logout-box-r-line"></i>
             Se déconnecter
           </button>
-          <Link
-            to="/"
-            className="mt-1 flex items-center gap-2 h-9 px-3 rounded-md text-xs font-medium text-foreground-500 hover:bg-background-200 cursor-pointer"
-          >
-            <i className="ri-arrow-left-line"></i>
-            Retour au site
-          </Link>
+          {!Capacitor.isNativePlatform() && (
+            <Link
+              to="/"
+              className="mt-1 flex items-center gap-2 h-9 px-3 rounded-md text-xs font-medium text-foreground-500 hover:bg-background-200 cursor-pointer"
+            >
+              <i className="ri-arrow-left-line"></i>
+              Retour au site
+            </Link>
+          )}
         </div>
       </aside>
 

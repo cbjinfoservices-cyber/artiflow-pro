@@ -406,7 +406,9 @@ export default function ClocheImminents({
         <div
           role="dialog"
           aria-label="Réglages des signalements imminents"
-          className="absolute right-0 top-full mt-2 z-50 w-80 max-h-[75vh] overflow-y-auto rounded-lg bg-background-50 border border-background-200 p-3"
+          // Téléphone : centré sous l'en-tête sur toute la largeur (la cloche n'est pas au bord de l'écran).
+          // À partir de sm : infobulle accrochée sous la cloche.
+          className="fixed inset-x-4 top-[4.5rem] mx-auto max-w-sm shadow-lg sm:shadow-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:mx-0 sm:w-80 sm:max-w-none z-50 max-h-[75vh] overflow-y-auto rounded-lg bg-background-50 border border-background-200 p-3"
         >
           <div className="flex items-center gap-2">
             <span className="relative w-7 h-7 flex items-center justify-center rounded-md bg-accent-100 text-accent-700">

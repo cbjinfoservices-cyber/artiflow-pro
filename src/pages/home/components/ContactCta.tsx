@@ -39,7 +39,7 @@ export default function ContactCta() {
                 <i className="ri-phone-line text-primary-400"></i> 07 88 94 61 91
               </span>
               <span className="flex items-center gap-2 text-background-100/85">
-                <i className="ri-mail-line text-primary-400"></i> contact@artiflow-pro.fr
+                <i className="ri-mail-line text-primary-400"></i> contact@artiflow-pro.com
               </span>
             </div>
           </div>

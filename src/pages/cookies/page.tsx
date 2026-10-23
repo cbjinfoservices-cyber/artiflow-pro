@@ -122,7 +122,7 @@ export default function CookiesPage() {
       </LegalSection>
 
       <LegalSection id="tableau" title="Liste des traceurs">
-        <p>Voici le détail de chaque traceur utilisé sur artiflow-pro.fr :</p>
+        <p>Voici le détail de chaque traceur utilisé sur artiflow-pro.com :</p>
         <div className="overflow-x-auto rounded-lg border border-background-200">
           <table className="w-full min-w-[640px] border-collapse">
             <thead>
@@ -224,7 +224,7 @@ export default function CookiesPage() {
           informations transmises via nos formulaires de contact ou lors d'une demande de démonstration.
         </p>
         <p>
-          Pour exercer ces droits, écrivez-nous à contact@artiflow-pro.fr en précisant votre demande. Nous
+          Pour exercer ces droits, écrivez-nous à contact@artiflow-pro.com en précisant votre demande. Nous
           répondons dans un délai maximum d'un mois, et nous vous indiquons, le cas échéant, quelles données nous
           conservons et pour quelle durée. Le détail complet des traitements figure dans notre politique de
           confidentialité.
@@ -263,10 +263,10 @@ export default function CookiesPage() {
         <p>
           Pour toute question sur les cookies ou vos données personnelles, écrivez-nous à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>
           .
         </p>

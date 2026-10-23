@@ -10,7 +10,7 @@ const identite = [
   { label: "RCS", value: "Paris B 912 345 678" },
   { label: "SIRET", value: "912 345 678 00019" },
   { label: "TVA intracommunautaire", value: "FR 12 912345678" },
-  { label: "Email", value: "contact@artiflow-pro.fr" },
+  { label: "Email", value: "contact@artiflow-pro.com" },
   { label: "Téléphone", value: "07 88 94 61 91" },
 ];
 
@@ -42,7 +42,7 @@ export default function MentionsLegalesPage() {
     >
       <LegalSection id="editeur" title="Éditeur du site">
         <p>
-          Le site <strong>artiflow-pro.fr</strong> est édité par <strong>ArtiFlow-pro SAS</strong>, société spécialisée
+          Le site <strong>artiflow-pro.com</strong> est édité par <strong>ArtiFlow-pro SAS</strong>, société spécialisée
           dans l'édition d'un logiciel d'assistance aux artisans du bâtiment. Les informations d'identification
           de l'éditeur sont les suivantes :
         </p>
@@ -63,10 +63,10 @@ export default function MentionsLegalesPage() {
           Le directeur de la publication est le représentant légal d'ArtiFlow-pro SAS. Pour toute question relative
           au contenu du site, vous pouvez le contacter par email à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>{" "}
           ou par téléphone au 07 88 94 61 91.
         </p>
@@ -81,10 +81,10 @@ export default function MentionsLegalesPage() {
         <p>
           Pour toute question technique liée à l'hébergement ou à la disponibilité du site, écrivez-nous à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>
           .
         </p>

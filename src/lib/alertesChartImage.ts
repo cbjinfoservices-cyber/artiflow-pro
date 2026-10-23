@@ -1,4 +1,5 @@
 import { todayISO } from "@/lib/dates";
+import { telechargerBlob } from "@/lib/telechargement";
 
 /** Donnée d'un mois du mini-graphe des alertes artisan. */
 export interface AlerteChartMois {
@@ -345,13 +346,6 @@ export function exportAlertesChartImage(mois: AlerteChartMois[], options: Alerte
   const nomFichier = nomFichierPngAlertes(options.highlightCles ?? [], options.plageDansNom !== false);
   canvas.toBlob((blob) => {
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = nomFichier;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    telechargerBlob(nomFichier, blob);
   }, "image/png");
 }

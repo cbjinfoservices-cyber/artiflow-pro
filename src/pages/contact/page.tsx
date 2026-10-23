@@ -31,8 +31,8 @@ const canaux = [
   {
     icon: "ri-mail-line",
     label: "Par email",
-    value: "contact@artiflow-pro.fr",
-    href: "mailto:contact@artiflow-pro.fr",
+    value: "contact@artiflow-pro.com",
+    href: "mailto:contact@artiflow-pro.com",
     hint: "Réponse sous 24 h ouvrées",
     tone: "secondary" as const,
   },

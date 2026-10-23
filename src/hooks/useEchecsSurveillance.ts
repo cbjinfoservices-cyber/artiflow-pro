@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EscaladeJournalItem } from "@/hooks/useArtisanData";
 import { ecrireBrut, lireBrut } from "@/lib/stockageLocal";
+import { afficherNotification, demanderPermissionNotifications, lirePermissionNotifications, notificationsDisponibles, type NotifPermission } from "@/lib/notificationsSysteme";
 
 // Clés de préférences partagées entre la page Relances et le tableau de bord,
 // pour que le réglage de surveillance soit identique partout.
@@ -23,7 +24,7 @@ export const SEUIL_ALERTE_OPTIONS = [2, 3, 5] as const;
 export const SEUIL_ALERTE_DEFAUT = 3;
 
 /** Permission navigateur pour les notifications (union locale, indépendante du DOM lib). */
-export type NotifPermission = "granted" | "denied" | "default";
+export type { NotifPermission };
 
 export interface EchecAlerte {
   echecs: number;
@@ -69,7 +70,7 @@ export function useEchecsSurveillance(
   const [echecAlerte, setEchecAlerte] = useState<EchecAlerte | null>(null);
   const [notifNav, setNotifNav] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotifPermission>(
-    typeof Notification !== "undefined" ? Notification.permission : "denied",
+    lirePermissionNotifications(),
   );
   const [seuilAlerte, setSeuilAlerte] = useState<number>(SEUIL_ALERTE_DEFAUT);
   // Dernier id de passage d'escalade déjà notifié (persisté pour survivre aux rechargements).
@@ -116,17 +117,13 @@ export function useEchecsSurveillance(
     ecrireBrut(SEEN_ECHEc_KEY, String(maxId));
     if (nbNouveaux > 0) {
       if (alerteBandeau) setEchecAlerte({ echecs: nbNouveaux, passages: nouveaux.length });
-      if (notifNav && typeof Notification !== "undefined" && Notification.permission === "granted") {
-        try {
-          new Notification("ArtiFlow-pro · Échec d'envoi détecté", {
-            body: `${nbNouveaux} envoi${nbNouveaux > 1 ? "s" : ""} sur ${nouveaux.length} passage${
-              nouveaux.length > 1 ? "s" : ""
-            } viennent d'échouer. Vérifiez vos identifiants d'envoi.`,
-            tag: "artiflow-echec-envoi",
-          });
-        } catch {
-          /* certains navigateurs refusent la notification hors service worker */
-        }
+      if (notifNav && lirePermissionNotifications() === "granted") {
+        afficherNotification("ArtiFlow-pro · Échec d'envoi détecté", {
+          body: `${nbNouveaux} envoi${nbNouveaux > 1 ? "s" : ""} sur ${nouveaux.length} passage${
+            nouveaux.length > 1 ? "s" : ""
+          } viennent d'échouer. Vérifiez vos identifiants d'envoi.`,
+          tag: "artiflow-echec-envoi",
+        });
       }
     }
   }, [journal, surveillanceFreq, alerteBandeau, notifNav]);
@@ -159,20 +156,13 @@ export function useEchecsSurveillance(
 
   // Bascule la notification navigateur. Au premier clic, demande la permission au navigateur.
   const toggleNotifNav = useCallback(async () => {
-    if (typeof Notification === "undefined") return;
+    if (!notificationsDisponibles()) return;
     if (notifNav) {
       setNotifNav(false);
       ecrireBrut(NOTIF_NAV_KEY, "false");
       return;
     }
-    let perm = Notification.permission;
-    if (perm === "default") {
-      try {
-        perm = await Notification.requestPermission();
-      } catch {
-        perm = "denied";
-      }
-    }
+    const perm = await demanderPermissionNotifications();
     setNotifPermission(perm);
     const enabled = perm === "granted";
     setNotifNav(enabled);

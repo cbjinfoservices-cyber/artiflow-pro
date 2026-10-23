@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
     try {
       // 4) Client de test.
       const custParams = new URLSearchParams();
-      custParams.append("email", `test-essai-${Date.now()}@artiflow-pro.fr`);
+      custParams.append("email", `test-essai-${Date.now()}@artiflow-pro.com`);
       custParams.append("description", "Test automatique essai abonnement (ArtiFlow-pro)");
       const cust = await stripePost("/customers", stripeTestKey, custParams);
       if (!cust.ok || !cust.data?.id) {

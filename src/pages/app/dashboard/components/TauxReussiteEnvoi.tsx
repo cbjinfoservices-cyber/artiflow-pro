@@ -8,6 +8,7 @@ import { toCsv, downloadCsv } from "@/lib/csv";
 import { SEUILS_TAUX, SEUIL_TAUX_DEFAUT, lireSeuilTaux, ecrireSeuilTaux, SEUIL_TAUX_EVENT } from "@/lib/tauxSeuil";
 import CompleterEmailsModal from "@/pages/app/components/CompleterEmailsModal";
 import MotifClientsModal, { type MotifClientItem } from "@/pages/app/dashboard/components/MotifClientsModal";
+import { afficherNotification, demanderPermissionNotifications, lirePermissionNotifications, notificationsDisponibles } from "@/lib/notificationsSysteme";
 
 interface Props {
   /** Relances client (programmées + traitées) : on ne regarde que les relances déjà traitées. */
@@ -106,7 +107,7 @@ export default function TauxReussiteEnvoi({
   const [filtreTendance, setFiltreTendance] = useState<"tous" | "recule" | "hausse" | "stable">("tous");
   const [notifNav, setNotifNav] = useState(false);
   const [notifPermission, setNotifPermission] = useState<string>(
-    typeof Notification !== "undefined" ? Notification.permission : "denied",
+    lirePermissionNotifications(),
   );
   // Seuil de notification réglable (au lieu du 50 % fixe) : on avertit quand le taux hebdo passe dessous.
   const [seuilAlerte, setSeuilAlerte] = useState<number>(SEUIL_ALERTE_DEFAUT);
@@ -116,7 +117,7 @@ export default function TauxReussiteEnvoi({
     const saved = localStorage.getItem(NOTIF_TAUX_KEY);
     if (saved !== null) setNotifNav(saved === "true");
     setSeuilAlerte(lireSeuilTaux());
-    if (typeof Notification !== "undefined") setNotifPermission(Notification.permission);
+    setNotifPermission(lirePermissionNotifications());
   }, []);
 
   // Reste synchronisé si le seuil change ailleurs (autre onglet ouvert) : on relit la valeur partagée.
@@ -309,40 +310,29 @@ export default function TauxReussiteEnvoi({
   // Notification navigateur : quand le taux de la semaine glissante chute sous 50 %.
   useEffect(() => {
     if (!notifNav) return;
-    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    if (lirePermissionNotifications() !== "granted") return;
     const s = semaineGlissante;
     if (!s || s.taux === null || s.taux >= seuilAlerte || s.ok + s.ko < MIN_ENVOIS_NOTIF) return;
     const last = Number(localStorage.getItem(NOTIF_TAUX_SEEN_KEY));
     if (Number.isFinite(last) && last > 0 && Date.now() - last < NOTIF_COOLDOWN_MS) return;
-    try {
-      new Notification("ArtiFlow-pro · Taux de réussite en chute", {
-        body: `Semaine du ${s.label} : ${s.taux}% de réussite (${s.ok} réussie${
-          s.ok > 1 ? "s" : ""
-        }, ${s.ko} en échec).${s.motif ? ` Motif principal : ${s.motif}.` : ""}`,
-        tag: "artiflow-taux-semaine",
-      });
-      localStorage.setItem(NOTIF_TAUX_SEEN_KEY, String(Date.now()));
-    } catch {
-      /* certains navigateurs refusent la notification hors service worker */
-    }
+    afficherNotification("ArtiFlow-pro · Taux de réussite en chute", {
+      body: `Semaine du ${s.label} : ${s.taux}% de réussite (${s.ok} réussie${
+        s.ok > 1 ? "s" : ""
+      }, ${s.ko} en échec).${s.motif ? ` Motif principal : ${s.motif}.` : ""}`,
+      tag: "artiflow-taux-semaine",
+    });
+    localStorage.setItem(NOTIF_TAUX_SEEN_KEY, String(Date.now()));
   }, [notifNav, semaineGlissante, seuilAlerte]);
 
   // Bascule la notification navigateur. Au premier clic, demande la permission au navigateur.
   const toggleNotifNav = async () => {
-    if (typeof Notification === "undefined") return;
+    if (!notificationsDisponibles()) return;
     if (notifNav) {
       setNotifNav(false);
       localStorage.setItem(NOTIF_TAUX_KEY, "false");
       return;
     }
-    let perm = Notification.permission;
-    if (perm === "default") {
-      try {
-        perm = await Notification.requestPermission();
-      } catch {
-        perm = "denied";
-      }
-    }
+    const perm = await demanderPermissionNotifications();
     setNotifPermission(perm);
     const enabled = perm === "granted";
     setNotifNav(enabled);

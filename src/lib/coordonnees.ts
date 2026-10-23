@@ -50,7 +50,7 @@ export const coordonneesEntreprise: CoordonneesEntreprise = {
   region: "",
   pays: "France",
   telephone: "+33788946191",
-  email: "contact@artiflow-pro.fr",
+  email: "contact@artiflow-pro.com",
   horaires: [],
 };
 

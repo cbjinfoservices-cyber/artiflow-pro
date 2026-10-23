@@ -1,5 +1,6 @@
 import { todayISO } from "@/lib/dates";
 import type { PointRecapMensuel } from "@/lib/diagnosticEmail";
+import { telechargerBlob } from "@/lib/telechargement";
 
 /**
  * Données nécessaires pour dessiner le comparatif de cadence des récaps mensuels sous
@@ -261,13 +262,6 @@ export function exportComparatifCadenceImage(input: ComparatifCadenceImageInput)
   if (!canvas) return;
   canvas.toBlob((blob) => {
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `comparatif-cadence-${todayISO()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    telechargerBlob(`comparatif-cadence-${todayISO()}.png`, blob);
   }, "image/png");
 }

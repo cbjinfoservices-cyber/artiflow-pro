@@ -48,9 +48,9 @@ Entreprise (Business)
 
 ## Coordonnées
 
-- Site web : https://artiflow.pro
+- Site web : https://artiflow-pro.com
 - Email de contact : à compléter (adresse visible publiquement sur le Store)
-- Politique de confidentialité : https://artiflow.pro/rgpd
+- Politique de confidentialité : https://artiflow-pro.com/rgpd
 
 ## Visuels
 

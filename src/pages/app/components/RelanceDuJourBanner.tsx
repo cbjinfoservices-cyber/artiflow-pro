@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRelancesDuJour } from "@/hooks/useRelancesDuJour";
 import { todayISO } from "@/lib/dates";
+import { afficherNotification, demanderPermissionNotifications, lirePermissionNotifications, notificationsDisponibles, type NotifPermission } from "@/lib/notificationsSysteme";
 
 // Clé de mémorisation : le bandeau « relances du jour » masqué ne réapparaît pas avant le lendemain.
 const VU_KEY = "artiflow.relances.jourJ.vu";
@@ -10,8 +11,6 @@ const NOTIF_NAV_KEY = "artiflow.relances.jourJ.notifNav";
 // Date (ISO) de la dernière notification navigateur envoyée, pour n'alerter qu'une fois par jour.
 const NOTIF_ENVOYEE_KEY = "artiflow.relances.jourJ.notifEnvoyee";
 
-/** Permission navigateur pour les notifications (union locale, indépendante du DOM lib). */
-type NotifPermission = "granted" | "denied" | "default";
 
 /**
  * Notification in-app affichée le jour J lorsqu'une ou plusieurs relances programmées
@@ -27,7 +26,7 @@ export default function RelanceDuJourBanner({ refreshKey }: { refreshKey?: strin
   const [hidden, setHidden] = useState(false);
   const [notifNav, setNotifNav] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotifPermission>(
-    typeof Notification !== "undefined" ? Notification.permission : "denied",
+    lirePermissionNotifications(),
   );
 
   useEffect(() => {
@@ -38,36 +37,25 @@ export default function RelanceDuJourBanner({ refreshKey }: { refreshKey?: strin
   // Notification système : une seule fois par jour, quand des relances tombent aujourd'hui.
   useEffect(() => {
     if (count === 0 || !notifNav) return;
-    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    if (lirePermissionNotifications() !== "granted") return;
     const jour = todayISO();
     if (localStorage.getItem(NOTIF_ENVOYEE_KEY) === jour) return;
     localStorage.setItem(NOTIF_ENVOYEE_KEY, jour);
-    try {
-      new Notification("ArtiFlow-pro · Relances du jour", {
-        body: `${count} relance${count > 1 ? "s" : ""} programmée${count > 1 ? "s" : ""} aujourd'hui. Vérifiez ou prévisualisez avant l'envoi automatique.`,
-        tag: "artiflow-relance-jourJ",
-      });
-    } catch {
-      /* certains navigateurs refusent la notification hors service worker */
-    }
+    afficherNotification("ArtiFlow-pro · Relances du jour", {
+      body: `${count} relance${count > 1 ? "s" : ""} programmée${count > 1 ? "s" : ""} aujourd'hui. Vérifiez ou prévisualisez avant l'envoi automatique.`,
+      tag: "artiflow-relance-jourJ",
+    });
   }, [count, notifNav]);
 
   // Bascule la notification navigateur. Au premier clic, demande la permission au navigateur.
   const toggleNotif = useCallback(async () => {
-    if (typeof Notification === "undefined") return;
+    if (!notificationsDisponibles()) return;
     if (notifNav) {
       setNotifNav(false);
       localStorage.setItem(NOTIF_NAV_KEY, "false");
       return;
     }
-    let perm = Notification.permission;
-    if (perm === "default") {
-      try {
-        perm = await Notification.requestPermission();
-      } catch {
-        perm = "denied";
-      }
-    }
+    const perm = await demanderPermissionNotifications();
     setNotifPermission(perm);
     const enabled = perm === "granted";
     setNotifNav(enabled);

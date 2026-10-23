@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { metierLabel } from "@/lib/metiers";
+import { telechargerBlob } from "@/lib/telechargement";
 
 export interface PdfLigne {
   designation: string;
@@ -1957,9 +1958,9 @@ export function buildDelaiMoyenAnnuelPdf(input: PdfDelaiMoyenAnnuelInput): jsPDF
   return doc;
 }
 
-/** Déclenche le téléchargement du PDF dans le navigateur. */
+/** Déclenche le téléchargement du PDF (navigateur ou feuille de partage de l'application mobile). */
 export function savePdf(doc: jsPDF, filename: string): void {
-  doc.save(filename);
+  telechargerBlob(filename, doc.output("blob"));
 }
 
 /** Retourne le contenu du PDF encodé en base64 (sans préfixe data URI), pour un envoi en pièce jointe. */

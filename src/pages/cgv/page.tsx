@@ -207,10 +207,10 @@ export default function CgvPage() {
         <p>
           Pour exercer ce droit, l'Utilisateur peut écrire à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>
           . Les sommes versées sont alors remboursées dans un délai de quatorze jours suivant la réception de la
           demande. Les professionnels ne bénéficient pas de ce droit de rétractation.
@@ -249,10 +249,10 @@ export default function CgvPage() {
         <p>
           Le support est accessible par email à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>{" "}
           durant les jours ouvrés. Les modalités et niveaux de support peuvent varier selon l'offre souscrite.
         </p>
@@ -315,10 +315,10 @@ export default function CgvPage() {
           Conformément à la réglementation, le consommateur peut recourir gratuitement à un médiateur de la
           consommation. Pour toute question relative aux présentes conditions, écrivez-nous à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>
           .
         </p>

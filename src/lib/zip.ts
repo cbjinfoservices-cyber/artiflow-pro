@@ -1,4 +1,8 @@
 import JSZip from "jszip";
+import { blobToBase64, telechargerBlob } from "@/lib/telechargement";
+
+// Réexportés pour les appelants historiques de ce module.
+export { blobToBase64, telechargerBlob };
 
 export interface ZipEntry {
   /** Nom du fichier à l'intérieur de l'archive (ex. « abonnements.csv »). */
@@ -42,35 +46,6 @@ export async function creerZip(entries: ZipEntry[]): Promise<ZipBuild> {
   });
   const blob = await zip.generateAsync({ type: "blob" });
   return { blob, entries: entries.length, size: blob.size };
-}
-
-/**
- * Convertit un blob en chaîne base64 (sans préfixe data URI), pour l'envoyer
- * en pièce jointe à une fonction Backend (email). Lecture purement locale.
- */
-export function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result ?? "");
-      const comma = result.indexOf(",");
-      resolve(comma >= 0 ? result.slice(comma + 1) : result);
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Lecture du fichier impossible."));
-    reader.readAsDataURL(blob);
-  });
-}
-
-/** Déclenche le téléchargement d'un blob sous le nom de fichier donné. */
-export function telechargerBlob(filename: string, blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 
 /**

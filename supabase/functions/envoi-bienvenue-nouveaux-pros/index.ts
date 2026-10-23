@@ -120,7 +120,7 @@ async function envoyerEmail(
   };
 
   const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
-  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.fr";
+  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.com";
   let erreurBrevo = "";
 
   if (brevoKey) {

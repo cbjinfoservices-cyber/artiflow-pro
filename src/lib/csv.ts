@@ -1,3 +1,4 @@
+import { telechargerBlob } from "@/lib/telechargement";
 /** Échappe une cellule CSV (séparateur point-virgule, compatible Excel FR). */
 function escapeCell(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -15,14 +16,7 @@ export function toCsv(headers: string[], rows: (string | number | null | undefin
 /** Déclenche le téléchargement d'un fichier CSV (BOM UTF-8 pour Excel). */
 export function downloadCsv(filename: string, content: string): void {
   const blob = new Blob([`\uFEFF${content}`], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  telechargerBlob(filename, blob);
 }
 
 /** Encode un contenu texte en base64 (UTF-8), pour l'envoyer en pièce jointe email. */

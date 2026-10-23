@@ -100,7 +100,7 @@ export default function ApercuEmail({
     objet: ex.objet,
     montant: ex.montant,
     echeance: ex.echeance,
-    lien: "https://artiflow-pro.fr/signature-devis/ab12cd34",
+    lien: "https://artiflow-pro.com/signature-devis/ab12cd34",
   };
   const sujet = appliquer((sujetDraft ?? "").trim() || ex.sujet, valeurs);
   const corps = appliquer((corpsDraft ?? "").trim() || ex.corps, valeurs);

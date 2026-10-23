@@ -51,3 +51,20 @@ export function telechargerBlob(filename: string, blob: Blob): void {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+/** Déclenche le téléchargement d'un fichier déjà disponible sous forme d'URL (`blob:` ou `data:`). */
+export function telechargerUrl(filename: string, url: string): void {
+  if (Capacitor.isNativePlatform()) {
+    fetch(url)
+      .then((reponse) => reponse.blob())
+      .then((blob) => telechargerBlob(filename, blob))
+      .catch((erreur: unknown) => console.error("Lecture du fichier impossible", erreur));
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}

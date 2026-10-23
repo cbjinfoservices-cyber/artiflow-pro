@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { telechargerBlob } from "@/lib/telechargement";
 import {
   type ProfilFavoris,
   CLE_PROFIL_ACTIF,
@@ -215,14 +216,7 @@ export function useProfilsFavoris({
     );
     try {
       const blob = new Blob([contenu], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const lien = document.createElement("a");
-      lien.href = url;
-      lien.download = "favoris-artiflow.json";
-      document.body.appendChild(lien);
-      lien.click();
-      document.body.removeChild(lien);
-      URL.revokeObjectURL(url);
+      telechargerBlob("favoris-artiflow.json", blob);
       afficherMessageProfils(
         "ok",
         `${profils.length} profil${profils.length > 1 ? "s" : ""} et ${favoris.length} favori${favoris.length > 1 ? "s" : ""} exporté${profils.length + favoris.length > 1 ? "s" : ""}`

@@ -10,7 +10,7 @@
 
 | Élément | Où |
 |---------|-----|
-| Configuration Capacitor (identifiant `com.artiflow.pro`, nom, dossier `out/`) | `capacitor.config.ts` |
+| Configuration Capacitor (identifiant `com.artiflow-pro.com`, nom, dossier `out/`) | `capacitor.config.ts` |
 | Projet Android (à ouvrir avec Android Studio) | `android/` |
 | Projet iOS (à ouvrir avec Xcode, sur Mac) | `ios/` |
 | Bouton retour Android + ouverture des liens du site dans l'app | `src/components/feature/IntegrationNative.tsx` |
@@ -27,7 +27,7 @@ Dans l'application :
   l'application Android/iOS ;
 - le branchement des événements natifs est monté par `src/App.tsx` ; l'ouverture de l'application à `/`
   redirige vers `/app`, tandis que les liens profonds gardent leur destination ;
-- les liens copiés ou envoyés aux clients pointent vers **https://artiflow.pro** (ou `VITE_SITE_URL`),
+- les liens copiés ou envoyés aux clients pointent vers **https://artiflow-pro.com** (ou `VITE_SITE_URL`),
   jamais vers l'adresse interne `https://localhost` de l'application ;
 - un PDF, un CSV ou un export ouvre la **feuille de partage** (Enregistrer dans Fichiers, Drive, Gmail, WhatsApp…).
 
@@ -81,7 +81,7 @@ Dans Android Studio : choisir le téléphone en haut, puis ▶ **Run**.
 
 ## 4. Liens d'email qui ouvrent l'application (Android App Links)
 
-Les liens `https://artiflow.pro/app/...` (connexion par lien magique, réinitialisation du mot de
+Les liens `https://artiflow-pro.com/app/...` (connexion par lien magique, réinitialisation du mot de
 passe, retour de paiement) sont déclarés dans `android/app/src/main/AndroidManifest.xml`. Pour
 qu'Android les ouvre **dans l'application** plutôt que dans le navigateur, le site doit prouver
 qu'il appartient à l'application :
@@ -97,7 +97,7 @@ qu'il appartient à l'application :
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.artiflow.pro",
+      "package_name": "com.artiflow-pro.com",
       "sha256_cert_fingerprints": ["AA:BB:...:FF"]
     }
   }
@@ -108,7 +108,7 @@ Tant que ce fichier n'est pas en ligne, l'application fonctionne normalement ; s
 s'ouvrent dans le navigateur au lieu de l'application.
 
 Équivalent iOS (*Universal Links*) : il faut configurer la capacité **Associated Domains**
-(`applinks:artiflow.pro`) dans Xcode et publier `/.well-known/apple-app-site-association` avec
+(`applinks:artiflow-pro.com`) dans Xcode et publier `/.well-known/apple-app-site-association` avec
 l'identifiant d'équipe Apple associé à l'application. Sans ces deux réglages, les liens s'ouvrent
 dans le navigateur ; leur traitement dans l'application est déjà branché par `IntegrationNative`.
 
@@ -165,7 +165,7 @@ Pour chaque nouvelle version, **augmenter `versionCode`** (et `versionName`) dan
 3. **Fiche du Store** : description courte (80 car.) et longue, icône 512×512, image de présentation
    1024×500, au moins 2 captures d'écran de téléphone.
 4. **Contenu de l'application** : URL de la politique de confidentialité
-   (`https://artiflow.pro/rgpd`), questionnaire de classification, public cible (adultes),
+   (`https://artiflow-pro.com/rgpd`), questionnaire de classification, public cible (adultes),
    **Sécurité des données** (email, nom, données clients/factures stockées chez Supabase, chiffrées en transit),
    **accès pour les examinateurs** : un compte de démonstration (email + mot de passe) avec des données.
 5. **Envoyer `app-release.aab`** dans *Tests › Test interne* (essai immédiat sur vos appareils), puis

@@ -75,10 +75,10 @@ export default function RgpdPage() {
           Pour toute question relative à la protection de vos données, vous pouvez joindre notre référent
           protection des données à l'adresse{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>
           .
         </p>
@@ -186,10 +186,10 @@ export default function RgpdPage() {
         <p>
           Vous pouvez exercer ces droits à tout moment en écrivant à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>
           . Nous répondons dans un délai maximum d'un mois, et pouvons vous demander un justificatif d'identité
           en cas de doute raisonnable.
@@ -230,10 +230,10 @@ export default function RgpdPage() {
         <p>
           Pour toute question relative à vos données personnelles, contactez notre référent à{" "}
           <a
-            href="mailto:contact@artiflow-pro.fr"
+            href="mailto:contact@artiflow-pro.com"
             className="font-semibold text-primary-700 hover:underline cursor-pointer"
           >
-            contact@artiflow-pro.fr
+            contact@artiflow-pro.com
           </a>
           . Nous traitons votre demande dans un délai d'un mois.
         </p>

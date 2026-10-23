@@ -26,7 +26,7 @@ export function useOrganizationSchema(id = "artiflow-organization-schema") {
     url: `${origin}/`,
     logo: logoArtiFlowPro,
     description: DESCRIPTION_ORGANISATION,
-    email: "contact@artiflow-pro.fr",
+    email: "contact@artiflow-pro.com",
     telephone: "+33788946191",
     areaServed: {
       "@type": "Country",
@@ -47,7 +47,7 @@ export function useOrganizationSchema(id = "artiflow-organization-schema") {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      email: "contact@artiflow-pro.fr",
+      email: "contact@artiflow-pro.com",
       telephone: "+33788946191",
       availableLanguage: "fr",
       hoursAvailable: "Mo-Fr 09:00-18:00",

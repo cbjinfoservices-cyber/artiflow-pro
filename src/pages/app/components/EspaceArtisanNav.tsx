@@ -46,6 +46,7 @@ import { formatEuros } from "@/lib/format";
 import BadgeNouveau from "@/components/base/BadgeNouveau";
 import CompteurNouvellesRessources from "@/components/base/CompteurNouvellesRessources";
 import { compterGuidesNouveaux, sujetDateRecente } from "@/mocks/ressources";
+import { MODE_TERRAIN, pageTerrain } from "@/lib/modeTerrain";
 
 /** Compteur cumulé d'un sous-thème, affiché sur le titre du groupe même quand il est replié. */
 interface CompteurGroupe {
@@ -406,9 +407,13 @@ export default function EspaceArtisanNav({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  // Entrées réellement affichables : la comptabilité n'apparaît que pour les comptes qui y ont accès.
+  // Entrées réellement affichables : la comptabilité n'apparaît que pour les comptes qui y ont accès,
+  // et l'application mobile ne propose que les pages de la version terrain.
   const itemsVisibles = useMemo(
-    () => navItems.filter((item) => item.to !== "/app/comptabilite" || voirComptabilite),
+    () =>
+      navItems.filter(
+        (item) => (item.to !== "/app/comptabilite" || voirComptabilite) && (!MODE_TERRAIN || pageTerrain(item.to)),
+      ),
     [voirComptabilite],
   );
 
@@ -423,8 +428,11 @@ export default function EspaceArtisanNav({
       return cree;
     };
     itemsVisibles.forEach((item) => garantir(item.groupe).items.push(item));
-    navSecondaires.forEach((sec) => garantir(sec.groupe).secondaires.push(sec));
-    garantir(GROUPE_RESSOURCES);
+    // Bibliothèque, vues épinglées et ressources : outils de bureau, absents de la version terrain.
+    if (!MODE_TERRAIN) {
+      navSecondaires.forEach((sec) => garantir(sec.groupe).secondaires.push(sec));
+      garantir(GROUPE_RESSOURCES);
+    }
     return Array.from(map.values());
   }, [itemsVisibles]);
 

@@ -75,7 +75,7 @@ export default function ProductPreview() {
             <div className="flex-1 flex justify-center">
               <span className="inline-flex items-center gap-1.5 px-3 h-6 rounded-md bg-background-50 text-[11px] text-foreground-500">
                 <i className="ri-lock-line text-accent-500"></i>
-                app.artiflow-pro.fr
+                artiflow-pro.com/app
               </span>
             </div>
           </div>

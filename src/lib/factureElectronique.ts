@@ -1,3 +1,4 @@
+import { telechargerBlob } from "@/lib/telechargement";
 /**
  * Socle de la facturation électronique : statuts de cycle de vie, contrôles de
  * conformité et génération du fichier XML structuré au format Factur-X (profil
@@ -386,14 +387,7 @@ export function nomFichierXml(numero: string): string {
 /** Déclenche le téléchargement du XML dans le navigateur. */
 export function telechargerXml(filename: string, xml: string): void {
   const blob = new Blob([xml], { type: "application/xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  telechargerBlob(filename, blob);
 }
 
 /* ------------------------------ MENTIONS ------------------------------ */

@@ -12,7 +12,7 @@ routeur, dans le navigateur. Résultat : un seul aperçu pour tout le site.
 
 ## Ce qui a été vérifié sur le site publié
 
-- `https://artiflow-pro.fr/zones-intervention/paris` renvoie bien un `200` et le
+- `https://artiflow-pro.com/zones-intervention/paris` renvoie bien un `200` et le
   HTML de la coquille de l'application.
 - Ce HTML contient le titre générique du site
   (« ArtiFlow-pro — Assistant IA pour artisans du bâtiment ») et une image

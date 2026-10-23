@@ -1,4 +1,5 @@
 import { Navigate, type RouteObject } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { lazy } from "react";
 import NotFound from "@/pages/NotFound";
 // Les gardes d'accès sont légères et partagées par de nombreuses sections :
@@ -79,11 +80,13 @@ const GuideMotDePasseSolidePage = lazy(() => import("@/pages/guide-mot-de-passe-
 const routes: RouteObject[] = [
   {
     path: "/",
-    element: <Home />,
+    // L'application mobile démarre directement sur l'espace artisan, sans le site vitrine.
+    element: Capacitor.isNativePlatform() ? <Navigate to="/app" replace /> : <Home />,
   },
   {
     path: "/tarifs",
-    element: <TarifsPage />,
+    // Pas de vente d'abonnement dans l'application mobile (règles Google Play / App Store).
+    element: Capacitor.isNativePlatform() ? <Navigate to="/app/profil?onglet=abonnement" replace /> : <TarifsPage />,
   },
   {
     path: "/metiers",

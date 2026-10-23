@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { useRobotsMeta } from "@/hooks/useRobotsMeta";
 import { supabase } from "@/lib/supabase";
 import { historiserChangementMotDePasse, mettreAJourMotDePasse, validerMotDePasseFort } from "@/lib/motDePasse";
@@ -123,9 +124,11 @@ export default function ResetPasswordPage() {
             </span>
             <span className="font-heading font-bold text-lg text-foreground-950">ArtiFlow-pro</span>
           </Link>
-          <Link to="/" className="text-xs font-medium text-foreground-500 hover:text-foreground-900 cursor-pointer">
-            Retour au site
-          </Link>
+          {!Capacitor.isNativePlatform() && (
+            <Link to="/" className="text-xs font-medium text-foreground-500 hover:text-foreground-900 cursor-pointer">
+              Retour au site
+            </Link>
+          )}
         </div>
 
         <div className="flex-1 flex items-center justify-center px-4 py-10 md:py-14">

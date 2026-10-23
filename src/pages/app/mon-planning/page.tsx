@@ -20,6 +20,7 @@ import EmptyState from "@/pages/app/components/EmptyState";
 import BandeauChangements from "@/pages/app/mon-planning/components/BandeauChangements";
 import RecapSemaine from "@/pages/app/mon-planning/components/RecapSemaine";
 import CreneauPersoCard from "@/pages/app/mon-planning/components/CreneauPersoCard";
+import DetailChantierModal from "@/pages/app/mon-planning/components/DetailChantierModal";
 import CreneauPersoEditModal from "@/pages/app/mon-planning/components/CreneauPersoEditModal";
 import ClotureSemaine from "@/pages/app/mon-planning/components/ClotureSemaine";
 import AbsencesJourCard from "@/pages/app/planning/components/AbsencesJourCard";
@@ -87,6 +88,7 @@ export default function AppMonPlanning() {
   const [pointageBusy, setPointageBusy] = useState(false);
   const [pointageError, setPointageError] = useState<string | null>(null);
   const [pvCreneau, setPvCreneau] = useState<CreneauPerso | null>(null);
+  const [chantierCreneau, setChantierCreneau] = useState<CreneauPerso | null>(null);
   const [pvCharge, setPvCharge] = useState<PvRecette | null>(null);
   const [pvLoading, setPvLoading] = useState(false);
   const [pvBusy, setPvBusy] = useState(false);
@@ -671,6 +673,7 @@ export default function AppMonPlanning() {
                         setPointageCreneau(c);
                       }}
                       onPv={(c) => void ouvrirPv(c)}
+                      onChantier={setChantierCreneau}
                     />
                   ))}
                 </div>
@@ -704,6 +707,9 @@ export default function AppMonPlanning() {
           />
         )}
 
+        {chantierCreneau && (
+          <DetailChantierModal creneau={chantierCreneau} onClose={() => setChantierCreneau(null)} />
+        )}
         {pvCreneau && !pvLoading && (
           <PvRecetteModal
             creneau={pvCreneau}

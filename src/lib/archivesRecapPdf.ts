@@ -1,3 +1,4 @@
+import { telechargerBlob } from "@/lib/telechargement";
 /**
  * Petit archivage local des PDF de récap mensuel (IndexedDB).
  *
@@ -104,12 +105,5 @@ export async function supprimerPdfArchive(nom: string): Promise<void> {
 
 /** Télécharge un blob PDF sous le nom donné. */
 export function telechargerPdfArchive(nom: string, blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const lien = document.createElement("a");
-  lien.href = url;
-  lien.download = nom;
-  document.body.appendChild(lien);
-  lien.click();
-  document.body.removeChild(lien);
-  window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+  telechargerBlob(nom, blob);
 }

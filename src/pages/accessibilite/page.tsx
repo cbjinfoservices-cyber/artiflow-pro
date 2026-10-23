@@ -287,10 +287,10 @@ export default function AccessibilitePage() {
             <span>
               Par email :{" "}
               <a
-                href="mailto:contact@artiflow-pro.fr"
+                href="mailto:contact@artiflow-pro.com"
                 className="font-semibold text-primary-700 hover:underline cursor-pointer"
               >
-                contact@artiflow-pro.fr
+                contact@artiflow-pro.com
               </a>
             </span>
           </li>

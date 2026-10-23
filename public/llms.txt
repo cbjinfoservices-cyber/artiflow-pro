@@ -6,23 +6,23 @@ ArtiFlow-pro transforme le téléphone de l'artisan en assistant : vous dictez l
 
 ## Pages principales
 
-- [Accueil](https://artiflow-pro.fr/) — présentation, bénéfices, démo et simulateur.
-- [Tarifs](https://artiflow-pro.fr/tarifs) — les offres et leurs fonctionnalités.
-- [Métiers](https://artiflow-pro.fr/metiers) — devis adaptés à chaque corps de métier.
-- [Zones d'intervention](https://artiflow-pro.fr/zones-intervention) — accompagnement par ville.
-- [Ressources](https://artiflow-pro.fr/ressources) — guides pratiques, parcours guidés et bibliothèque de modèles.
-- [Contact](https://artiflow-pro.fr/contact) — demander une démo.
-- [À propos](https://artiflow-pro.fr/a-propos) — l'équipe et la mission.
-- [Podcast](https://artiflow-pro.fr/podcast) — les épisodes.
-- [Nouveautés](https://artiflow-pro.fr/nouveautes) — les dernières évolutions du produit.
+- [Accueil](https://artiflow-pro.com/) — présentation, bénéfices, démo et simulateur.
+- [Tarifs](https://artiflow-pro.com/tarifs) — les offres et leurs fonctionnalités.
+- [Métiers](https://artiflow-pro.com/metiers) — devis adaptés à chaque corps de métier.
+- [Zones d'intervention](https://artiflow-pro.com/zones-intervention) — accompagnement par ville.
+- [Ressources](https://artiflow-pro.com/ressources) — guides pratiques, parcours guidés et bibliothèque de modèles.
+- [Contact](https://artiflow-pro.com/contact) — demander une démo.
+- [À propos](https://artiflow-pro.com/a-propos) — l'équipe et la mission.
+- [Podcast](https://artiflow-pro.com/podcast) — les épisodes.
+- [Nouveautés](https://artiflow-pro.com/nouveautes) — les dernières évolutions du produit.
 
 ## L'application
 
-- [Espace artisan](https://app.artiflow-pro.fr) — l'application en ligne.
+- [Espace artisan](https://artiflow-pro.com/app) — l'application en ligne.
 
 ## Contact et réseaux
 
-- Email : contact@artiflow-pro.fr
+- Email : contact@artiflow-pro.com
 - Téléphone : +33 7 88 94 61 91
 - LinkedIn : https://www.linkedin.com/company/artiflow-pro
 - Facebook : https://www.facebook.com/artiflowpro

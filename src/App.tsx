@@ -7,6 +7,7 @@ import i18n from "./i18n";
 import DemoModalProvider from "./components/feature/DemoModalProvider";
 import ScrollToHash from "@/components/feature/ScrollToHash";
 import LienEvitement from "@/components/feature/LienEvitement";
+import IntegrationNative from "@/components/feature/IntegrationNative";
 
 // Éléments de confort global (bannière cookies, mesure d'audience, bouton retour haut,
 // synchronisation des préférences) : rien d'indispensable au premier affichage. On les
@@ -39,6 +40,7 @@ function App() {
         <BrowserRouter basename={__BASE_PATH__}>
           <DemoModalProvider>
             <LienEvitement />
+            <IntegrationNative />
             <ScrollToHash />
             <Suspense fallback={null}>
               <SyncPreferencesGlobal />

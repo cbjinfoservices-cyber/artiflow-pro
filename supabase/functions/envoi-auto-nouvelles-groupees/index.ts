@@ -414,7 +414,7 @@ Deno.serve(async (req) => {
       const logo = p.doc_afficher_logo === false ? "" : String(p.logo_url ?? "").trim();
       const pied = String(p.doc_pied_page ?? "").trim();
       const telephone = String(p.telephone ?? "").trim();
-      const baseUrl = (String(p.comptable_app_url ?? "").trim() || "https://artiflow-pro.fr").replace(/\/+$/, "");
+      const baseUrl = (String(p.comptable_app_url ?? "").trim() || "https://artiflow-pro.com").replace(/\/+$/, "");
       const messagePerso = String(p.nouvelles_auto_message ?? "").trim();
       const messageDefaut =
         "Petit point sur l'avancement de votre chantier : les travaux progressent comme prévu. Le détail des étapes est à jour sur votre page de suivi.";

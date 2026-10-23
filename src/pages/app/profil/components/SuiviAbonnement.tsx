@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useMonAbonnement } from "@/hooks/useMonAbonnement";
-import { confirmerAbonnement, type ModePaiement } from "@/lib/abonnementPaiement";
+import { ACHAT_ABONNEMENT_DISPONIBLE, confirmerAbonnement, type ModePaiement } from "@/lib/abonnementPaiement";
+import { statutMeta } from "@/lib/monAbonnement";
+import { formatShortDate } from "@/lib/dates";
+import type { MonAbonnement } from "@/hooks/useMonAbonnement";
 import DataState from "@/pages/app/components/DataState";
 import OffreActuelleCard from "@/pages/app/abonnement/components/OffreActuelleCard";
 import ComparaisonOffres from "@/pages/app/abonnement/components/ComparaisonOffres";
@@ -45,6 +48,38 @@ function VideAucunAbonnement() {
           Nous contacter
         </Link>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Application mobile : l'abonnement est consultable mais ne se gère pas ici (pas de tarifs, de
+ * changement d'offre, de paiement ni de résiliation, voir ACHAT_ABONNEMENT_DISPONIBLE).
+ */
+function AbonnementLectureSeule({ abonnement }: { abonnement: MonAbonnement | null }) {
+  const statut = abonnement ? statutMeta(abonnement.statut) : null;
+  return (
+    <div className="p-4 rounded-lg bg-background-100 border border-background-200">
+      {abonnement && statut ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-9 h-9 flex items-center justify-center rounded-full bg-accent-100 text-accent-700">
+            <i className="ri-vip-crown-line"></i>
+          </span>
+          <span className="font-heading font-semibold text-base text-foreground-950">ArtiFlow-pro {abonnement.offre}</span>
+          <span className={`inline-flex items-center gap-1 h-6 px-2 rounded-full ${statut.tone} text-[11px] font-bold whitespace-nowrap`}>
+            <i className={statut.icon}></i>
+            {statut.label}
+          </span>
+        </div>
+      ) : (
+        <p className="font-heading font-semibold text-base text-foreground-950">Aucun abonnement rattaché à votre compte</p>
+      )}
+      {abonnement?.date_echeance ? (
+        <p className="mt-2 text-sm text-foreground-600">Prochaine échéance : {formatShortDate(abonnement.date_echeance)}</p>
+      ) : null}
+      <p className="mt-3 text-xs text-foreground-500">
+        Le choix de l'offre, le moyen de paiement et les factures d'abonnement ne sont pas gérés dans l'application mobile.
+      </p>
     </div>
   );
 }
@@ -106,6 +141,17 @@ export default function SuiviAbonnement() {
         setSearchParams(next, { replace: true });
       });
   }, [searchParams, setSearchParams, reload]);
+
+  if (!ACHAT_ABONNEMENT_DISPONIBLE) {
+    return (
+      <div className="flex flex-col gap-5">
+        <DataState loading={loading} error={error} onRetry={reload}>
+          <AbonnementLectureSeule abonnement={abonnement} />
+          {abonnement ? <HistoriqueOffresCard abonnement={abonnement} /> : null}
+        </DataState>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5">

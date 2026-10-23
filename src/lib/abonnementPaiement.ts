@@ -1,8 +1,18 @@
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/lib/supabase";
 import { viderCacheDiagnosticPaiement } from "@/lib/diagnosticPaiementCache";
 import { originePublique } from "@/lib/site";
 
 export type Facturation = "mensuel" | "annuel";
+
+/**
+ * L'abonnement ne s'achète pas dans l'application mobile : Google Play (et l'App Store) imposent
+ * leur propre système de paiement pour un abonnement vendu dans l'application. L'artisan s'abonne
+ * sur le site, puis se connecte dans l'application avec son compte.
+ */
+export const ACHAT_ABONNEMENT_DISPONIBLE = !Capacitor.isNativePlatform();
+
+const MESSAGE_ACHAT_INDISPONIBLE = "La gestion de l'abonnement n'est pas disponible dans l'application mobile.";
 
 /** Mode de règlement : reconduction automatique (abonnement) ou paiement unique. */
 export type ModePaiement = "recurrent" | "unique";
@@ -228,6 +238,7 @@ export async function demarrerAbonnement(
   facturation: Facturation,
   modePaiement: ModePaiement = "recurrent",
 ): Promise<CheckoutDemarrage> {
+  if (!ACHAT_ABONNEMENT_DISPONIBLE) throw new Error(MESSAGE_ACHAT_INDISPONIBLE);
   const successUrl = urlRetour("/app/profil?onglet=abonnement&checkout=success&session_id={CHECKOUT_SESSION_ID}");
   // On mémorise l'offre et la facturation dans l'URL d'annulation : au retour,
   // le bandeau peut proposer de reprendre exactement le même paiement.
@@ -448,6 +459,7 @@ export async function previsualiserEmailEssaiJ1(): Promise<ApercuRappel> {
  * factures, résilier). Renvoie la page sécurisée vers laquelle rediriger l'artisan.
  */
 export async function ouvrirPortailAbonnement(returnUrl: string): Promise<{ url: string }> {
+  if (!ACHAT_ABONNEMENT_DISPONIBLE) throw new Error(MESSAGE_ACHAT_INDISPONIBLE);
   const { data, error } = await supabase.functions.invoke("stripe-billing-portal", {
     body: { returnUrl },
   });

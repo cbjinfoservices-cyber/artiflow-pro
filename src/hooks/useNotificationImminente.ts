@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { libelleDans, type ExecutionImminente } from "@/lib/envoisAutomatiques";
 import { ajouterJournalImminentes } from "@/lib/journalImminentesMemoire";
 import { ecrireBrut, lireBrut } from "@/lib/stockageLocal";
+import { afficherNotification, demanderPermissionNotifications, lirePermissionNotifications, notificationsDisponibles, type NotifPermission } from "@/lib/notificationsSysteme";
 
 /**
  * Notification navigateur (système) lorsqu'un traitement automatique devient imminent — c'est-à-dire
@@ -20,8 +21,6 @@ const CLE_PREF = "artiflow.imminents.notifNav";
 // Identifiants des traitements déjà signalés (pour n'alerter qu'une fois chacun).
 const CLE_ENVOYES = "artiflow.imminents.notifEnvoyes";
 
-/** Permission navigateur pour les notifications (union locale, indépendante du DOM lib). */
-type NotifPermission = "granted" | "denied" | "default";
 
 /** Lit la liste des identifiants déjà signalés (robuste à un stockage corrompu). */
 function lireIdsEnvoyes(): string[] {
@@ -56,13 +55,13 @@ export interface NotificationImminente {
 export function useNotificationImminente(executions: ExecutionImminente[]): NotificationImminente {
   const [actif, setActif] = useState(() => lireBrut(CLE_PREF) === "true");
   const [permission, setPermission] = useState<NotifPermission>(() =>
-    typeof Notification !== "undefined" ? Notification.permission : "denied",
+    lirePermissionNotifications(),
   );
 
   // Émission des notifications : une seule fois par traitement imminent, en ignorant ceux déjà signalés.
   useEffect(() => {
     if (!actif) return;
-    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    if (lirePermissionNotifications() !== "granted") return;
 
     const idsCourants = executions.map((e) => e.item.id);
     const envoyes = lireIdsEnvoyes();
@@ -79,14 +78,10 @@ export function useNotificationImminente(executions: ExecutionImminente[]): Noti
     const corps =
       lignes.slice(0, 4).join("\n") +
       (lignes.length > 4 ? `\n+ ${lignes.length - 4} autre(s)` : "");
-    try {
-      new Notification("ArtiFlow-pro · Traitement imminent", {
-        body: corps,
-        tag: "artiflow-traitement-imminent",
-      });
-    } catch {
-      /* certains navigateurs refusent la notification hors service worker */
-    }
+    afficherNotification("ArtiFlow-pro · Traitement imminent", {
+      body: corps,
+      tag: "artiflow-traitement-imminent",
+    });
     ecrireIdsEnvoyes([...restants, ...nouveaux.map((e) => e.item.id)]);
     // Historise le signalement : le journal local permet de vérifier ce qui a déjà été notifié.
     const notifieLe = new Date().toISOString();
@@ -105,20 +100,13 @@ export function useNotificationImminente(executions: ExecutionImminente[]): Noti
 
   // Bascule la préférence. Au premier clic, demande la permission au navigateur.
   const toggle = useCallback(async () => {
-    if (typeof Notification === "undefined") return;
+    if (!notificationsDisponibles()) return;
     if (actif) {
       setActif(false);
       ecrireBrut(CLE_PREF, "false");
       return;
     }
-    let perm = Notification.permission;
-    if (perm === "default") {
-      try {
-        perm = await Notification.requestPermission();
-      } catch {
-        perm = "denied";
-      }
-    }
+    const perm = await demanderPermissionNotifications();
     setPermission(perm);
     const enabled = perm === "granted";
     setActif(enabled);

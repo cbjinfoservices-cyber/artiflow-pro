@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { telechargerBlob } from "@/lib/telechargement";
 
 /** Extension de fichier cohérente avec le type réel renvoyé par le serveur d'images. */
 function extensionDepuis(type: string): string {
@@ -10,14 +11,7 @@ function extensionDepuis(type: string): string {
 
 /** Déclenche le téléchargement d'un blob via un lien temporaire. */
 function enregistrerBlob(blob: Blob, nom: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = nom;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+  telechargerBlob(nom, blob);
 }
 
 type Etat = "repos" | "chargement" | "ok" | "nouvelOnglet";

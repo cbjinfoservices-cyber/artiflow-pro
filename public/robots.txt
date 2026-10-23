@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /app
 Disallow: /signature-devis
 
-Sitemap: https://artiflow-pro.fr/sitemap.xml
+Sitemap: https://artiflow-pro.com/sitemap.xml

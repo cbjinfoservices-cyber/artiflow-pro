@@ -21,12 +21,12 @@
 
             <!-- Android App Links : les liens de l'espace artisan (connexion par email, réinitialisation
                  du mot de passe, retours de paiement) s'ouvrent dans l'application. Nécessite le fichier
-                 https://artiflow.pro/.well-known/assetlinks.json (voir docs/application-mobile.md). -->
+                 https://artiflow-pro.com/.well-known/assetlinks.json (voir docs/application-mobile.md). -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="artiflow.pro" android:pathPrefix="/app" />
+                <data android:scheme="https" android:host="artiflow-pro.com" android:pathPrefix="/app" />
             </intent-filter>
         </activity>
 
@@ -42,4 +42,7 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Photos de chantier (PV de recette) : le sélecteur de fichiers propose aussi l'appareil photo. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 </manifest>

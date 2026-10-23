@@ -20,9 +20,9 @@ export function useLocalBusinessGlobalSchema(id = "artiflow-localbusiness-global
     legalName: "ArtiFlow-pro SAS",
     description:
       "SaaS IA des artisans du bâtiment : devis en 2 minutes, relances SMS et WhatsApp automatiques, planning et suivi de chantier.",
-    url: "https://artiflow-pro.fr",
+    url: "https://artiflow-pro.com",
     telephone: "+33 7 88 94 61 91",
-    email: "contact@artiflow-pro.fr",
+    email: "contact@artiflow-pro.com",
     address: {
       "@type": "PostalAddress",
       streetAddress: "12 rue des Artisans",

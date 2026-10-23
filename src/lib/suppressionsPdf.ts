@@ -22,6 +22,7 @@ import {
   type SuppressionEnAttente,
 } from "@/lib/suppressionsAdmin";
 import { formaterDateFr } from "@/lib/compte";
+import { telechargerBlob } from "@/lib/telechargement";
 
 const INK: [number, number, number] = [32, 30, 27];
 const MUTED: [number, number, number] = [124, 117, 111];
@@ -493,24 +494,20 @@ export function buildSuppressionsEnAttentePdf(input: PdfSuppressionsInput): jsPD
 }
 
 /** Transforme un PDF reçu en base64 en URL locale (blob) affichable dans une iframe. */
-export function urlBlobPdfBase64(base64: string): string {
+function blobPdfBase64(base64: string): Blob {
   const binaire = atob(base64);
   const octets = new Uint8Array(binaire.length);
   for (let i = 0; i < binaire.length; i += 1) {
     octets[i] = binaire.charCodeAt(i);
   }
-  const blob = new Blob([octets.buffer as ArrayBuffer], { type: "application/pdf" });
-  return URL.createObjectURL(blob);
+  return new Blob([octets.buffer as ArrayBuffer], { type: "application/pdf" });
+}
+
+export function urlBlobPdfBase64(base64: string): string {
+  return URL.createObjectURL(blobPdfBase64(base64));
 }
 
 /** Télécharge dans le navigateur un PDF reçu en base64 depuis le Backend. */
 export function telechargerPdfBase64(base64: string, filename: string): void {
-  const url = urlBlobPdfBase64(base64);
-  const lien = document.createElement("a");
-  lien.href = url;
-  lien.download = filename;
-  document.body.appendChild(lien);
-  lien.click();
-  document.body.removeChild(lien);
-  URL.revokeObjectURL(url);
+  telechargerBlob(filename, blobPdfBase64(base64));
 }

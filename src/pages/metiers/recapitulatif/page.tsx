@@ -232,7 +232,7 @@ export default function MetiersRecapitulatifPage() {
                   lecteur d'actualités. Copiez l'adresse du flux ou utilisez le bouton.
                 </p>
                 <code className="mt-3 inline-block px-3 py-2 rounded-md bg-background-50 border border-background-200 text-xs text-foreground-700 break-all">
-                  https://artiflow-pro.fr{RSS_HREF}
+                  https://artiflow-pro.com{RSS_HREF}
                 </code>
               </div>
               <a

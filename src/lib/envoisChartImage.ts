@@ -1,4 +1,5 @@
 import { todayISO } from "@/lib/dates";
+import { telechargerBlob } from "@/lib/telechargement";
 
 /** Données d'une barre mensuelle du graphe des envois comptables. */
 export interface EnvoisChartDatum {
@@ -365,14 +366,7 @@ export function exportEnvoisChartImage(mois: EnvoisChartDatum[], options: Envois
   if (!canvas) return;
   canvas.toBlob((blob) => {
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `envois-comptable-par-mois-${todayISO()}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    telechargerBlob(`envois-comptable-par-mois-${todayISO()}.png`, blob);
   }, "image/png");
 }
 

@@ -27,6 +27,7 @@ export default function CreneauPersoCard({
   onEdit,
   onPointer,
   onPv,
+  onChantier,
 }: {
   creneau: CreneauPerso;
   /** Intervention modifiée récemment : à surligner. */
@@ -42,6 +43,8 @@ export default function CreneauPersoCard({
   onEdit: (creneau: CreneauPerso) => void;
   onPointer: (creneau: CreneauPerso) => void;
   onPv: (creneau: CreneauPerso) => void;
+  /** Ouvre le détail du chantier (adresse, itinéraire, client, étapes). */
+  onChantier: (creneau: CreneauPerso) => void;
 }) {
   const statut = statutCreneauMeta(creneau.statut);
   const estFaite = creneau.statut === "faite";
@@ -111,8 +114,17 @@ export default function CreneauPersoCard({
           </p>
         )}
 
-        {/* Pointage + PV de recette : les deux gestes terrain de l'intervention. */}
+        {/* Chantier, pointage et PV de recette : les gestes terrain de l'intervention. */}
         <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => onChantier(creneau)}
+            title="Adresse, itinéraire, client à contacter et étapes du chantier"
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary-100 text-primary-800 text-[11px] font-semibold whitespace-nowrap cursor-pointer transition-colors hover:bg-primary-200"
+          >
+            <i className="ri-map-pin-line"></i>
+            Chantier
+          </button>
           <button
             type="button"
             onClick={() => onPointer(creneau)}

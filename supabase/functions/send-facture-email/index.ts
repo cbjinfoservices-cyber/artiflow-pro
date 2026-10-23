@@ -54,7 +54,7 @@ async function envoyerEmailAvecRepli(
 
   // Resend est le canal principal : Brevo n'est plus sollicité (plus de validation d'expéditeur).
   const brevoKey = "";
-  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.fr";
+  const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.com";
   let erreurBrevo = "";
 
   if (brevoKey) {

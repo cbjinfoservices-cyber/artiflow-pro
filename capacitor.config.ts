@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.artiflow.pro",
+  appId: "com.artiflow-pro.com",
   appName: "ArtiFlow-pro",
   // Dossier produit par `vite build` (voir vite.config.ts) : construire avec BASE_PATH=/ (valeur par défaut).
   webDir: "out",

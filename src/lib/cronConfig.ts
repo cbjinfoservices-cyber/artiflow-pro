@@ -1,4 +1,5 @@
 import { TACHES_PLANIFIEES, urlFonction } from "@/lib/tachesPlanifiees";
+import { telechargerBlob } from "@/lib/telechargement";
 
 /**
  * Génération des fichiers de configuration « prêts à coller » pour brancher les
@@ -170,12 +171,5 @@ Une fois les ${TACHES_PLANIFIEES.length} tâches au vert, les automatisations so
 /** Déclenche le téléchargement d'un fichier texte (avec BOM pour un affichage correct). */
 export function telechargerTexte(nomFichier: string, contenu: string, typeMime = "text/plain"): void {
   const blob = new Blob([contenu], { type: `${typeMime};charset=utf-8` });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = nomFichier;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  telechargerBlob(nomFichier, blob);
 }

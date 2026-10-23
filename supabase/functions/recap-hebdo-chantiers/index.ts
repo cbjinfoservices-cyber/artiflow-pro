@@ -390,7 +390,7 @@ Deno.serve(async (req) => {
         html: buildEmailHtml({
           emetteur: emetteurPrev,
           chantiers: chantiersPrev,
-          appUrl: appUrlBody || String(pPrev.comptable_app_url ?? "").trim() || "https://artiflow-pro.fr",
+          appUrl: appUrlBody || String(pPrev.comptable_app_url ?? "").trim() || "https://artiflow-pro.com",
           accent: /^#[0-9a-fA-F]{6}$/.test(String(pPrev.doc_couleur ?? "")) ? String(pPrev.doc_couleur) : "#C4783A",
           jourLabel: JOURS_SEMAINE[jourChoisiDe(pPrev)] ?? "vendredi",
         }),
@@ -444,7 +444,7 @@ Deno.serve(async (req) => {
       // Adresses en copie (comptable, associé…) : toutes celles cochées, jamais l'adresse principale.
       const cc = adressesCcDe(p, email);
       const accent = /^#[0-9a-fA-F]{6}$/.test(String(p.doc_couleur ?? "")) ? String(p.doc_couleur) : "#C4783A";
-      const appUrl = appUrlBody || String(p.comptable_app_url ?? "").trim() || "https://artiflow-pro.fr";
+      const appUrl = appUrlBody || String(p.comptable_app_url ?? "").trim() || "https://artiflow-pro.com";
       const subject =
         chantiers.length > 0
           ? `Récap chantiers · ${chantiers.length} chantier${chantiers.length > 1 ? "s" : ""} en cours`
