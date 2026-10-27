@@ -107,6 +107,20 @@ const pagesPrincipales = [
       "Les postes ouverts, notre process de recrutement et le formulaire pour déposer votre candidature.",
   },
   {
+    to: "/partenaires",
+    icon: "ri-shake-hands-line",
+    label: "Partenaires",
+    description:
+      "Fédérations, comptables, fournisseurs, écoles et médias : devenir partenaire, et le badge à afficher pour les artisans clients.",
+  },
+  {
+    to: "/presse",
+    icon: "ri-newspaper-line",
+    label: "Espace presse",
+    description:
+      "Le kit média : textes de présentation, faits clés, logos à télécharger, communiqués et contact presse.",
+  },
+  {
     to: "/guide/mot-de-passe-solide",
     icon: "ri-shield-keyhole-line",
     label: "Créer un mot de passe solide",

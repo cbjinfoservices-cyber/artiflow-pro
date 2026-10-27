@@ -48,6 +48,8 @@ const NouveautePersonnalisationPage = lazy(() => import("@/pages/nouveautes/pers
 const NouveauteSuiviEmailsPage = lazy(() => import("@/pages/nouveautes/suivi-emails-clients/page"));
 const NouveauteRecapitulatifPage = lazy(() => import("@/pages/nouveautes/recapitulatif/page"));
 const RejoindrePage = lazy(() => import("@/pages/rejoindre/page"));
+const PressePage = lazy(() => import("@/pages/presse/page"));
+const PartenairesPage = lazy(() => import("@/pages/partenaires/page"));
 const AuthPage = lazy(() => import("@/pages/app/auth/page"));
 const ResetPasswordPage = lazy(() => import("@/pages/app/auth/reset-password/page"));
 const AppDemarrage = lazy(() => import("@/pages/app/demarrage/page"));
@@ -183,6 +185,14 @@ const routes: RouteObject[] = [
   {
     path: "/nous-rejoindre",
     element: <RejoindrePage />,
+  },
+  {
+    path: "/presse",
+    element: <PressePage />,
+  },
+  {
+    path: "/partenaires",
+    element: <PartenairesPage />,
   },
   {
     path: "/nouveautes",

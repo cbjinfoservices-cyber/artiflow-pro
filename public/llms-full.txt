@@ -101,6 +101,8 @@ Des collections ordonnées de guides qui s'enchaînent logiquement.
 - [Contact](https://artiflow-pro.com/contact) — demander une démo ou poser une question.
 - [À propos](https://artiflow-pro.com/a-propos) — l'équipe, la mission et l'histoire du produit.
 - [Nous rejoindre](https://artiflow-pro.com/nous-rejoindre) — les postes ouverts.
+- [Partenaires](https://artiflow-pro.com/partenaires) — devenir partenaire et badge pour les artisans clients.
+- [Espace presse](https://artiflow-pro.com/presse) — kit média, logos et communiqués.
 - [Podcast](https://artiflow-pro.com/podcast) — les épisodes et les interventions.
 - [Nouveautés](https://artiflow-pro.com/nouveautes) — les dernières évolutions du produit.
 - [Personnalisation des documents](https://artiflow-pro.com/nouveautes/personnalisation-documents) — logo, couleur d'accent et mentions sur les devis et factures.

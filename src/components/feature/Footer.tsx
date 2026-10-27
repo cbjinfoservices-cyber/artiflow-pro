@@ -38,6 +38,8 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { label: "Demander une démo", section: "contact" },
       { label: "Nous contacter", to: "/contact" },
       { label: "Nous rejoindre", to: "/nous-rejoindre" },
+      { label: "Partenaires", to: "/partenaires" },
+      { label: "Espace presse", to: "/presse" },
       { label: "À propos", to: "/a-propos#equipe" },
       { label: "Podcast", to: "/podcast" },
       { label: "Nouveautés produit", to: "/nouveautes" },

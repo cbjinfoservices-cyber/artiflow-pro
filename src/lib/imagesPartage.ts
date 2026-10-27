@@ -79,3 +79,11 @@ export const IMAGE_PARTAGE_RECAP_NOUVEAUTES =
 /** Annonce produit — personnalisation des documents (identité unifiée). */
 export const IMAGE_PARTAGE_PERSONNALISATION =
   "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20unified%20brand%20identity%20for%20construction%20documents%2C%20overlapping%20quote%20and%20invoice%20cards%20with%20a%20color%20swatch%20palette%20and%20an%20envelope%20silhouette%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-personnalisation-documents&orientation=landscape";
+
+/** Espace presse — kit média. */
+export const IMAGE_PARTAGE_PRESSE =
+  "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20for%20a%20press%20and%20media%20kit%20page%2C%20a%20folded%20newspaper%2C%20a%20microphone%20and%20logo%20card%20silhouettes%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-presse&orientation=landscape";
+
+/** Partenaires — fédérations, comptables, fournisseurs, écoles et médias. */
+export const IMAGE_PARTAGE_PARTENAIRES =
+  "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20about%20business%20partnerships%20in%20the%20building%20trades%2C%20two%20hands%20shaking%20over%20a%20blueprint%20with%20tool%20silhouettes%2C%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-partenaires&orientation=landscape";

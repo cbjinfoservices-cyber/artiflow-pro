@@ -175,6 +175,8 @@ function entreesEntreprise(): EntreeSitemap[] {
       ],
     },
     { path: "/nous-rejoindre" },
+    { path: "/presse" },
+    { path: "/partenaires" },
     ...equipe.map((membre) => ({ path: `/auteurs/${membre.id}` })),
     { path: "/plan-du-site", lastmod: DATE_REVISION_PLAN },
     { path: "/guide/mot-de-passe-solide" },
