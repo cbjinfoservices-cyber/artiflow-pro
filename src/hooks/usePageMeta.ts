@@ -32,7 +32,7 @@ type PageMetaOptions = {
 
 /** Description de repli du site (reprise de la balise partagée de index.html). */
 const DESCRIPTION_SITE =
-  "ArtiFlow-pro, le logiciel IA des artisans du bâtiment : devis en 2 minutes, relances SMS et WhatsApp automatiques, planning et suivi de chantier. Essai gratuit.";
+  "Logiciel IA des artisans du bâtiment : devis dictés en quelques minutes, relances automatiques, planning d'équipe et facture électronique prête.";
 
 /** Mots-clés de repli du site (repris de la balise partagée de index.html). */
 const MOTS_CLES_SITE =

@@ -24,7 +24,7 @@ import { IMAGE_PARTAGE_SITE, usePageMeta } from "@/hooks/usePageMeta";
 export default function Home() {
   usePageMeta(
     "ArtiFlow-pro — Assistant IA pour artisans du bâtiment",
-    "ArtiFlow-pro, le logiciel IA des artisans du bâtiment : devis dicté en quelques minutes, relances automatiques, équipe pilotée sur mobile et facture électronique prête.",
+    "Logiciel IA des artisans du bâtiment : devis dictés en quelques minutes, relances automatiques, planning d'équipe et facture électronique prête.",
     {
       // Accueil : on utilise volontairement l'image de marque choisie dans les
       // Réglages SEO, et non plus une bannière dédiée. C'est exactement le
