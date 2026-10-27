@@ -119,7 +119,7 @@ async function envoyerEmail(
     }
   };
 
-  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
   const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.com";
   let erreurBrevo = "";
 
@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: "L'envoi de bienvenue n'est pas encore configuré." }, 500);
     }
 
-    const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+    const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
     const canSend = Boolean(brevoKey || (resendKey && fromDomain));

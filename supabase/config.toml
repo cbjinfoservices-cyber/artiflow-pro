@@ -1,0 +1,104 @@
+# Configuration Supabase du projet ArtiFlow-pro (Supabase Cloud).
+project_id = "goaaigufumbsjndtbcup"
+
+# Fonctions appelées sans clé : tâches planifiées (cron-job.org) et nettoyage des comptes.
+# Elles revérifient elles-mêmes l'heure et leur anti-doublon avant d'envoyer quoi que ce soit.
+# Toutes les autres exigent au moins la clé du site (verify_jwt par défaut).
+[functions.recap-quotidien]
+verify_jwt = false
+
+[functions.envoi-journal-mensuel]
+verify_jwt = false
+
+[functions.relance-envoi-manquant]
+verify_jwt = false
+
+[functions.relancer-factures-retard]
+verify_jwt = false
+
+[functions.escalade-relances]
+verify_jwt = false
+
+[functions.rappel-prelevement-abonnement]
+verify_jwt = false
+
+[functions.rappel-echeance-paiement-unique]
+verify_jwt = false
+
+[functions.recap-recontact-volatils]
+verify_jwt = false
+
+[functions.rappel-conges-semaine]
+verify_jwt = false
+
+[functions.rappel-conflits-conge-veille]
+verify_jwt = false
+
+[functions.recap-hebdo-envois-auto]
+verify_jwt = false
+
+[functions.recap-hebdo-alertes-taux]
+verify_jwt = false
+
+[functions.recap-hebdo-echecs-blanc]
+verify_jwt = false
+
+[functions.recap-hebdo-echecs-paiement]
+verify_jwt = false
+
+[functions.recap-hebdo-alertes-stripe-non-traitees]
+verify_jwt = false
+
+[functions.recap-invitations-intervenants]
+verify_jwt = false
+
+[functions.envoi-bilan-annuel]
+verify_jwt = false
+
+[functions.alerte-mot-de-passe-ancien]
+verify_jwt = false
+
+[functions.recap-mensuel-mot-de-passe]
+verify_jwt = false
+
+[functions.recap-trimestriel-mot-de-passe]
+verify_jwt = false
+
+[functions.envoi-recap-mensuel-annuel]
+verify_jwt = false
+
+[functions.envoi-comparatif-cadence-annuel]
+verify_jwt = false
+
+[functions.envoi-recap-echecs-annuel]
+verify_jwt = false
+
+[functions.export-csv-mensuel]
+verify_jwt = false
+
+[functions.envoi-bienvenue-nouveaux-pros]
+verify_jwt = false
+
+[functions.alerte-taux-brevo]
+verify_jwt = false
+
+[functions.purger-comptes-supprimes]
+verify_jwt = false
+
+[functions.rappeler-suppressions-prochaines]
+verify_jwt = false
+
+# Emails de connexion (inscription, mot de passe oublié…) : envoyés par la fonction envoi-email-auth
+# via Brevo. Supabase Auth l'appelle avec une signature (secret partagé), sans clé d'API.
+[functions.envoi-email-auth]
+verify_jwt = false
+
+[auth]
+site_url = "https://artiflow-pro.com"
+additional_redirect_urls = ["https://artiflow-pro.com/**", "https://www.artiflow-pro.com/**", "http://localhost:3000/**"]
+
+[auth.hook.send_email]
+enabled = true
+uri = "https://goaaigufumbsjndtbcup.supabase.co/functions/v1/envoi-email-auth"
+# Secret lu dans l'environnement au moment du « supabase config push » (jamais écrit dans ce fichier).
+secrets = "env(SEND_EMAIL_HOOK_SECRET)"

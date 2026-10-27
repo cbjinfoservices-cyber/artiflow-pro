@@ -1,8 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { postesOuverts } from "@/mocks/rejoindre";
-
-const FORM_URL = "https://readdy.ai/api/form/db4efd9rqll58fj4o72g";
+import { envoyerFormulaire } from "@/lib/formulaires";
 
 const postesOptions = ["Candidature spontanée", ...postesOuverts.map((p) => p.title)];
 
@@ -31,53 +30,18 @@ export default function CandidatureForm({ role = "" }: CandidatureFormProps) {
       return;
     }
 
-    const params = new URLSearchParams();
-    formData.forEach((value, key) => {
-      if (key === "website_alt") return;
-      params.append(key, value as string);
-    });
-    params.append("source", "page-nous-rejoindre");
+    const extras: Record<string, string> = { source: "page-nous-rejoindre" };
 
     setStatus("loading");
     setFormError("");
 
-    try {
-      const response = await fetch(FORM_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const responseText = await response.text();
-      let parsed: {
-        code?: string;
-        message?: string;
-        meta?: { message?: string; detail?: string };
-      } | null = null;
-      try {
-        parsed = JSON.parse(responseText);
-      } catch {
-        parsed = null;
-      }
-
-      const serverMsg =
-        parsed?.meta?.message || parsed?.message || parsed?.meta?.detail || responseText || "";
-      const succeeded = response.ok && parsed?.code === "OK";
-      const isSpam = typeof serverMsg === "string" && serverMsg.toLowerCase().includes("spam");
-
-      if (succeeded && !isSpam) {
-        setStatus("success");
-        form.reset();
-        setPoste("Candidature spontanée");
-      } else {
-        setStatus("error");
-        setFormError(
-          serverMsg || "L'envoi n'a pas abouti. Vérifiez vos informations puis réessayez."
-        );
-      }
-    } catch {
+    const erreur = await envoyerFormulaire("candidature", formData, extras);
+    if (erreur) {
       setStatus("error");
-      setFormError("Connexion impossible pour le moment. Réessayez dans un instant.");
+      setFormError(erreur);
+    } else {
+      setStatus("success");
+      form.reset();
     }
   };
 

@@ -281,7 +281,8 @@ export default function AppPlanning() {
   };
 
   const weekStart = useMemo(() => addDays(startOfWeek(new Date()), weekOffset * 7), [weekOffset]);
-  const days = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  // Semaine complète, week-end compris : une intervention du samedi doit apparaître dans la vue Jour.
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
   const isoList = days.map(toISODate);
   const selectedDate = isoList[selected];
 
@@ -424,6 +425,22 @@ export default function AppPlanning() {
 
   const daySlots = byDate[selectedDate] ?? [];
   const totalSlots = creneauxFiltres.length;
+
+  // Jour ouvert par défaut : aujourd'hui pour la semaine en cours, sinon le premier jour qui a
+  // une intervention (à défaut, le lundi). Recalculé à chaque changement de semaine.
+  const aujourdhuiIso = toISODate(new Date());
+  useEffect(() => {
+    if (loading) return;
+    const indexAujourdhui = isoList.indexOf(aujourdhuiIso);
+    if (indexAujourdhui >= 0) {
+      setSelected(indexAujourdhui);
+      return;
+    }
+    const premierOccupe = isoList.findIndex((iso) => (byDate[iso] ?? []).length > 0);
+    setSelected(premierOccupe >= 0 ? premierOccupe : 0);
+    // byDate et isoList sont volontairement exclus : la sélection ne bouge qu'au changement de semaine.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekOffset, loading]);
 
   // Nombre de créneaux « à confirmer » par jour : affiché sur chaque vignette de jour de la
   // vue Jour, pour repérer d'un coup d'œil où sont les interventions en attente sans filtrer.
@@ -1811,7 +1828,7 @@ export default function AppPlanning() {
           </>
         ) : (
           <>
-            <div className="grid grid-cols-5 gap-2 md:gap-3">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
               {days.map((day, i) => {
                 const nbAConfirmer = provisoiresParJour[isoList[i]] ?? 0;
                 return (
@@ -1824,13 +1841,13 @@ export default function AppPlanning() {
                       ? `${nbAConfirmer} intervention${nbAConfirmer > 1 ? "s" : ""} à confirmer ce jour`
                       : undefined
                   }
-                  className={`relative flex flex-col items-center gap-2 p-2 md:p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`relative flex flex-col items-center gap-1.5 sm:gap-2 py-2 px-0.5 sm:p-2 md:p-3 rounded-lg border cursor-pointer transition-colors ${
                     selected === i ? "bg-primary-500 border-primary-500 text-background-50" : "bg-background-100 border-background-200 text-foreground-700 hover:border-primary-300"
                   }`}
                 >
                   {nbAConfirmer > 0 && (
                     <span
-                      className={`absolute top-1.5 right-1.5 inline-flex items-center gap-0.5 h-5 min-w-[20px] px-1.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
+                      className={`absolute -top-1.5 -right-1 sm:top-1.5 sm:right-1.5 inline-flex items-center gap-0.5 h-5 min-w-[20px] px-1.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
                         selected === i ? "bg-background-50 text-accent-700" : "bg-accent-500 text-background-50"
                       }`}
                     >
@@ -1838,12 +1855,14 @@ export default function AppPlanning() {
                       {nbAConfirmer}
                     </span>
                   )}
-                  <span className="text-[11px] md:text-xs font-medium">{formatDayName(day).slice(0, 3)}</span>
-                  <span className={`w-9 h-9 flex items-center justify-center rounded-full text-sm font-bold ${selected === i ? "bg-background-50/20" : "bg-background-200"}`}>
+                  <span className="text-[11px] md:text-xs font-medium">
+                    {isoList[i] === aujourdhuiIso ? "Auj." : formatDayName(day).slice(0, 3)}
+                  </span>
+                  <span className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full text-sm font-bold ${selected === i ? "bg-background-50/20" : "bg-background-200"}`}>
                     {day.getDate()}
                   </span>
                   <span className={`text-[10px] font-medium ${selected === i ? "text-background-50/80" : "text-foreground-400"}`}>
-                    {(byDate[isoList[i]] ?? []).length} rdv
+                    {(byDate[isoList[i]] ?? []).length}<span className="hidden sm:inline"> rdv</span>
                   </span>
                   {(absencesParJour[isoList[i]] ?? 0) > 0 && (
                     <span
@@ -1853,7 +1872,7 @@ export default function AppPlanning() {
                       }`}
                     >
                       <i className="ri-suitcase-line"></i>
-                      {absencesParJour[isoList[i]]} abs.
+                      <span className="hidden sm:inline">{absencesParJour[isoList[i]]} abs.</span>
                     </span>
                   )}
                 </button>

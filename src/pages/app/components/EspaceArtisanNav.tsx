@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   DndContext,
@@ -573,7 +573,11 @@ export default function EspaceArtisanNav({
   };
 
   // Rouvre automatiquement le groupe de la page courante (navigation directe par URL, lien externe…).
+  // Ne réagit qu'au changement de page : sinon replier le groupe de la page affichée le rouvrirait aussitôt.
+  const repliesRef = useRef(replies);
+  repliesRef.current = replies;
   useEffect(() => {
+    const replies = repliesRef.current;
     let groupeCourant: string | undefined;
     if (location.pathname === "/ressources/bibliotheque") {
       // « Ma bibliothèque » vit désormais dans le groupe « Suivi clients ».
@@ -586,7 +590,7 @@ export default function EspaceArtisanNav({
     if (groupeCourant && replies.includes(groupeCourant)) {
       setReplies(replies.filter((g) => g !== groupeCourant));
     }
-  }, [location.pathname, replies, setReplies, itemsVisibles]);
+  }, [location.pathname, setReplies, itemsVisibles]);
 
   return (
     <div className="flex flex-col gap-1">

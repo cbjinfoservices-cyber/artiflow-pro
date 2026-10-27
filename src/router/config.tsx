@@ -34,6 +34,8 @@ const ArticlePage = lazy(() => import("@/pages/ressources/detail/page"));
 const PlanDuSitePage = lazy(() => import("@/pages/plan-du-site/page"));
 const MentionsLegalesPage = lazy(() => import("@/pages/mentions-legales/page"));
 const RgpdPage = lazy(() => import("@/pages/rgpd/page"));
+const SuppressionComptePage = lazy(() => import("@/pages/suppression-compte/page"));
+const AccordSousTraitancePage = lazy(() => import("@/pages/accord-sous-traitance/page"));
 const CgvPage = lazy(() => import("@/pages/cgv/page"));
 const CookiesPage = lazy(() => import("@/pages/cookies/page"));
 const AccessibilitePage = lazy(() => import("@/pages/accessibilite/page"));
@@ -139,6 +141,16 @@ const routes: RouteObject[] = [
   {
     path: "/rgpd",
     element: <RgpdPage />,
+  },
+  {
+    // Page publique exigée par Google Play : demande de suppression du compte et des données.
+    path: "/suppression-compte",
+    element: <SuppressionComptePage />,
+  },
+  {
+    // Accord de sous-traitance (article 28 du RGPD), annexe des CGV.
+    path: "/accord-sous-traitance",
+    element: <AccordSousTraitancePage />,
   },
   {
     path: "/cgv",

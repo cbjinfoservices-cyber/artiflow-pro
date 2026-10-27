@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { domaineEnvoiEmail } from "../_shared/envoiEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -261,8 +262,11 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    // Brevo est prioritaire dès que sa clé est présente (même règle que l'envoi, _shared/envoiEmail.ts).
+    const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
     const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
-    const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+    const fournisseur = brevoKey ? "brevo" : "resend";
+    const fromDomain = (domaineEnvoiEmail() ?? "").trim();
 
     if (!supabaseUrl || !anonKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
@@ -275,7 +279,7 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await authClient.auth.getUser();
     if (userError || !userData?.user) return json({ ok: false, error: "Vous devez etre connecte." }, 401);
 
-    const keyPresent = resendKey.length > 0;
+    const keyPresent = (brevoKey || resendKey).length > 0;
     const domainPresent = fromDomain.length > 0;
     const fromAddress = domainPresent ? `contact@${fromDomain}` : null;
 
@@ -285,7 +289,36 @@ Deno.serve(async (req) => {
     let domainStatus: string | null = null;
     let records: ResendRecordApi[] = [];
 
-    if (keyPresent) {
+    if (brevoKey) {
+      // Brevo : un domaine « authenticated » (DKIM + code Brevo validés) peut envoyer sans restriction.
+      try {
+        const res = await fetch("https://api.brevo.com/v3/senders/domains", {
+          headers: { "api-key": brevoKey, Accept: "application/json" },
+        });
+        if (res.ok) {
+          apiReachable = true;
+          const body = (await res.json().catch(() => null)) as
+            | { domains?: Array<{ id?: number; domain_name?: string; authenticated?: boolean; verified?: boolean }> }
+            | null;
+          for (const d of body?.domains ?? []) {
+            const name = String(d.domain_name ?? "").trim();
+            if (!name) continue;
+            domains.push({
+              id: String(d.id ?? name),
+              name,
+              status: d.authenticated ? "verified" : d.verified ? "pending" : "not_started",
+            });
+          }
+          const match = domains.find((d) => d.name.toLowerCase() === fromDomain.toLowerCase());
+          domainStatus = match ? match.status : "not_found";
+        } else {
+          const b = (await res.json().catch(() => null)) as { message?: string } | null;
+          apiError = b?.message || `L'API Brevo a repondu avec le code ${res.status}.`;
+        }
+      } catch (e) {
+        apiError = e instanceof Error ? e.message : "Impossible de joindre l'API Brevo.";
+      }
+    } else if (keyPresent) {
       try {
         const res = await fetch("https://api.resend.com/domains", {
           headers: { Authorization: `Bearer ${resendKey}`, Accept: "application/json" },
@@ -379,6 +412,7 @@ Deno.serve(async (req) => {
 
     return json({
       ok: true,
+      fournisseur,
       keyPresent,
       domainPresent,
       domainName: fromDomain || null,

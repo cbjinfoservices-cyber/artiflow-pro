@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
-// Tâche planifiée : surveille le taux de réussite RÉEL des emails envoyés via Resend
+// Tâche planifiée : surveille le taux de réussite RÉEL des emails envoyés (Brevo et Resend)
 // sur les 24 dernières heures. Si le taux passe sous 95 % (avec un échantillon minimum
 // de 5 envois), l'alerte part par email aux gestionnaires. Anti-doublon : une seule
 // alerte par tranche de 24 h, sauf appel `force: true`.
@@ -54,27 +55,29 @@ async function envoyerEmail(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   admin: any,
 ): Promise<{ ok: boolean; fournisseur: string; error?: string }> {
-  const tracer = async (statut: string, message?: string) => {
+  // Service réellement utilisé : Brevo s'il est configuré, sinon Resend (voir _shared/envoiEmail.ts).
+  const fournisseur = (Deno.env.get("BREVO_API_KEY") ?? "").trim() ? "brevo" : "resend";
+  const tracer = async (statut: string, message?: string, utilise = fournisseur) => {
     if (!admin) return;
     try {
       await admin
         .from("envoi_fournisseur_historique")
-        .insert({ fonction, fournisseur: "resend", statut, repli: false, message: message ?? null });
+        .insert({ fonction, fournisseur: utilise, statut, repli: false, message: message ?? null });
     } catch {
       /* la trace ne doit jamais bloquer un envoi */
     }
   };
 
-  const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
-  const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+  const resendKey = (cleEnvoiEmail() ?? "").trim();
+  const fromDomain = (domaineEnvoiEmail() ?? "").trim();
   if (!resendKey || !fromDomain) {
-    const erreur = "Envoi non configuré : clé API Resend ou domaine d'envoi manquant.";
+    const erreur = "Envoi non configuré : clé API (Brevo ou Resend) ou domaine d'envoi manquant.";
     await tracer("echec", erreur);
-    return { ok: false, fournisseur: "resend", error: erreur };
+    return { ok: false, fournisseur, error: erreur };
   }
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await envoyerEmail("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -85,17 +88,18 @@ async function envoyerEmail(
       }),
     });
     const data = (await res.json().catch(() => null)) as { message?: string } | null;
+    const utilise = res.headers.get("x-fournisseur") ?? fournisseur;
     if (res.ok) {
-      await tracer("succes");
-      return { ok: true, fournisseur: "resend" };
+      await tracer("succes", undefined, utilise);
+      return { ok: true, fournisseur: utilise };
     }
-    const erreur = data?.message || `Resend a refusé l'envoi (code ${res.status}).`;
-    await tracer("echec", erreur);
-    return { ok: false, fournisseur: "resend", error: erreur };
+    const erreur = data?.message || `L'envoi a été refusé (code ${res.status}).`;
+    await tracer("echec", erreur, utilise);
+    return { ok: false, fournisseur: utilise, error: erreur };
   } catch (e) {
-    const erreur = e instanceof Error ? e.message : "Resend est injoignable.";
+    const erreur = e instanceof Error ? e.message : "Le service d'envoi est injoignable.";
     await tracer("echec", erreur);
-    return { ok: false, fournisseur: "resend", error: erreur };
+    return { ok: false, fournisseur, error: erreur };
   }
 }
 
@@ -177,7 +181,7 @@ Deno.serve(async (req) => {
     const { data, error } = await admin
       .from("envoi_fournisseur_historique")
       .select("fonction, statut, message, created_at")
-      .eq("fournisseur", "resend")
+      .in("fournisseur", ["brevo", "resend"])
       .gte("created_at", depuis)
       .order("created_at", { ascending: false });
     if (error) return json({ ok: false, error: error.message }, 500);

@@ -1,4 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { envoyerMessage, messagerieConfiguree, messageNonConfigure } from "../_shared/envoiMessage.ts";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 // Fonction d'escalade automatique des relances en retard.
 // Elle est prévue pour tourner SANS session utilisateur : elle est appelée
@@ -287,12 +289,8 @@ Deno.serve(async (req) => {
     const retryMode = retryIds.size > 0;
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
-    const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-    const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    const smsFrom = Deno.env.get("TWILIO_SMS_FROM");
-    const whatsappFrom = Deno.env.get("TWILIO_WHATSAPP_FROM");
+    const resendKey = cleEnvoiEmail();
+    const fromDomain = domaineEnvoiEmail();
 
     if (!supabaseUrl || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
@@ -460,7 +458,7 @@ Deno.serve(async (req) => {
     </div>
   </div>
 </body></html>`;
-          const resMail = await fetch("https://api.resend.com/emails", {
+          const resMail = await envoyerEmail("https://api.resend.com/emails", {
             method: "POST",
             headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -473,25 +471,12 @@ Deno.serve(async (req) => {
           if (!resMail.ok) throw new Error("L'envoi de l'email automatique a échoué.");
           destinataire = client.email;
         } else {
-          if (!twilioSid || !twilioToken) throw new Error("Twilio non configuré (Account SID + Auth Token).");
-          const fromNumber = c.canal === "WhatsApp" ? whatsappFrom : smsFrom;
-          if (!fromNumber) throw new Error("Numéro d'envoi Twilio manquant pour ce canal.");
+          const canal = c.canal === "WhatsApp" ? "whatsapp" : "sms";
+          if (!messagerieConfiguree(canal)) throw new Error(messageNonConfigure(canal));
           const to = toE164(client?.telephone);
           if (!to) throw new Error("Ce client n'a pas de numéro de téléphone valide.");
-          const isWhatsapp = c.canal === "WhatsApp";
-          const form = new URLSearchParams();
-          form.set("To", isWhatsapp ? `whatsapp:${to}` : to);
-          form.set("From", isWhatsapp ? `whatsapp:${fromNumber}` : fromNumber);
-          form.set("Body", message);
-          const resSms = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
-            method: "POST",
-            headers: {
-              Authorization: `Basic ${btoa(`${twilioSid}:${twilioToken}`)}`,
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: form.toString(),
-          });
-          if (!resSms.ok) throw new Error("L'envoi automatique du message a échoué.");
+          const envoi = await envoyerMessage(canal, to, message);
+          if (!envoi.ok) throw new Error(envoi.error || "L'envoi automatique du message a échoué.");
           destinataire = to;
         }
 
@@ -549,7 +534,7 @@ Deno.serve(async (req) => {
       if (res.echoue > 0 && res.config.email && resendKey && fromDomain) {
         try {
           const html = buildAlerteHtml(res.config.nom, res.echoue, res.echoues, res.config.identite);
-          const resAlert = await fetch("https://api.resend.com/emails", {
+          const resAlert = await envoyerEmail("https://api.resend.com/emails", {
             method: "POST",
             headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -571,7 +556,7 @@ Deno.serve(async (req) => {
       if (res.envoye > 0 && res.config.email && resendKey && fromDomain) {
         try {
           const html = buildRecapHtml(res.config.nom, res.envoye, res.echoue, res.clients, res.echoues, res.config.identite);
-          const resRecap = await fetch("https://api.resend.com/emails", {
+          const resRecap = await envoyerEmail("https://api.resend.com/emails", {
             method: "POST",
             headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({

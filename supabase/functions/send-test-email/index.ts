@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,7 +37,7 @@ async function envoyerViaResend(opts: {
   html: string;
 }): Promise<{ ok: boolean; id?: string; error?: string }> {
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await envoyerEmail("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${opts.apiKey}`,
@@ -243,8 +244,8 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const brevoKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
-    const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+    const brevoKey = (cleEnvoiEmail() ?? "").trim();
+    const fromDomain = (domaineEnvoiEmail() ?? "").trim();
     const fromEmail = fromDomain ? `contact@${fromDomain}` : "";
 
     if (!supabaseUrl || !anonKey) return json({ ok: false, error: "Configuration manquante." }, 500);
@@ -338,8 +339,8 @@ Deno.serve(async (req) => {
     // un envoi : ce test prouve que le relais fonctionne vraiment. Les DEUX tentatives sont
     // tracées dans envoi_fournisseur_historique pour apparaître dans « Suivi des envois ».
     if (payload?.repliTest === true) {
-      const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
-      const resendDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+      const resendKey = (cleEnvoiEmail() ?? "").trim();
+      const resendDomain = (domaineEnvoiEmail() ?? "").trim();
       const messageBrevo = "Test du repli : échec Brevo simulé volontairement.";
 
       if (admin) {
@@ -404,7 +405,7 @@ Deno.serve(async (req) => {
       let ok = false;
       let erreur = "";
       try {
-        const res = await fetch("https://api.resend.com/emails", {
+        const res = await envoyerEmail("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({

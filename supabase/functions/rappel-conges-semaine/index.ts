@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 // Rappel hebdomadaire au responsable : chaque lundi matin (heure de Paris), un email
 // récapitule les congés et indisponibilités qui DÉMARRENT la semaine suivante.
@@ -216,8 +217,8 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
-    const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+    const resendKey = (cleEnvoiEmail() ?? "").trim();
+    const fromDomain = (domaineEnvoiEmail() ?? "").trim();
     if (!supabaseUrl || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
     const body = (req.method === "POST" ? await req.json().catch(() => null) : null) ?? {};
@@ -357,7 +358,7 @@ Deno.serve(async (req) => {
       const subject = `Congés de la semaine du ${formatJourCourt(lundi)} au ${formatJourCourt(dimanche)} · ${conges.length} absence${conges.length > 1 ? "s" : ""}`;
 
       try {
-        const res = await fetch("https://api.resend.com/emails", {
+        const res = await envoyerEmail("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({

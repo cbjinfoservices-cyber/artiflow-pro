@@ -60,7 +60,8 @@ export default function CgvPage() {
       <LegalSection id="objet" title="Objet et champ d'application">
         <p>
           Les présentes conditions générales de vente et d'utilisation (les « CGV ») régissent la relation entre{" "}
-          <strong>ArtiFlow-pro SAS</strong>, éditeur du logiciel ArtiFlow-pro (le « Service »), et toute personne
+          <strong>CBJ-INFOSERVICES</strong>, SARL dont le siège est situé 14 voie des Meuniers, 94550 Chevilly-Larue
+          (SIREN 990 157 562), éditeur du logiciel ArtiFlow-pro (le « Service »), et toute personne
           physique ou morale qui crée un compte ou utilise le Service (l'« Utilisateur »).
         </p>
         <p>
@@ -261,7 +262,7 @@ export default function CgvPage() {
       <LegalSection id="propriete" title="Propriété intellectuelle">
         <p>
           Le Service, sa structure, ses interfaces, son code source, ses textes et ses marques demeurent la
-          propriété exclusive d'ArtiFlow-pro SAS. La souscription ne confère à l'Utilisateur qu'un droit d'usage
+          propriété exclusive d'CBJ-INFOSERVICES. La souscription ne confère à l'Utilisateur qu'un droit d'usage
           personnel, non exclusif et non transférable, pour la durée de son abonnement.
         </p>
         <p>
@@ -291,8 +292,16 @@ export default function CgvPage() {
           <Link to="/rgpd" className="font-semibold text-primary-700 hover:underline cursor-pointer">
             politique de protection des données (RGPD)
           </Link>
-          . L'Utilisateur, en tant que responsable de traitement des données de ses propres clients, s'engage à
-          respecter la réglementation applicable.
+          . L'Utilisateur, en tant que responsable de traitement des données de ses propres clients et de son équipe,
+          s'engage à respecter la réglementation applicable.
+        </p>
+        <p>
+          Le traitement de ces données par ArtiFlow-pro, en qualité de sous-traitant, est régi par l'
+          <Link to="/accord-sous-traitance" className="font-semibold text-primary-700 hover:underline cursor-pointer">
+            accord de sous-traitance des données
+          </Link>{" "}
+          (article 28 du RGPD), qui fait partie intégrante des présentes CGV et est accepté en même temps qu'elles lors
+          de l'inscription.
         </p>
       </LegalSection>
 

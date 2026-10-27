@@ -404,6 +404,51 @@ export const metiers = [
       { question: "Puis-je documenter la mise en service pour la garantie ?", answer: "Oui, chaque intervention accepte des photos horodatées du groupe extérieur et de la mise en service, conservées avec la fiche chantier." },
     ],
   },
+  {
+    slug: "installateur-photovoltaique",
+    name: "Installateur photovoltaïque",
+    shortName: "Photovoltaïque",
+    title: "Devis panneaux photovoltaïques & solaire | ArtiFlow-pro",
+    metaDescription:
+      "Devis photovoltaïques détaillés : panneaux, onduleur, fixations, raccordement et démarches. Chiffrez une installation solaire au kWc et relancez le client sans repasser au bureau.",
+    ogImage:
+      "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20for%20a%20solar%20panel%20installation%20brand%2C%20photovoltaic%20panels%20on%20a%20roof%20silhouette%2C%20an%20inverter%20shape%20and%20sun%20rays%20with%20warm%20amber%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20grid%20lines%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-metier-photovoltaique&orientation=landscape",
+    tagline: "Des devis solaires chiffrés au kWc, prêts avant de redescendre du toit.",
+    intro:
+      "Panneaux, onduleurs, micro-onduleurs, batteries, fixations et raccordement : ArtiFlow-pro rédige vos devis photovoltaïques avec vos tarifs, organise les poses et relance le client jusqu'à la signature.",
+    heroImage:
+      "https://readdy.ai/api/search-image?query=Stylized%20artistic%20abstract%20scene%20of%20photovoltaic%20solar%20panels%20on%20a%20pitched%20roof%20with%20mounting%20rails%20and%20cables%2C%20warm%20amber%20and%20deep%20teal%20lighting%20on%20a%20dark%20charcoal%20background%2C%20cinematic%20moody%20technical%20composition%2C%20strong%20contrast%20for%20overlaid%20text%2C%20high%20detail&width=1600&height=900&seq=artiflow-metier-photovoltaique&orientation=landscape",
+    cardImage:
+      "https://readdy.ai/api/search-image?query=Artistic%20close%20up%20of%20a%20photovoltaic%20solar%20panel%20corner%20with%20an%20aluminium%20mounting%20rail%20and%20a%20compact%20inverter%20on%20a%20clean%20neutral%20studio%20background%2C%20soft%20shadows%2C%20premium%20technical%20aesthetic%2C%20high%20detail&width=400&height=300&seq=artiflow-metier-photovoltaique-card&orientation=landscape",
+    stats: [
+      { value: "5 min", label: "pour un devis d'installation 6 kWc" },
+      { value: "+23 %", label: "de devis solaires signés" },
+      { value: "0", label: "poste oublié entre toiture et raccordement" },
+    ],
+    problems: [
+      { icon: "ri-sun-line", title: "Dimensionnement au cas par cas", description: "Puissance, nombre de panneaux, orientation, onduleur : chaque devis demande un calcul différent." },
+      { icon: "ri-file-list-3-line", title: "Postes techniques nombreux", description: "Fixations, câblage, coffrets de protection, démarches de raccordement : un oubli et la marge s'envole." },
+      { icon: "ri-time-line", title: "Clients qui comparent", description: "Le client demande trois devis : celui qui répond vite et clairement emporte le chantier." },
+    ],
+    helps: [
+      { icon: "ri-mic-line", title: "Visite technique dictée", description: "« 12 panneaux 500 Wc, toiture tuiles plein sud, micro-onduleurs » → ArtiFlow-pro monte les lignes avec vos prix." },
+      { icon: "ri-bookmark-3-line", title: "Vos kits et tarifs", description: "Panneaux, onduleurs, batteries, fixations et forfaits de raccordement : votre bibliothèque de prix reste la référence." },
+      { icon: "ri-notification-3-line", title: "Relance jusqu'à la signature", description: "L'IA relance le client qui compare, sur email puis SMS, au rythme que vous choisissez." },
+      { icon: "ri-camera-line", title: "Preuves de pose", description: "Photos de toiture, de câblage et de mise en service horodatées : le dossier de garantie est complet." },
+    ],
+    testimonial: {
+      name: "Julien Fabre",
+      role: "Installateur photovoltaïque · Toulouse",
+      quote: "Je dicte la visite technique sur le toit et le devis est prêt dans la voiture. Mes clients reçoivent une offre claire le jour même, avant les concurrents.",
+    },
+    faq: [
+      { question: "ArtiFlow-pro gère-t-il l'autoconsommation et la revente de surplus ?", answer: "Oui. Vous enregistrez vos kits et vos options (batterie, revente du surplus, autoconsommation totale) et l'IA réutilise ces postes à chaque devis." },
+      { question: "Puis-je chiffrer au kWc ?", answer: "Oui, vos postes peuvent être exprimés au kWc, à l'unité ou au forfait, et le devis additionne panneaux, onduleur, pose et raccordement." },
+      { question: "Les démarches administratives peuvent-elles figurer sur le devis ?", answer: "Oui, déclaration préalable, demande de raccordement et attestation de conformité se chiffrent comme des forfaits distincts et réutilisables." },
+      { question: "Puis-je proposer plusieurs puissances dans le même devis ?", answer: "Oui, chiffrez deux ou trois options de puissance dans un seul document : le client compare et choisit directement." },
+      { question: "Comment documenter la pose pour la garantie ?", answer: "Chaque intervention accepte des photos horodatées des fixations, du câblage et de la mise en service, conservées avec la fiche chantier." },
+    ],
+  },
 ];
 
 export const metiersZonesIntro =

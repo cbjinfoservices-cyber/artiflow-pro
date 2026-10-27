@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail } from "../_shared/envoiEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,7 +54,7 @@ async function envoyerEmailAvecRepli(
   };
 
   // Resend est le canal principal : Brevo n'est plus sollicité (plus de validation d'expéditeur).
-  const brevoKey = "";
+  const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
   const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.com";
   let erreurBrevo = "";
 
@@ -156,7 +157,7 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const brevoKey = Deno.env.get("BREVO_API_KEY");
-    const repliConfigure = Boolean(Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_DOMAIN"));
+    const repliConfigure = Boolean(cleEnvoiEmail() && domaineEnvoiEmail());
 
     if (!supabaseUrl || !anonKey || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
     if (!brevoKey && !repliConfigure) {

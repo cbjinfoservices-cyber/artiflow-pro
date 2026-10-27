@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,8 +35,8 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
+    const resendKey = cleEnvoiEmail();
+    const fromDomain = domaineEnvoiEmail();
 
     if (!supabaseUrl || !anonKey || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
     if (!resendKey || !fromDomain) {
@@ -131,7 +132,7 @@ Deno.serve(async (req) => {
       attachments: [{ filename, content: csvBase64, content_type: "text/csv" }],
     };
 
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await envoyerEmail("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify(body),

@@ -9,7 +9,7 @@ import { useStructuredData } from "@/hooks/useStructuredData";
  * il accompagne toutes les pages via le <head> partagé.
  *
  * Les valeurs reprennent celles publiées sur la page mentions légales :
- * raison sociale ArtiFlow-pro SAS, siège 12 rue des Artisans, 75011 Paris,
+ * raison sociale CBJ-INFOSERVICES (SARL), siège 14 voie des Meuniers, 94550 Chevilly-Larue,
  * téléphone 07 88 94 61 91, horaires du lundi au vendredi, 9 h – 18 h.
  */
 export function useLocalBusinessGlobalSchema(id = "artiflow-localbusiness-global-schema") {
@@ -17,7 +17,9 @@ export function useLocalBusinessGlobalSchema(id = "artiflow-localbusiness-global
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: "ArtiFlow-pro",
-    legalName: "ArtiFlow-pro SAS",
+    legalName: "CBJ-INFOSERVICES",
+    vatID: "FR85990157562",
+    taxID: "990157562",
     description:
       "SaaS IA des artisans du bâtiment : devis en 2 minutes, relances SMS et WhatsApp automatiques, planning et suivi de chantier.",
     url: "https://artiflow-pro.com",
@@ -25,9 +27,9 @@ export function useLocalBusinessGlobalSchema(id = "artiflow-localbusiness-global
     email: "contact@artiflow-pro.com",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "12 rue des Artisans",
-      postalCode: "75011",
-      addressLocality: "Paris",
+      streetAddress: "14 voie des Meuniers",
+      postalCode: "94550",
+      addressLocality: "Chevilly-Larue",
       addressCountry: "FR",
     },
     openingHoursSpecification: [
@@ -38,11 +40,6 @@ export function useLocalBusinessGlobalSchema(id = "artiflow-localbusiness-global
         closes: "18:00",
       },
     ],
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: 48.8618,
-      longitude: 2.377,
-    },
     priceRange: "€€",
   };
 

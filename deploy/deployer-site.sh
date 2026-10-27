@@ -11,7 +11,8 @@ SSH=(ssh -i "$CLE" -o BatchMode=yes "$VPS")
 npx vite build
 
 # Envoi dans un dossier temporaire puis bascule : le site en ligne n'est jamais à moitié copié.
-tar -C out -czf - . | "${SSH[@]}" '
+# Les cartes de code source (.map) restent sur le poste : elles exposeraient tout le code.
+tar -C out --exclude='*.map' -czf - . | "${SSH[@]}" '
   set -e
   rm -rf /opt/artiflow/site.nouveau && mkdir -p /opt/artiflow/site.nouveau
   tar -C /opt/artiflow/site.nouveau -xzf -

@@ -22,6 +22,7 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
   const [telephone, setTelephone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [conditionsAcceptees, setConditionsAcceptees] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +39,10 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
       setError("Précisez le statut juridique et la taille de votre entreprise.");
       return;
     }
+    if (!conditionsAcceptees) {
+      setError("Acceptez les conditions générales et l'accord de sous-traitance pour créer votre compte.");
+      return;
+    }
     const erreurMdp = validerMotDePasseFort(password);
     if (erreurMdp) {
       setError(erreurMdp);
@@ -52,6 +57,7 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
       statut_juridique: statutJuridique,
       taille_entreprise: tailleEntreprise,
       telephone: telephone.trim(),
+      conditionsAcceptees,
     });
     setBusy(false);
     if (err) {
@@ -218,6 +224,31 @@ export default function SignUpForm({ onDone }: { onDone: () => void }) {
         </div>
         <IndicateurForceMotDePasse valeur={password} seuilLongueur={8} />
       </Field>
+
+      <label htmlFor="signup-conditions" className="flex items-start gap-2.5 text-sm text-foreground-700 leading-relaxed cursor-pointer">
+        <input
+          id="signup-conditions"
+          type="checkbox"
+          checked={conditionsAcceptees}
+          onChange={(e) => setConditionsAcceptees(e.target.checked)}
+          className="mt-1 w-4 h-4 shrink-0 accent-primary-500 cursor-pointer"
+        />
+        <span>
+          J'accepte les{" "}
+          <a href="/cgv" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-700 hover:underline">
+            conditions générales
+          </a>{" "}
+          et l'
+          <a href="/accord-sous-traitance" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-700 hover:underline">
+            accord de sous-traitance des données
+          </a>
+          , et j'ai lu la{" "}
+          <a href="/rgpd" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-700 hover:underline">
+            politique de confidentialité
+          </a>
+          .
+        </span>
+      </label>
 
       <button
         type="submit"

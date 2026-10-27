@@ -74,7 +74,7 @@ async function envoyerEmailAvecRepli(
     }
   };
 
-  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
   const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.com";
   let erreurBrevo = "";
 
@@ -563,7 +563,7 @@ Deno.serve(async (req) => {
     const hourOverride = Number.isFinite(Number(body?.hour)) ? Number(body.hour) % 24 : null;
     const dayOverride = Number.isFinite(Number(body?.day)) ? ((Number(body.day) - 1 + 7) % 7) + 1 : null;
 
-    const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+    const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
     if (!preview && !brevoKey && (!resendKey || !fromDomain)) {
       return json({
         ok: true,

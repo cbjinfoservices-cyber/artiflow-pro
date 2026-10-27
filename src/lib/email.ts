@@ -53,7 +53,7 @@ export async function sendRelanceEmail(
 }
 
 /**
- * Envoie une relance SMS ou WhatsApp au client via Twilio.
+ * Envoie une relance SMS ou WhatsApp au client (Brevo, ou Twilio en repli).
  * `canal` vaut « SMS » ou « WhatsApp ».
  * `groupe` indique que l'envoi fait partie d'un lot (relance groupée / escalade automatique).
  */
@@ -63,7 +63,7 @@ export async function sendRelanceSms(relanceId: number, canal: string, groupe = 
 
 /**
  * Envoie un SMS ou WhatsApp de TEST vers un numéro saisi à la volée, sans créer de relance.
- * Sert à valider la configuration Twilio en un clic depuis l'écran Relances.
+ * Sert à valider la configuration d'envoi SMS / WhatsApp en un clic depuis l'écran Relances.
  */
 export async function sendTestSms(telephone: string, canal: string, message = ""): Promise<void> {
   await invoke("send-test-sms", { telephone, canal, message });

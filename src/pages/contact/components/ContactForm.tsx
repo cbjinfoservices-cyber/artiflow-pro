@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-
-const FORM_URL = "https://readdy.ai/api/form/db4e2gek6jkc2oct46h0";
+import { envoyerFormulaire } from "@/lib/formulaires";
 
 const SUJET_INTERVENTIONS = "Interventions près de chez moi";
 
@@ -58,58 +57,22 @@ export default function ContactForm() {
       return;
     }
 
-    const params = new URLSearchParams();
-    formData.forEach((value, key) => {
-      if (key === "website_alt") return;
-      params.append(key, value as string);
-    });
-    params.append("source", "page-contact");
     const origine = searchParams.get("origine") || "";
-    if (origine) {
-      params.append("origine", ORIGINE_LABELS[origine] || origine);
-    }
+    const extras: Record<string, string> = { source: "page-contact" };
+    if (origine) extras.origine = ORIGINE_LABELS[origine] || origine;
 
     setStatus("loading");
     setFormError("");
 
-    try {
-      const response = await fetch(FORM_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const responseText = await response.text();
-      let parsed: {
-        code?: string;
-        message?: string;
-        meta?: { message?: string; detail?: string };
-      } | null = null;
-      try {
-        parsed = JSON.parse(responseText);
-      } catch {
-        parsed = null;
-      }
-
-      const serverMsg =
-        parsed?.meta?.message || parsed?.message || parsed?.meta?.detail || responseText || "";
-      const succeeded = response.ok && parsed?.code === "OK";
-      const isSpam = typeof serverMsg === "string" && serverMsg.toLowerCase().includes("spam");
-
-      if (succeeded && !isSpam) {
-        setStatus("success");
-        form.reset();
-        setSujet("");
-        setMessage("");
-      } else {
-        setStatus("error");
-        setFormError(
-          serverMsg || "L'envoi n'a pas abouti. Vérifiez vos informations puis réessayez."
-        );
-      }
-    } catch {
+    const erreur = await envoyerFormulaire("contact", formData, extras);
+    if (erreur) {
       setStatus("error");
-      setFormError("Connexion impossible pour le moment. Réessayez dans un instant.");
+      setFormError(erreur);
+    } else {
+      setStatus("success");
+      form.reset();
+      setSujet("");
+      setMessage("");
     }
   };
 

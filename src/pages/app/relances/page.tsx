@@ -407,7 +407,7 @@ export default function AppRelances() {
         );
       } else {
         setActionError(
-          `${run.relancesEchouees.length} envoi${run.relancesEchouees.length > 1 ? "s" : ""} toujours en échec. Vérifiez vos identifiants d'envoi (Resend / Twilio).`,
+          `${run.relancesEchouees.length} envoi${run.relancesEchouees.length > 1 ? "s" : ""} toujours en échec. Vérifiez la configuration du service d'envoi (Brevo).`,
         );
       }
     } catch {
@@ -493,7 +493,7 @@ export default function AppRelances() {
           const detail = sendErr instanceof Error ? sendErr.message : "";
           setActionNotice(
             `Relance ${payload.canal} programmée. ${
-              detail || "Ajoutez vos identifiants Twilio pour que l'envoi fonctionne."
+              detail || "Le service d'envoi SMS / WhatsApp n'est pas encore configuré."
             }`,
           );
         }
@@ -779,7 +779,7 @@ export default function AppRelances() {
                 <button
                   type="button"
                   onClick={() => setSmsTestOpen(true)}
-                  title="Envoyer un SMS/WhatsApp de test à un numéro saisi à la volée (validation Twilio)"
+                  title="Envoyer un SMS/WhatsApp de test à un numéro saisi à la volée (validation de la configuration d'envoi)"
                   className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-background-100 border border-background-200 text-foreground-700 text-sm font-semibold whitespace-nowrap cursor-pointer hover:border-accent-300 hover:text-accent-700 transition-colors"
                 >
                   <i className="ri-message-3-line"></i>

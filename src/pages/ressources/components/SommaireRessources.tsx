@@ -12,6 +12,7 @@ const ICON_BY_SLUG: Record<string, string> = {
   couvreur: "ri-home-4-line",
   platrier: "ri-layout-4-line",
   "installateur-climatisation": "ri-temp-cold-line",
+  "installateur-photovoltaique": "ri-sun-line",
   "securite-du-compte": "ri-shield-keyhole-line",
   "gestion-devis": "ri-file-list-3-line",
   facturation: "ri-file-code-line",

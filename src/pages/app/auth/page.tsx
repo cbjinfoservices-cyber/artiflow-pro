@@ -79,7 +79,7 @@ export default function AuthPage() {
             </div>
 
             <p className="mt-6 text-xs text-foreground-400 text-center leading-relaxed">
-              En continuant, vous acceptez nos{" "}
+              Consultez nos{" "}
               <Link to="/cgv" className="text-primary-700 hover:text-primary-800 cursor-pointer">
                 conditions générales
               </Link>{" "}

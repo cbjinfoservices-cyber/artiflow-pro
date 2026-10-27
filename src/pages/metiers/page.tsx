@@ -36,7 +36,7 @@ export default function MetiersPage() {
 
   usePageMeta(
     "Métiers du bâtiment : devis & relances | ArtiFlow-pro",
-    "Plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste, frigoriste climaticien : les devis, relances et plannings d'ArtiFlow-pro pour chaque corps d'état.",
+    "Plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste, frigoriste climaticien, installateur photovoltaïque : les devis, relances et plannings d'ArtiFlow-pro pour chaque corps d'état.",
     {
       type: "website",
       image:

@@ -12,7 +12,7 @@ export default function RecapSemaine({
 }: {
   /** Toutes les interventions de la personne (toutes semaines confondues). */
   creneaux: CreneauPerso[];
-  /** Les 5 jours (ISO) de la semaine affichée. */
+  /** Les 7 jours (ISO) de la semaine affichée. */
   isoList: string[];
   /** Libellé de la semaine affichée (« Cette semaine · Octobre 2026 »). */
   labelSemaine: string;

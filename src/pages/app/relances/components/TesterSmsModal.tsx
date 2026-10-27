@@ -7,7 +7,7 @@ const CANAUX_TEST = ["SMS", "WhatsApp"] as const;
 
 /**
  * Fenêtre « Tester l'envoi SMS » : envoie un message de test à un numéro saisi à la volée
- * pour valider Twilio, sans créer de relance ni toucher à un vrai client.
+ * pour valider la configuration d'envoi, sans créer de relance ni toucher à un vrai client.
  */
 export default function TesterSmsModal({ onClose }: { onClose: () => void }) {
   const [canal, setCanal] = useState<string>("SMS");
@@ -31,7 +31,7 @@ export default function TesterSmsModal({ onClose }: { onClose: () => void }) {
     try {
       await sendTestSms(telephone.trim(), canal, message.trim());
       setNotice(
-        `Message de test ${canal} envoyé à ${telephone.trim()}. Vérifiez la réception sur ce numéro pour confirmer que Twilio fonctionne.`,
+        `Message de test ${canal} envoyé à ${telephone.trim()}. Vérifiez la réception sur ce numéro pour confirmer que l'envoi fonctionne.`,
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "L'envoi du test a échoué.");
@@ -130,8 +130,8 @@ export default function TesterSmsModal({ onClose }: { onClose: () => void }) {
         <div className="flex items-start gap-2 p-3 rounded-md bg-background-100 border border-background-200 text-[11px] text-foreground-500 leading-relaxed">
           <i className="ri-information-line mt-px shrink-0 text-primary-600"></i>
           <span>
-            Si vous voyez « L'envoi SMS/WhatsApp n'est pas encore configuré », c'est qu'un des identifiants Twilio
-            est manquant côté Backend (Account SID, Auth Token ou numéro d'envoi).
+            Si vous voyez « L'envoi SMS/WhatsApp n'est pas encore configuré », c'est qu'un réglage du service
+            d'envoi manque côté Backend (clé Brevo, nom d'expéditeur SMS ou numéro WhatsApp).
           </span>
         </div>
       </div>

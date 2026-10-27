@@ -26,11 +26,12 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
+    const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
 
     if (!supabaseUrl || !anonKey) return json({ ok: false, error: "Configuration manquante." }, 500);
-    if (!resendKey) {
+    if (!resendKey && !brevoKey) {
       return json(
-        { ok: false, error: "La configuration d'envoi (cle Resend) n'est pas disponible." },
+        { ok: false, error: "La configuration d'envoi (cle Brevo ou Resend) n'est pas disponible." },
         400,
       );
     }
@@ -47,6 +48,41 @@ Deno.serve(async (req) => {
     const payload = await req.json().catch(() => null);
     const id = String(payload?.id ?? "").trim();
     if (!id) return json({ ok: false, error: "Identifiant d'email manquant." }, 400);
+
+    // Les identifiants Brevo ont la forme « <…@smtp-relay.mailin.fr> » ; ceux de Resend sont des UUID.
+    if (id.includes("@")) {
+      if (!brevoKey) return json({ ok: false, error: "Cet email a été envoyé par Brevo, dont la clé n'est pas configurée." }, 400);
+      const params = new URLSearchParams({ messageId: id, limit: "50", sort: "desc" });
+      const resBrevo = await fetch(`https://api.brevo.com/v3/smtp/statistics/events?${params}`, {
+        headers: { "api-key": brevoKey, Accept: "application/json" },
+      });
+      if (!resBrevo.ok) {
+        const b = (await resBrevo.json().catch(() => null)) as { message?: string } | null;
+        return json({ ok: false, error: b?.message || `Brevo n'a pas pu fournir l'etat de cet email (code ${resBrevo.status}).` }, 502);
+      }
+      const corps = (await resBrevo.json().catch(() => null)) as
+        | { events?: Array<{ email?: string; date?: string; subject?: string; event?: string; from?: string }> }
+        | null;
+      const evenements = [...(corps?.events ?? [])].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      // Vocabulaire Brevo → vocabulaire Resend attendu par l'application.
+      const traduction: Record<string, string> = {
+        requests: "sent", delivered: "delivered", opened: "opened", clicks: "clicked",
+        hardBounces: "bounced", softBounces: "bounced", blocked: "bounced", invalid: "bounced",
+        spam: "complained", deferred: "delivery_delayed",
+      };
+      const premier = evenements[0];
+      const dernier = evenements[evenements.length - 1];
+      return json({
+        ok: true,
+        id,
+        to: premier?.email ?? null,
+        from: premier?.from ?? null,
+        subject: premier?.subject ?? null,
+        createdAt: premier?.date ?? null,
+        lastEvent: dernier?.event ? (traduction[dernier.event] ?? dernier.event) : null,
+      });
+    }
+    if (!resendKey) return json({ ok: false, error: "Cet email a été envoyé par Resend, dont la clé n'est pas configurée." }, 400);
 
     const res = await fetch(`https://api.resend.com/emails/${encodeURIComponent(id)}`, {
       headers: { Authorization: `Bearer ${resendKey}` },

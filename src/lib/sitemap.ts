@@ -186,6 +186,8 @@ function entreesLegales(): EntreeSitemap[] {
   return [
     { path: "/mentions-legales" },
     { path: "/rgpd" },
+    { path: "/suppression-compte" },
+    { path: "/accord-sous-traitance" },
     { path: "/cgv" },
     { path: "/cookies" },
     { path: "/accessibilite" },

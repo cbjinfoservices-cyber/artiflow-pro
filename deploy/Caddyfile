@@ -2,6 +2,12 @@
 (site) {
 	root * /srv
 	encode zstd gzip
+	# Cartes de code source (.map) et fichiers cachés : jamais servis (ils exposeraient le code complet).
+	# (Deux blocs « handle » exclusifs : sinon le renvoi vers index.html passerait avant la règle.)
+	@prive path *.map /.env* /.git/*
+	handle @prive {
+		respond 404
+	}
 	# Les fichiers de /assets portent une empreinte dans leur nom : mise en cache longue.
 	header /assets/* Cache-Control "public, max-age=31536000, immutable"
 	header {
@@ -9,11 +15,18 @@
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Frame-Options "SAMEORIGIN"
+		# Complète la CSP d'index.html : frame-ancestors n'est pris en compte que dans un en-tête.
+		Content-Security-Policy "frame-ancestors 'self'"
+		# Micro autorisé pour l'agent vocal ; caméra, position et paiement navigateur coupés.
+		Permissions-Policy "camera=(), geolocation=(), payment=(), usb=(), microphone=(self)"
+		Cross-Origin-Opener-Policy "same-origin-allow-popups"
 		-Server
 	}
 	# Application monopage : toute adresse inconnue renvoie index.html (le routeur React prend le relais).
-	try_files {path} /index.html
-	file_server
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
 }
 
 artiflow-pro.com {
@@ -24,7 +37,7 @@ www.artiflow-pro.com {
 	redir https://artiflow-pro.com{uri} permanent
 }
 
-# Accès direct par l'adresse IP (tests avant la propagation DNS).
+# Accès direct par l'adresse IP : renvoyé vers le domaine en HTTPS (plus de site servi en clair).
 :80 {
-	import site
+	redir https://artiflow-pro.com{uri} permanent
 }

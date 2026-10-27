@@ -11,6 +11,7 @@
  * de ne jamais bloquer inutilement l'affichage d'un bandeau.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -132,8 +133,8 @@ async function alerterConfigStripeIncomplete(
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
-    const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+    const resendKey = (cleEnvoiEmail() ?? "").trim();
+    const fromDomain = (domaineEnvoiEmail() ?? "").trim();
     if (!supabaseUrl || !serviceKey) return;
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
@@ -150,7 +151,7 @@ async function alerterConfigStripeIncomplete(
     const destinataires = await adressesGestionnaires(admin);
     if (destinataires.length === 0) return;
 
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await envoyerEmail("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -177,11 +178,12 @@ Deno.serve(async (req) => {
       return json({ ok: true, eurDisponible: true, motif: "", pays: "", mode: "" });
     }
 
-    // Mode de la clé branchée : « test » (sk_test_…), « live » (sk_live_…) ou inconnu.
+    // Mode de la clé branchée : « test » (sk_test_… / rk_test_…), « live » (sk_live_… / rk_live_…)
+    // ou inconnu. Les clés restreintes (rk_) sont acceptées comme les clés secrètes (sk_).
     // Affiché dans le back-office pour savoir d'un coup d'œil sur quel mode la clé opère.
-    const mode = stripeKey.startsWith("sk_test_")
+    const mode = /^(sk|rk)_test_/.test(stripeKey)
       ? "test"
-      : stripeKey.startsWith("sk_live_")
+      : /^(sk|rk)_live_/.test(stripeKey)
       ? "live"
       : "";
 

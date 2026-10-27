@@ -4,7 +4,7 @@
   <channel>
     <title>ArtiFlow-pro — Fiches métiers du bâtiment</title>
     <link>https://artiflow-pro.com/metiers</link>
-    <description>Les fiches métiers d'ArtiFlow-pro : plombier chauffagiste, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste et frigoriste climaticien. Devis, relances et suivi de chantier adaptés à chaque corps d'état.</description>
+    <description>Les fiches métiers d'ArtiFlow-pro : plombier chauffagiste, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste, frigoriste climaticien et installateur photovoltaïque. Devis, relances et suivi de chantier adaptés à chaque corps d'état.</description>
     <language>fr-FR</language>
     <copyright>ArtiFlow-pro</copyright>
     <lastBuildDate>Thu, 22 Oct 2026 09:00:00 +0200</lastBuildDate>
@@ -81,6 +81,13 @@
       <guid isPermaLink="true">https://artiflow-pro.com/metiers/installateur-climatisation</guid>
       <category>Métier</category>
       <description>Devis climatisation et pompe à chaleur détaillés : splits, gainables, entretien annuel. Chiffrez la pose, la mise en service et les relances sans repasser au bureau.</description>
+    </item>
+    <item>
+      <title>Installateur photovoltaïque — Devis panneaux photovoltaïques &amp; solaire</title>
+      <link>https://artiflow-pro.com/metiers/installateur-photovoltaique</link>
+      <guid isPermaLink="true">https://artiflow-pro.com/metiers/installateur-photovoltaique</guid>
+      <category>Métier</category>
+      <description>Devis photovoltaïques détaillés : panneaux, onduleur, fixations, raccordement et démarches. Chiffrez une installation solaire au kWc et relancez le client sans repasser au bureau.</description>
     </item>
   </channel>
 </rss>

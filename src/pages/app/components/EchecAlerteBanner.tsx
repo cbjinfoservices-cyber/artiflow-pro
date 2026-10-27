@@ -27,8 +27,8 @@ export default function EchecAlerteBanner({ echecs, passages, onRetry, onDismiss
           <p className="text-sm font-semibold text-red-800">Nouvel échec d'envoi détecté</p>
           <p className="text-xs text-red-700 mt-0.5">
             {echecs} envoi{echecs > 1 ? "s" : ""} sur {passages} passage
-            {passages > 1 ? "s" : ""} viennent d'échouer côté serveur. Vérifiez vos identifiants d'envoi (Resend /
-            Twilio).
+            {passages > 1 ? "s" : ""} viennent d'échouer côté serveur. Vérifiez la configuration du service
+            d'envoi (Brevo).
           </p>
           {showRetry && (
             <button

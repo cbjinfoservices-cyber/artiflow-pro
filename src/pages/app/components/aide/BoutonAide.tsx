@@ -9,6 +9,7 @@ import {
   reinitialiserAidePriseEnMain,
 } from "@/lib/aidePriseEnMainMemoire";
 import { reinitialiserTousLesGuidesPremiereVisite } from "@/lib/guidePremiereVisite";
+import { MODE_TERRAIN } from "@/lib/modeTerrain";
 
 /** Une étape du guide de prise en main. */
 interface Etape {
@@ -24,7 +25,7 @@ interface Etape {
  * Guide « premiers pas » : quelques étapes courtes, sans jargon, qui montrent l'essentiel à
  * quelqu'un qui découvre l'outil pour la première fois.
  */
-const ETAPES: Etape[] = [
+const ETAPES_SITE: Etape[] = [
   {
     icon: "ri-hand-heart-line",
     titre: "Bienvenue, on y va doucement",
@@ -71,12 +72,54 @@ const ETAPES: Etape[] = [
   },
 ];
 
-/** Raccourcis essentiels affichés en haut du panneau. */
-const RACCOURCIS: { icon: string; label: string; to: string }[] = [
-  { icon: "ri-file-add-line", label: "Créer un devis", to: "/app/devis" },
-  { icon: "ri-user-add-line", label: "Ajouter un client", to: "/app/clients" },
-  { icon: "ri-notification-3-line", label: "Mes relances", to: "/app/relances" },
+/**
+ * Version application mobile (terrain) : seulement les pages présentes sur le téléphone. Devis,
+ * factures et relances restent sur le site : on ne propose pas de lien vers des écrans absents.
+ */
+const ETAPES_TERRAIN: Etape[] = [
+  {
+    icon: "ri-hand-heart-line",
+    titre: "Votre chantier dans la poche",
+    texte:
+      "L'application garde l'essentiel du terrain : planning, chantiers, clients et équipe. Devis, factures et relances se font sur le site, depuis un ordinateur.",
+  },
+  {
+    icon: "ri-layout-bottom-line",
+    titre: "La barre du bas, c'est votre sommaire",
+    texte:
+      "Planning, Chantiers, Clients et Pointages sont toujours à un geste. Le bouton « Plus » ouvre le reste : équipe, profil, réglages.",
+    lien: "/app/planning",
+    lienLabel: "Voir le planning",
+  },
+  {
+    icon: "ri-building-2-line",
+    titre: "Le chantier, étape par étape",
+    texte: "Ouvrez un chantier pour cocher les étapes au fur et à mesure : l'avancement suit la réalité du terrain.",
+    lien: "/app/chantiers",
+    lienLabel: "Voir les chantiers",
+  },
+  {
+    icon: "ri-shield-check-line",
+    titre: "Vous ne pouvez rien casser",
+    texte: "Tout se modifie et s'annule facilement. En cas de doute, le bouton « Aide » reste en haut de l'écran.",
+  },
 ];
+
+/** Étapes affichées : version mobile dans l'application, version complète sur le site. */
+const ETAPES: Etape[] = MODE_TERRAIN ? ETAPES_TERRAIN : ETAPES_SITE;
+
+/** Raccourcis essentiels affichés en haut du panneau. */
+const RACCOURCIS: { icon: string; label: string; to: string }[] = MODE_TERRAIN
+  ? [
+      { icon: "ri-calendar-2-line", label: "Mon planning", to: "/app/planning" },
+      { icon: "ri-user-add-line", label: "Ajouter un client", to: "/app/clients" },
+      { icon: "ri-timer-line", label: "Pointages", to: "/app/pointages" },
+    ]
+  : [
+      { icon: "ri-file-add-line", label: "Créer un devis", to: "/app/devis" },
+      { icon: "ri-user-add-line", label: "Ajouter un client", to: "/app/clients" },
+      { icon: "ri-notification-3-line", label: "Mes relances", to: "/app/relances" },
+    ];
 
 /**
  * Bouton d'aide, présent sur tout l'espace artisan et sur l'espace intervenant. Il ouvre un panneau
@@ -117,7 +160,9 @@ export default function BoutonAide({
 
   // Ouverture automatique au tout premier passage (une seule fois).
   useEffect(() => {
-    if (!ouvertureAuto || aidePriseEnMainDejaVue()) return undefined;
+    // Pas d'ouverture automatique dans l'application mobile : le panneau couvrirait tout l'écran
+    // dès la première page. Il reste accessible par le bouton « Aide ».
+    if (!ouvertureAuto || MODE_TERRAIN || aidePriseEnMainDejaVue()) return undefined;
     const timer = setTimeout(() => setOuvert(true), 1200);
     return () => clearTimeout(timer);
   }, [ouvertureAuto]);
@@ -609,7 +654,9 @@ export default function BoutonAide({
                 Guides de page réinitialisés
               </span>
             ) : (
-              <span className="text-[10px] text-foreground-400">Astuce : survolez les boutons pour une explication.</span>
+              <span className="text-[10px] text-foreground-400">
+                {MODE_TERRAIN ? "Astuce : chaque écran a ses conseils, juste ici." : "Astuce : survolez les boutons pour une explication."}
+              </span>
             )}
             <div className="flex flex-wrap items-center gap-1">
               {!contexteSeulement && (

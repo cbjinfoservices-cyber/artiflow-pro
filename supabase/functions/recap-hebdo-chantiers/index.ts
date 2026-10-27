@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 // Récapitulatif HEBDOMADAIRE de l'avancement des chantiers en cours.
 //
@@ -327,8 +328,8 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
-    const resendKey = (Deno.env.get("RESEND_API_KEY") ?? "").trim();
-    const fromDomain = (Deno.env.get("RESEND_FROM_DOMAIN") ?? "").trim();
+    const resendKey = (cleEnvoiEmail() ?? "").trim();
+    const fromDomain = (domaineEnvoiEmail() ?? "").trim();
 
     const parsed = req.method === "POST" ? await req.json().catch(() => null) : null;
     const body = (parsed ?? Object.create(null)) as Record<string, unknown>;
@@ -451,7 +452,7 @@ Deno.serve(async (req) => {
           : "Récap chantiers · rien en cours cette semaine";
 
       try {
-        const res = await fetch("https://api.resend.com/emails", {
+        const res = await envoyerEmail("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({

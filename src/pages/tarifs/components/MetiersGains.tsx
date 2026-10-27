@@ -39,6 +39,10 @@ const GAIN_PAR_METIER: Record<string, { fait: string; gain: string }> = {
     fait: "Poses de splits et de pompes à chaleur dictées, entretiens annuels ressortis et relancés.",
     gain: "+26 % de devis signés",
   },
+  "installateur-photovoltaique": {
+    fait: "Visites techniques dictées, installations chiffrées au kWc, raccordement et démarches inclus.",
+    gain: "5 min pour un devis 6 kWc",
+  },
 };
 
 /**

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 // Alerte à l'artisan : un mois attendu est resté sans envoi automatique du journal
 // comptable, passé un délai après le jour d'envoi choisi.
@@ -192,8 +193,8 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
+    const resendKey = cleEnvoiEmail();
+    const fromDomain = domaineEnvoiEmail();
     if (!supabaseUrl || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
     const parsed = req.method === "POST" ? await req.json().catch(() => null) : null;
@@ -334,7 +335,7 @@ Deno.serve(async (req) => {
         identite: docIdentite(p),
       });
       try {
-        const res = await fetch("https://api.resend.com/emails", {
+        const res = await envoyerEmail("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({

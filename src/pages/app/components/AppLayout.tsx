@@ -417,7 +417,7 @@ export default function AppLayout() {
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 shrink-0 flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 bg-background-50 border-b border-background-200">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 overflow-hidden lg:shrink-0 lg:max-w-[40%]">
             <div className="flex items-center gap-3 lg:hidden shrink-0">
               <span className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary-500 text-background-50">
                 <i className="ri-tools-fill text-lg"></i>
@@ -436,32 +436,72 @@ export default function AppLayout() {
               </Link>
             )}
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <div className="flex-1 min-w-0 flex items-center justify-end gap-1.5 sm:gap-2.5">
+            {/* Éléments secondaires : quand la place manque, ils passent à la ligne et sont masqués
+                (h-10 + overflow-hidden). flex-row-reverse fait disparaître en premier les derniers
+                du code, donc les moins utiles : l'ordre ci-dessous va du plus au moins important,
+                de droite à gauche à l'écran. Masqués sur téléphone. */}
+            <div className="hidden sm:flex flex-row-reverse flex-wrap items-center gap-x-2.5 gap-y-4 h-10 min-w-0 overflow-hidden">
+              {!backOfficeOnly && !MODE_TERRAIN && <CompteurQuoiDeNeuf />}
+              {!backOfficeOnly && executionsImminentes.length > 0 && (
+                <Link
+                  to="/app/envois-automatiques"
+                  title={`${executionsImminentes.length} traitement${executionsImminentes.length > 1 ? "s" : ""} automatique${executionsImminentes.length > 1 ? "s" : ""} dans l'heure :\n${executionsImminentes
+                    .map((e) => `${e.item.nom} — ${libelleDans(e.dansMs)}`)
+                    .join("\n")}`}
+                  aria-label={`${executionsImminentes.length} traitement(s) imminent(s) — ouvrir les envois automatiques`}
+                  className="inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-accent-100 border border-accent-200 text-accent-800 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
+                >
+                  <span className="relative w-5 h-5 flex items-center justify-center">
+                    <i className="ri-timer-flash-line text-sm"></i>
+                    <span
+                      className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary-500 animate-pulse"
+                      aria-hidden="true"
+                    ></span>
+                  </span>
+                  Imminents
+                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold tabular-nums">
+                    {executionsImminentes.length > 99 ? "99+" : executionsImminentes.length}
+                  </span>
+                </Link>
+              )}
+              {!backOfficeOnly && !MODE_TERRAIN && (
+                <div className="hidden md:flex items-center gap-2 px-3 h-10 rounded-md bg-background-100 border border-background-200 w-48">
+                  <i className="ri-search-line text-foreground-400 text-sm"></i>
+                  <span className="text-xs text-foreground-400">Rechercher…</span>
+                </div>
+              )}
+              {!sonActif && (
+                <Link
+                  to="/app/preferences#section-son"
+                  title="Son de confirmation coupé — ouvrir les préférences d'affichage"
+                  aria-label="Son de confirmation coupé"
+                  className="inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-background-100 border border-background-200 text-foreground-500 text-xs font-semibold whitespace-nowrap cursor-pointer hover:border-primary-300 transition-colors"
+                >
+                  <i className="ri-volume-mute-line text-sm"></i>
+                  Son coupé
+                </Link>
+              )}
+              {voirMonAbonnement && abonnement && offreStatut && (
+                <Link
+                  to="/app/profil?onglet=abonnement"
+                  title={`Votre offre ArtiFlow-pro ${abonnement.offre} · ${offreStatut.label}`}
+                  className="hidden md:inline-flex items-center gap-2 h-10 pl-3 pr-2 rounded-md bg-background-100 border border-background-200 hover:border-primary-300 cursor-pointer transition-colors"
+                >
+                  <i className="ri-vip-crown-2-line text-accent-600"></i>
+                  <span className="text-xs font-semibold text-foreground-800 whitespace-nowrap">ArtiFlow-pro {abonnement.offre}</span>
+                  <span className={`inline-flex items-center gap-1 h-6 px-2 rounded-full ${offreStatut.tone} text-[10px] font-bold whitespace-nowrap`}>
+                    <i className={offreStatut.icon}></i>
+                    {offreStatut.label}
+                  </span>
+                </Link>
+              )}
+              <IndicateurSynchroPublique />
+            </div>
+
+            {/* Éléments essentiels : toujours visibles. */}
             {!backOfficeOnly && (
-              <>
-                {executionsImminentes.length > 0 && (
-                  <Link
-                    to="/app/envois-automatiques"
-                    title={`${executionsImminentes.length} traitement${executionsImminentes.length > 1 ? "s" : ""} automatique${executionsImminentes.length > 1 ? "s" : ""} dans l'heure :\n${executionsImminentes
-                      .map((e) => `${e.item.nom} — ${libelleDans(e.dansMs)}`)
-                      .join("\n")}`}
-                    aria-label={`${executionsImminentes.length} traitement(s) imminent(s) — ouvrir les envois automatiques`}
-                    // Sur téléphone, la pastille de la cloche affiche déjà le nombre : on libère la place.
-                    className="hidden sm:inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-accent-100 border border-accent-200 text-accent-800 text-xs font-semibold whitespace-nowrap cursor-pointer hover:bg-accent-200 transition-colors"
-                  >
-                    <span className="relative w-5 h-5 flex items-center justify-center">
-                      <i className="ri-timer-flash-line text-sm"></i>
-                      <span
-                        className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary-500 animate-pulse"
-                        aria-hidden="true"
-                      ></span>
-                    </span>
-                    <span className="hidden sm:inline">Imminents</span>
-                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-accent-500 text-background-50 text-[10px] font-bold tabular-nums">
-                      {executionsImminentes.length > 99 ? "99+" : executionsImminentes.length}
-                    </span>
-                  </Link>
-                )}
+              <div className="shrink-0">
                 <ClocheImminents
                   executions={executionsImminentes}
                   prefs={imminence}
@@ -475,56 +515,20 @@ export default function AppLayout() {
                   autoNouvellesActif={autoNouvellesActif}
                   entreprise={profile?.entreprise ?? null}
                 />
-              </>
-            )}
-            {voirMonAbonnement && abonnement && offreStatut && (
-              <Link
-                to="/app/profil?onglet=abonnement"
-                title={`Votre offre ArtiFlow-pro ${abonnement.offre} · ${offreStatut.label}`}
-                className="hidden md:inline-flex items-center gap-2 h-10 pl-3 pr-2 rounded-md bg-background-100 border border-background-200 hover:border-primary-300 cursor-pointer transition-colors"
-              >
-                <i className="ri-vip-crown-2-line text-accent-600"></i>
-                <span className="text-xs font-semibold text-foreground-800 whitespace-nowrap">ArtiFlow-pro {abonnement.offre}</span>
-                <span className={`inline-flex items-center gap-1 h-6 px-2 rounded-full ${offreStatut.tone} text-[10px] font-bold whitespace-nowrap`}>
-                  <i className={offreStatut.icon}></i>
-                  {offreStatut.label}
-                </span>
-              </Link>
-            )}
-            {!sonActif && (
-              <Link
-                to="/app/preferences#section-son"
-                title="Son de confirmation coupé — ouvrir les préférences d'affichage"
-                aria-label="Son de confirmation coupé"
-                className="hidden sm:inline-flex items-center gap-1.5 h-10 px-2.5 rounded-md bg-background-100 border border-background-200 text-foreground-500 text-xs font-semibold whitespace-nowrap cursor-pointer hover:border-primary-300 transition-colors"
-              >
-                <i className="ri-volume-mute-line text-sm"></i>
-                <span className="hidden sm:inline">Son coupé</span>
-              </Link>
-            )}
-            {!backOfficeOnly && !MODE_TERRAIN && (
-              <>
-                <div className="hidden md:flex items-center gap-2 px-3 h-10 rounded-md bg-background-100 border border-background-200 w-56">
-                  <i className="ri-search-line text-foreground-400 text-sm"></i>
-                  <span className="text-xs text-foreground-400">Rechercher…</span>
-                </div>
-                <span className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors">
-                  <i className="ri-magic-line"></i>
-                  <span className="hidden sm:inline">Nouveau devis IA</span>
-                </span>
-              </>
-            )}
-            {/* Compteur des nouveautés et synchro : secondaires, masqués sur téléphone. */}
-            {!backOfficeOnly && !MODE_TERRAIN && (
-              <div className="hidden sm:flex">
-                <CompteurQuoiDeNeuf />
               </div>
             )}
-            <BoutonAide />
-            <div className="hidden sm:flex">
-              <IndicateurSynchroPublique />
+            {!backOfficeOnly && !MODE_TERRAIN && (
+              <span className="hidden sm:inline-flex shrink-0 items-center gap-2 h-10 px-4 rounded-md bg-primary-500 text-background-50 text-sm font-semibold whitespace-nowrap cursor-pointer hover:bg-primary-600 transition-colors">
+                <i className="ri-magic-line"></i>
+                Nouveau devis IA
+              </span>
+            )}
+            <div className="shrink-0">
+              <BoutonAide />
             </div>
-            <MenuCompte backOfficeOnly={backOfficeOnly} />
+            <div className="shrink-0">
+              <MenuCompte backOfficeOnly={backOfficeOnly} />
+            </div>
           </div>
         </header>
 

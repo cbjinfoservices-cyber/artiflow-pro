@@ -6,6 +6,7 @@ import { estGestionnairePrincipal, normaliseEmail } from "@/lib/roles";
 import { fetchMonIntervenant, type MonIntervenant } from "@/lib/planningIntervenant";
 import { syncEntrepriseAbonnement, creerAbonnementEssaiInitial } from "@/lib/abonnementsApi";
 import { originePublique } from "@/lib/site";
+import { VERSION_CONDITIONS } from "@/lib/documentsLegaux";
 
 export interface Profile {
   id: string;
@@ -309,6 +310,8 @@ export interface SignUpPayload {
   statut_juridique: string;
   taille_entreprise: string;
   telephone: string;
+  /** Case « J'accepte les CGV et l'accord de sous-traitance » cochée : la preuve est enregistrée avec le compte. */
+  conditionsAcceptees: boolean;
 }
 
 export interface ProfilePayload {
@@ -448,7 +451,13 @@ async function createProfileFromUser(user: User): Promise<Profile | null> {
     taille_entreprise: meta.taille_entreprise ?? null,
     telephone: meta.telephone ?? null,
   };
-  const { data } = await supabase.from("profiles").insert(row).select("*").maybeSingle();
+  const { data, error } = await supabase.from("profiles").insert(row).select("*").maybeSingle();
+  if (error?.code === "23505") {
+    // Deux chargements simultanés au premier accès : l'autre a déjà créé la fiche (et l'abonnement
+    // d'essai). On la relit au lieu de renvoyer une fiche vide qui écraserait la bonne.
+    const { data: existant } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    return (existant as Profile) ?? null;
+  }
   const profile = (data as Profile) ?? null;
   // À la première inscription d'un artisan, on crée aussi son abonnement d'essai pour que
   // son compte apparaisse aussitôt dans le back-office « Pros inscrits ».
@@ -721,6 +730,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           statut_juridique: payload.statut_juridique,
           taille_entreprise: payload.taille_entreprise,
           telephone: payload.telephone,
+          // Preuve d'acceptation des CGV et de l'accord de sous-traitance (version + date), conservée
+          // avec le compte : c'est ce qui rend l'accord opposable.
+          ...(payload.conditionsAcceptees
+            ? { conditions_version: VERSION_CONDITIONS, conditions_acceptees_le: new Date().toISOString() }
+            : {}),
         },
         emailRedirectTo: computeRedirect(),
       },

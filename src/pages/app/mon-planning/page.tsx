@@ -148,7 +148,8 @@ export default function AppMonPlanning() {
   }, [load]);
 
   const weekStart = useMemo(() => addDays(startOfWeek(new Date()), weekOffset * 7), [weekOffset]);
-  const days = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  // Semaine complète, week-end compris : beaucoup d'artisans interviennent le samedi.
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
   const isoList = useMemo(() => days.map(toISODate), [days]);
   const selectedDate = isoList[selected];
   const labelSemaine = `${
@@ -165,6 +166,22 @@ export default function AppMonPlanning() {
   }, [creneaux]);
 
   const daySlots = byDate[selectedDate] ?? [];
+
+  // Jour ouvert par défaut : aujourd'hui pour la semaine en cours, sinon le premier jour qui a
+  // une intervention (à défaut, le lundi). Recalculé à chaque changement de semaine.
+  const aujourdhuiIso = toISODate(new Date());
+  useEffect(() => {
+    if (loading) return;
+    const indexAujourdhui = isoList.indexOf(aujourdhuiIso);
+    if (indexAujourdhui >= 0) {
+      setSelected(indexAujourdhui);
+      return;
+    }
+    const premierOccupe = isoList.findIndex((iso) => (byDate[iso] ?? []).length > 0);
+    setSelected(premierOccupe >= 0 ? premierOccupe : 0);
+    // byDate est volontairement exclu : on ne veut pas déplacer la sélection quand un créneau change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekOffset, loading]);
 
   // Absences de la personne : celles du jour sélectionné, et le total de la semaine affichée.
   const absencesDuJour = useMemo(() => absences.filter((a) => a.date === selectedDate), [absences, selectedDate]);
@@ -596,28 +613,30 @@ export default function AppMonPlanning() {
             )}
 
             {/* Sélecteur de jours */}
-            <div className="grid grid-cols-5 gap-2 md:gap-3">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
               {days.map((day, i) => (
                 <button
                   key={isoList[i]}
                   type="button"
                   onClick={() => setSelected(i)}
-                  className={`flex flex-col items-center gap-2 p-2 md:p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`flex flex-col items-center gap-1.5 sm:gap-2 py-2 px-0.5 sm:p-2 md:p-3 rounded-lg border cursor-pointer transition-colors ${
                     selected === i
                       ? "bg-primary-500 border-primary-500 text-background-50"
                       : "bg-background-100 border-background-200 text-foreground-700 hover:border-primary-300"
                   }`}
                 >
-                  <span className="text-[11px] md:text-xs font-medium">{formatDayName(day).slice(0, 3)}</span>
+                  <span className="text-[11px] md:text-xs font-medium">
+                    {isoList[i] === aujourdhuiIso ? "Auj." : formatDayName(day).slice(0, 3)}
+                  </span>
                   <span
-                    className={`w-9 h-9 flex items-center justify-center rounded-full text-sm font-bold ${
+                    className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full text-sm font-bold ${
                       selected === i ? "bg-background-50/20" : "bg-background-200"
                     }`}
                   >
                     {day.getDate()}
                   </span>
                   <span className={`text-[10px] font-medium ${selected === i ? "text-background-50/80" : "text-foreground-400"}`}>
-                    {(byDate[isoList[i]] ?? []).length} rdv
+                    {(byDate[isoList[i]] ?? []).length}<span className="hidden sm:inline"> rdv</span>
                   </span>
                   {(absencesParJour[isoList[i]] ?? 0) > 0 && (
                     <span
@@ -627,7 +646,7 @@ export default function AppMonPlanning() {
                       }`}
                     >
                       <i className="ri-suitcase-line"></i>
-                      {absencesParJour[isoList[i]]} abs.
+                      <span className="hidden sm:inline">{absencesParJour[isoList[i]]} abs.</span>
                     </span>
                   )}
                 </button>

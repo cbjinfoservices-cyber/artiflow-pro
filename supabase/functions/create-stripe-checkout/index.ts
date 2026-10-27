@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -157,7 +158,7 @@ async function notifierGestionnairesEchec(
         <p style="margin:16px 0 0;font-size:11px;color:#8a8a84;text-align:center;">Alerte automatique ArtiFlow-pro.</p>
       </div>
     </body></html>`;
-    await fetch("https://api.resend.com/emails", {
+    await envoyerEmail("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -249,8 +250,8 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
+    const resendKey = cleEnvoiEmail();
+    const fromDomain = domaineEnvoiEmail();
     if (!supabaseUrl || !anonKey || !stripeKey) {
       return json({ ok: false, error: "Le paiement n'est pas encore configuré." }, 500);
     }

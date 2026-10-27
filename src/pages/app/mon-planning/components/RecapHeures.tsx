@@ -15,7 +15,7 @@ export default function RecapHeures({
 }: {
   /** Pointages de la personne (toutes semaines confondues). */
   pointages: Pointage[];
-  /** Les 5 jours de la semaine affichée. */
+  /** Les 7 jours de la semaine affichée. */
   jours: Date[];
   /** Les mêmes jours, en ISO (AAAA-MM-JJ). */
   isoList: string[];
@@ -61,7 +61,7 @@ export default function RecapHeures({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2">
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
         {parJour.map((jour, i) => (
           <div
             key={jour.date}

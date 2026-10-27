@@ -54,7 +54,7 @@ async function envoyerEmailAvecRepli(
     }
   };
 
-  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
   const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.com";
   let erreurBrevo = "";
 
@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+    const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
     const repliConfigure = Boolean(Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_DOMAIN"));
 
     if (!supabaseUrl || !anonKey || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);

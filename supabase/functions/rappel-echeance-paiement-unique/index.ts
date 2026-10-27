@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 // Rappel « J-7 avant la fin d'une période payée en paiement unique ».
 //
@@ -68,11 +69,11 @@ interface EmailParams {
 
 /** Envoi d'un email via Resend (best-effort, secrets lus à l'exécution). */
 async function envoyerEmail(params: EmailParams): Promise<boolean> {
-  const apiKey = Deno.env.get("RESEND_API_KEY");
-  const domain = Deno.env.get("RESEND_FROM_DOMAIN");
+  const apiKey = cleEnvoiEmail();
+  const domain = domaineEnvoiEmail();
   if (!apiKey || !domain) return false;
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await envoyerEmail("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -180,7 +181,7 @@ Deno.serve(async (req) => {
     const force = body?.force === true;
     const scopeUserId = typeof body?.userId === "string" && body.userId ? String(body.userId) : null;
 
-    const canSend = Boolean(Deno.env.get("RESEND_API_KEY") && Deno.env.get("RESEND_FROM_DOMAIN"));
+    const canSend = Boolean(cleEnvoiEmail() && domaineEnvoiEmail());
 
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 

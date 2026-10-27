@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail } from "../_shared/envoiEmail.ts";
 
 // Fonction de récapitulatif quotidien par email.
 // Elle est prévue pour tourner SANS session utilisateur : appelée par une tâche
@@ -85,7 +86,7 @@ async function envoyerEmailAvecRepli(
       /* trace non bloquante */
     }
   };
-  const brevoKey = ""; // Resend est le canal principal : Brevo n'est plus sollicité.
+  const brevoKey = (Deno.env.get("BREVO_API_KEY") ?? "").trim();
   const brevoFrom = (Deno.env.get("BREVO_FROM_EMAIL") ?? "").trim() || "contact@artiflow-pro.com";
   let erreurBrevo = "";
   if (brevoKey) {
@@ -700,8 +701,8 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromDomain = Deno.env.get("RESEND_FROM_DOMAIN");
+    const resendKey = cleEnvoiEmail();
+    const fromDomain = domaineEnvoiEmail();
 
     if (!supabaseUrl || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
@@ -710,7 +711,8 @@ Deno.serve(async (req) => {
     const parsed = req.method === "POST" ? await req.json().catch(() => null) : null;
     const body = (parsed ?? Object.create(null)) as Record<string, unknown>;
     const scopeUserId = typeof body?.userId === "string" && body.userId ? String(body.userId) : null;
-    const windowHours = Number(body?.windowHours ?? 24) > 0 ? Number(body.windowHours) : 24;
+    const fenetreDemandee = Number(body?.windowHours ?? 24);
+    const windowHours = fenetreDemandee > 0 ? fenetreDemandee : 24;
     const force = body?.force === true;
     // Aperçu : on renvoie le HTML de l'email sans rien envoyer (bouton « Aperçu »).
     const preview = body?.preview === true;

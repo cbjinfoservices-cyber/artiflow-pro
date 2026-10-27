@@ -36,6 +36,9 @@ export default function BandeauRattachementIntervenant() {
   const eligible = useMemo(() => {
     if (!session || isGestionnaire || isIntervenant || intervenantLoading) return false;
     if (lireBrut(CLE_VU) === "1") return false;
+    // Un compte qui a terminé la prise en main artisan (métier, premier client, premier devis) est
+    // celui d'un chef d'entreprise : la question « avez-vous été invité ? » ne le concerne pas.
+    if (profile?.onboarding_done === true) return false;
     return profilRecent(profile?.created_at ?? null);
   }, [session, isGestionnaire, isIntervenant, intervenantLoading, profile]);
 

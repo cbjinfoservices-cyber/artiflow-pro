@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-
-const FORM_URL = "https://readdy.ai/api/form/db4f1iprqll58fj4o7c0";
+import { envoyerFormulaire } from "@/lib/formulaires";
 
 const plateformes = [
   "Toutes les plateformes",
@@ -40,52 +39,18 @@ export default function AlertePodcastForm({ variante = "clair" }: AlertePodcastF
       return;
     }
 
-    const params = new URLSearchParams();
-    formData.forEach((value, key) => {
-      if (key === "contact_alt") return;
-      params.append(key, value as string);
-    });
-    params.append("source", "alerte-podcast");
+    const extras: Record<string, string> = { source: "alerte-podcast" };
 
     setStatus("loading");
     setFormError("");
 
-    try {
-      const response = await fetch(FORM_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-
-      const responseText = await response.text();
-      let parsed: {
-        code?: string;
-        message?: string;
-        meta?: { message?: string; detail?: string };
-      } | null = null;
-      try {
-        parsed = JSON.parse(responseText);
-      } catch {
-        parsed = null;
-      }
-
-      const serverMsg =
-        parsed?.meta?.message || parsed?.message || parsed?.meta?.detail || responseText || "";
-      const succeeded = response.ok && parsed?.code === "OK";
-      const isSpam = typeof serverMsg === "string" && serverMsg.toLowerCase().includes("spam");
-
-      if (succeeded && !isSpam) {
-        setStatus("success");
-        form.reset();
-      } else {
-        setStatus("error");
-        setFormError(
-          serverMsg || "L'inscription n'a pas abouti. Vérifiez votre email puis réessayez."
-        );
-      }
-    } catch {
+    const erreur = await envoyerFormulaire("podcast", formData, extras);
+    if (erreur) {
       setStatus("error");
-      setFormError("Connexion impossible pour le moment. Réessayez dans un instant.");
+      setFormError(erreur);
+    } else {
+      setStatus("success");
+      form.reset();
     }
   };
 

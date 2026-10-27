@@ -17,6 +17,7 @@ export const metierIcons: Record<string, string> = {
   couvreur: "ri-home-4-line",
   platrier: "ri-layout-2-line",
   "installateur-climatisation": "ri-temp-cold-line",
+  "installateur-photovoltaique": "ri-sun-line",
 };
 
 const metierShortBySlug = new Map(metiers.map((m) => [m.slug, m.shortName]));

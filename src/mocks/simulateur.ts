@@ -80,6 +80,15 @@ export const simulateurMetiers = [
     tauxSignatureApres: 39,
     panierMoyen: 4200,
   },
+  {
+    slug: "installateur-photovoltaique",
+    name: "Installateur photovoltaïque",
+    minutesAvant: 30,
+    minutesApres: 5,
+    tauxSignatureAvant: 28,
+    tauxSignatureApres: 35,
+    panierMoyen: 11000,
+  },
 ];
 
 /**

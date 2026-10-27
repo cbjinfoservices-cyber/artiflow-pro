@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cleEnvoiEmail, domaineEnvoiEmail, envoyerEmail } from "../_shared/envoiEmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,11 +36,11 @@ function dateFr(valeur: string | Date | null | undefined): string {
 
 /** Envoi d'un email via Resend (best-effort, jamais bloquant). */
 async function envoyerEmail(destinataire: string, sujet: string, html: string): Promise<boolean> {
-  const apiKey = Deno.env.get("RESEND_API_KEY");
-  const domain = Deno.env.get("RESEND_FROM_DOMAIN");
+  const apiKey = cleEnvoiEmail();
+  const domain = domaineEnvoiEmail();
   if (!apiKey || !domain) return false;
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await envoyerEmail("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,

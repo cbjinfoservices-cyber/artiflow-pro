@@ -30,6 +30,7 @@ Devis adaptés à chaque corps d'état, avec les bons postes, les bonnes unités
 - [Couvreur](https://artiflow-pro.com/metiers/couvreur) — réfections, zinguerie, fenêtres de toit et sinistres.
 - [Plaquiste plâtrier](https://artiflow-pro.com/metiers/platrier) — cloisons, faux plafonds, doublages et bandes.
 - [Frigoriste climaticien](https://artiflow-pro.com/metiers/installateur-climatisation) — climatisation, pompes à chaleur, entretien annuel et froid commercial.
+- [Installateur photovoltaïque](https://artiflow-pro.com/metiers/installateur-photovoltaique) — panneaux solaires, onduleurs, batteries, raccordement et démarches.
 - [Récapitulatif des métiers](https://artiflow-pro.com/metiers/recapitulatif) — synthèse de tous les corps d'état couverts.
 
 ## Zones d'intervention

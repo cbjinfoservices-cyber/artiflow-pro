@@ -22,6 +22,7 @@ const unitesParMetier: Record<string, string> = {
   couvreur: "m², ml, forfait",
   platrier: "m², ml, forfait",
   "installateur-climatisation": "Unité, forfait, ml",
+  "installateur-photovoltaique": "kWc, unité, forfait",
 };
 
 const RSS_HREF = "/metiers/rss.xml";
@@ -31,7 +32,7 @@ export default function MetiersRecapitulatifPage() {
 
   usePageMeta(
     "Récapitulatif des métiers du bâtiment | ArtiFlow-pro",
-    "Toutes les fiches métiers d'ArtiFlow-pro : plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste et frigoriste climaticien, avec leurs guides.",
+    "Toutes les fiches métiers d'ArtiFlow-pro : plombier, électricien, maçon, peintre, menuisier, carreleur, couvreur, plaquiste, frigoriste climaticien et installateur photovoltaïque, avec leurs guides.",
     {
       image:
         "https://readdy.ai/api/search-image?query=Stylized%20abstract%20editorial%20banner%20of%20a%20grid%20of%20building%20trade%20icons%20and%20tool%20silhouettes%20connected%20by%20thin%20lines%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%20tones%20on%20a%20deep%20charcoal%20background%2C%20blueprint%20line%20patterns%2C%20cinematic%20moody%20lighting%2C%20minimal%20premium%20composition%2C%20generous%20negative%20space%2C%20high%20detail&width=1200&height=630&seq=artiflow-og-metiers-recap&orientation=landscape",

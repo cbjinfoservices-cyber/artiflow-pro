@@ -1,8 +1,22 @@
 import { Link } from "react-router-dom";
-import { heroStats } from "@/mocks/landing";
 
 /** Petites puces du bandeau de réassurance, sous les boutons. */
 const reassurance = ["14 jours d'essai", "Sans engagement", "Résiliable en un clic"];
+
+/** Ce que l'application fait, en une ligne chacun : des capacités réelles, pas des statistiques. */
+const atouts = [
+  { icon: "ri-mic-line", label: "Devis dicté sur le chantier" },
+  { icon: "ri-repeat-line", label: "Relances email, SMS, WhatsApp" },
+  { icon: "ri-team-line", label: "Équipe pilotée sur mobile" },
+  { icon: "ri-file-shield-2-line", label: "Facture électronique prête" },
+];
+
+/** Lignes du devis d'exemple affiché dans le visuel. */
+const lignesExemple = [
+  { designation: "Dépose ancien chauffe-eau", detail: "1 forfait", montant: "120,00 €" },
+  { designation: "Chauffe-eau électrique 200 L", detail: "1 u", montant: "640,00 €" },
+  { designation: "Raccordements et mise en service", detail: "3 h", montant: "165,00 €" },
+];
 
 export default function Hero() {
   return (
@@ -26,32 +40,33 @@ export default function Hero() {
           className="absolute inset-0 w-full h-full object-cover object-top"
         />
       </picture>
-      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/35"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/80 to-black/40"></div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30"></div>
 
       <div className="relative z-10 w-full px-4 md:px-8 lg:px-12 pt-28 pb-16 md:pt-24 md:pb-14">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-center">
           <div className="text-center lg:text-left animate-fade-up">
-            <Link
-              to="/nouveautes"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-background-50/10 border border-background-50/25 backdrop-blur text-background-50 text-xs md:text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-background-50/20 transition-colors"
+            <a
+              href="#fonctionnalites"
+              className="inline-flex max-w-full items-center gap-2 px-3.5 py-1.5 rounded-full bg-background-50/10 border border-background-50/25 backdrop-blur text-background-50 text-xs md:text-sm font-medium whitespace-nowrap cursor-pointer hover:bg-background-50/20 transition-colors"
             >
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-500 text-background-50 text-[10px] font-bold uppercase tracking-wide">
                 Nouveau
               </span>
-              Renvois programmés & vérification d'adresse
-              <i className="ri-arrow-right-line"></i>
-            </Link>
+              {/* Libellé raccourci sur téléphone pour tenir sur une ligne. */}
+              <span className="sm:hidden">Équipe mobile & e-facture</span>
+              <span className="hidden sm:inline">Votre équipe sur mobile & facture électronique</span>
+              <i className="ri-arrow-down-line"></i>
+            </a>
 
             <h1 className="mt-5 font-heading font-extrabold text-background-50 text-4xl md:text-5xl lg:text-[3.6rem] leading-[1.06] tracking-tight">
-              Vos devis, vos relances
-              <br className="hidden md:block" /> et votre planning.
-              <span className="block text-primary-400 mt-1.5">En pilote automatique.</span>
+              Moins de paperasse.
+              <span className="block text-primary-400 mt-1.5">Plus de chantiers.</span>
             </h1>
 
             <p className="mt-5 text-background-100/90 text-base md:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
-              Vous dictez le chantier, l'IA rédige le devis, relance le client et range votre semaine — et si un
-              email n'arrive pas, vous savez pourquoi.
+              Vous dictez le devis sur place, le client signe sur son téléphone, les relances partent toutes seules
+              et votre équipe sait où aller. ArtiFlow-pro tient le bureau, vous gardez la main sur le métier.
             </p>
 
             <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3">
@@ -63,11 +78,11 @@ export default function Hero() {
                 Essai gratuit 14 jours
               </Link>
               <a
-                href="#contact"
+                href="#journee"
                 className="inline-flex items-center justify-center gap-2 h-12 md:h-14 px-6 rounded-md bg-background-50/10 border border-background-50/35 text-background-50 font-semibold whitespace-nowrap cursor-pointer hover:bg-background-50/20 transition-colors backdrop-blur"
               >
-                <i className="ri-calendar-check-line text-lg"></i>
-                Demander une démo
+                <i className="ri-play-circle-line text-lg"></i>
+                Voir une journée type
               </a>
             </div>
 
@@ -80,79 +95,76 @@ export default function Hero() {
               ))}
             </div>
 
-            <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-3 max-w-xl mx-auto lg:mx-0">
-              {heroStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="text-center lg:text-left px-3 py-2.5 rounded-lg bg-background-50/5 border border-background-50/15 backdrop-blur"
+            <ul className="mt-6 grid grid-cols-2 gap-2.5 md:gap-3 max-w-xl mx-auto lg:mx-0">
+              {atouts.map((a) => (
+                <li
+                  key={a.label}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-background-50/5 border border-background-50/15 backdrop-blur text-left"
                 >
-                  <p className="font-heading font-bold text-xl md:text-2xl text-primary-400">{stat.value}</p>
-                  <p className="mt-0.5 text-[11px] md:text-xs text-background-100/80 leading-snug">{stat.label}</p>
-                </div>
+                  <span className="w-8 h-8 shrink-0 flex items-center justify-center rounded-md bg-primary-500/20 text-primary-300">
+                    <i className={a.icon}></i>
+                  </span>
+                  <span className="text-xs md:text-sm font-medium text-background-100 leading-snug">{a.label}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
 
-          {/* Aperçu décoratif : la fiche client et le suivi des emails refusés. */}
-          <div className="relative hidden lg:block max-w-md w-full mx-auto lg:mx-0 lg:ml-auto pointer-events-none" aria-hidden="true">
-            <div className="rounded-xl border border-background-50/15 bg-background-50/95 p-4 md:p-5 shadow-2xl backdrop-blur">
-              <div className="flex items-center gap-3">
-                <span className="w-10 h-10 flex items-center justify-center rounded-full bg-primary-100 text-primary-700 font-heading font-bold text-sm">
-                  SD
+          {/* Visuel : un devis dicté, rédigé par l'IA, puis signé. Décoratif, masqué sur mobile. */}
+          <div className="relative hidden lg:block max-w-md w-full mx-auto lg:ml-auto pointer-events-none" aria-hidden="true">
+            <div className="rounded-xl bg-background-50/95 p-5 shadow-2xl backdrop-blur animate-fade-up [animation-delay:150ms]">
+              <div className="flex items-start gap-3">
+                <span className="w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-primary-500 text-background-50">
+                  <i className="ri-mic-fill"></i>
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground-950 truncate">Mme Sophie Dupont</p>
-                  <p className="text-[11px] text-foreground-500 truncate">Rénovation salle de bain · 4 380 €</p>
+                <div className="rounded-lg rounded-tl-none bg-background-100 px-3 py-2">
+                  <p className="text-[11px] font-semibold text-foreground-500">Dicté sur le chantier · 10:12</p>
+                  <p className="mt-0.5 text-[13px] text-foreground-900 leading-snug">
+                    « Remplacement chauffe-eau 200 litres chez Mme Dupont, dépose de l'ancien, trois heures de pose. »
+                  </p>
                 </div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-800 text-[10px] font-semibold whitespace-nowrap">
-                  <i className="ri-mail-line"></i>
-                  Suivi email
+              </div>
+
+              <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold text-accent-700">
+                <i className="ri-sparkling-2-fill"></i>
+                Devis rédigé avec vos tarifs
+              </div>
+              <div className="mt-2 rounded-lg border border-background-200 divide-y divide-background-200">
+                {lignesExemple.map((l) => (
+                  <div key={l.designation} className="flex items-center gap-3 px-3 py-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] font-medium text-foreground-900 truncate">{l.designation}</p>
+                      <p className="text-[10px] text-foreground-500">{l.detail}</p>
+                    </div>
+                    <span className="text-[12px] font-semibold text-foreground-900 tabular-nums">{l.montant}</span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between px-3 py-2 bg-background-100">
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-foreground-600">Total TTC</span>
+                  <span className="text-sm font-bold text-foreground-950 tabular-nums">1 017,50 €</span>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-1.5 text-[11px] text-foreground-500">
+                  <i className="ri-send-plane-line"></i>
+                  Envoyé à 10:14
+                </span>
+                <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-accent-100 text-accent-800 text-[11px] font-bold">
+                  <i className="ri-quill-pen-line"></i>
+                  Signé en ligne à 12:47
                 </span>
               </div>
-
-              <div className="mt-3 flex items-center gap-1.5 text-[11px] text-foreground-600">
-                <i className="ri-checkbox-circle-fill text-accent-600"></i>
-                14 emails partis avec succès
-              </div>
-
-              <div className="mt-3 rounded-lg border border-primary-200 bg-primary-50 p-3">
-                <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-primary-800">
-                  <i className="ri-error-warning-line"></i>
-                  Dernier email refusé
-                </p>
-                <p className="mt-1 text-[11px] text-foreground-700">
-                  21 oct. 2026 à 09:14 · boîte du destinataire pleine
-                </p>
-                <p className="mt-1.5 text-[11px] text-foreground-600 break-all">
-                  Adresse tentée : s.dupont@orange.fr
-                </p>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2">
-                <span className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-md bg-primary-500 text-background-50 text-[11px] font-semibold whitespace-nowrap">
-                  <i className="ri-shield-check-line"></i>
-                  Vérifier et renvoyer
-                </span>
-                <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-background-300 bg-background-50 text-foreground-800 text-[11px] font-semibold whitespace-nowrap">
-                  <i className="ri-timer-line"></i>
-                  Renvoyer dans 24 h
-                </span>
-              </div>
-
-              <p className="mt-2 flex items-center gap-1.5 text-[11px] text-accent-700">
-                <i className="ri-check-double-line"></i>
-                Adresse valide : format et domaine corrects
-              </p>
             </div>
 
-            <div className="mt-3 md:absolute md:-left-6 md:-bottom-8 md:mt-0 w-full md:w-64 rounded-lg border border-background-50/20 bg-foreground-950/90 p-3 backdrop-blur">
+            <div className="absolute -left-8 -bottom-16 w-60 rounded-lg border border-background-50/20 bg-foreground-950/90 p-3 backdrop-blur animate-float">
               <p className="flex items-center gap-1.5 text-[11px] font-semibold text-background-50">
-                <i className="ri-time-line text-primary-400"></i>
-                Renvois prévus
-                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-500 text-background-50">1</span>
+                <i className="ri-notification-3-line text-primary-400"></i>
+                Pendant ce temps…
               </p>
-              <p className="mt-1.5 text-[11px] text-background-200/85">s.dupont@orange.fr</p>
-              <p className="mt-0.5 text-[11px] font-semibold text-primary-400">dans 23 h 41 min · tout annuler</p>
+              <p className="mt-1.5 text-[11px] text-background-200/85 leading-snug">
+                3 relances parties toutes seules, 1 facture réglée.
+              </p>
             </div>
           </div>
         </div>

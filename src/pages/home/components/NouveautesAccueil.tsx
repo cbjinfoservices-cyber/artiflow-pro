@@ -13,8 +13,17 @@ function categorieLabel(key: string): string {
   return found ? found.label : key;
 }
 
-/** Les quatre dernières livraisons, lues directement dans le journal des nouveautés. */
-const dernieres = nouveautes.slice(0, 4);
+/** Livraisons internes au back-office : sans intérêt pour un artisan qui découvre le produit. */
+const RESERVEES_BACK_OFFICE = new Set(["v2-7"]);
+
+/**
+ * Les trois dernières mises à jour majeures, une par domaine (devis, clients, planning…),
+ * pour montrer l'étendue de ce qui avance plutôt que trois retouches du même sujet.
+ */
+const dernieres = nouveautes
+  .filter((n) => n.niveau === "majeur" && !RESERVEES_BACK_OFFICE.has(n.id))
+  .filter((n, i, liste) => liste.findIndex((m) => m.categorie === n.categorie) === i)
+  .slice(0, 3);
 
 export default function NouveautesAccueil() {
   return (
@@ -31,17 +40,13 @@ export default function NouveautesAccueil() {
             </h2>
             <p className="mt-4 text-sm md:text-base text-foreground-600 leading-relaxed">
               Les fonctions arrivent du terrain : un artisan signale un manque, on le corrige, on le publie. Voici
-              les quatre dernières, en clair.
+              les dernières grandes nouveautés, en clair.
             </p>
 
             <div className="mt-6 flex flex-col gap-2.5">
               <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-background-50 border border-background-200 text-xs font-semibold text-foreground-800">
                 <i className="ri-git-commit-line text-primary-600"></i>
                 {nouveautes.length} mises à jour publiées
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-background-50 border border-background-200 text-xs font-semibold text-foreground-800">
-                <i className="ri-mail-check-line text-accent-600"></i>
-                Suivi des emails clients renforcé
               </span>
             </div>
 

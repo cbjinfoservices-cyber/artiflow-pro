@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { envoyerMessage, messagerieConfiguree, messageNonConfigure } from "../_shared/envoiMessage.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,10 +34,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
-    const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
-    const smsFrom = Deno.env.get("TWILIO_SMS_FROM");
-    const whatsappFrom = Deno.env.get("TWILIO_WHATSAPP_FROM");
 
     if (!supabaseUrl || !anonKey || !serviceKey) return json({ ok: false, error: "Configuration manquante." }, 500);
 
@@ -59,20 +56,8 @@ Deno.serve(async (req) => {
     if (!relanceId) return json({ ok: false, error: "Relance introuvable." }, 400);
     if (!isWhatsapp && !isSms) return json({ ok: false, error: "Canal non pris en charge." }, 400);
 
-    if (!twilioSid || !twilioToken) {
-      return json(
-        {
-          ok: false,
-          error:
-            "L'envoi SMS/WhatsApp n'est pas encore configuré. Ajoutez vos identifiants Twilio (Account SID + Auth Token) pour l'utiliser.",
-        },
-        400,
-      );
-    }
-    const fromNumber = isWhatsapp ? whatsappFrom : smsFrom;
-    if (!fromNumber) {
-      return json({ ok: false, error: "Numéro d'envoi Twilio manquant pour ce canal." }, 400);
-    }
+    const canal = isWhatsapp ? "whatsapp" : "sms";
+    if (!messagerieConfiguree(canal)) return json({ ok: false, error: messageNonConfigure(canal) }, 400);
 
     // 2) Opérations privilégiées avec la clé service.
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
@@ -110,24 +95,8 @@ Deno.serve(async (req) => {
       String(relance.message ?? "").trim() ||
       `Bonjour ${(client as { nom?: string } | null)?.nom ?? ""}, un rappel concernant votre dossier.`;
 
-    const toAddr = isWhatsapp ? `whatsapp:${to}` : to;
-    const fromAddr = isWhatsapp ? `whatsapp:${fromNumber}` : fromNumber;
-
-    const form = new URLSearchParams();
-    form.set("To", toAddr);
-    form.set("From", fromAddr);
-    form.set("Body", corps);
-
-    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${btoa(`${twilioSid}:${twilioToken}`)}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: form.toString(),
-    });
-    const twilioData = (await res.json().catch(() => null)) as { message?: string } | null;
-    if (!res.ok) return json({ ok: false, error: twilioData?.message || "L'envoi du message a échoué." }, 502);
+    const envoi = await envoyerMessage(canal, to, corps);
+    if (!envoi.ok) return json({ ok: false, error: envoi.error || "L'envoi du message a échoué." }, 502);
 
     const canalLabel = isWhatsapp ? "whatsapp" : "sms";
 

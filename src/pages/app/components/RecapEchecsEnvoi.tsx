@@ -179,7 +179,7 @@ export default function RecapEchecsEnvoiCard({ journal, onRetried }: Props) {
       setNotice(succes.length > 0 ? `${succes.join(" · ")}.` : null);
       setError(
         echecs.length > 0
-          ? `${echecs.join(" · ")}. Vérifiez vos identifiants d'envoi (Resend / Twilio).`
+          ? `${echecs.join(" · ")}. Vérifiez la configuration du service d'envoi (Brevo).`
           : null,
       );
     } finally {
@@ -382,7 +382,7 @@ export default function RecapEchecsEnvoiCard({ journal, onRetried }: Props) {
               {passagesEscalade > 0 && (
                 <> sur {passagesEscalade} passage{passagesEscalade > 1 ? "s" : ""} d'escalade</>
               )}
-              . Vérifiez vos identifiants d'envoi (Resend / Twilio).
+              . Vérifiez la configuration du service d'envoi (Brevo).
             </p>
 
             {(recap?.parCanal.length ?? 0) > 0 && (

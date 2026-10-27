@@ -6,7 +6,11 @@ import { Capacitor } from "@capacitor/core";
  * comptabilité, envois et réglages avancés restent sur le site, depuis un ordinateur.
  * Les comptes intervenant ont déjà leur propre espace allégé (IntervenantLayout).
  */
-export const MODE_TERRAIN = Capacitor.isNativePlatform();
+export const MODE_TERRAIN =
+  Capacitor.isNativePlatform() ||
+  // Développement uniquement : `VITE_FORCER_TERRAIN=1 npx vite` affiche la version mobile dans le
+  // navigateur, pour la tester sans téléphone. Sans effet sur le site et l'application publiés.
+  (import.meta.env.DEV && import.meta.env.VITE_FORCER_TERRAIN === "1");
 
 /** Page d'accueil de l'application mobile pour un artisan. */
 export const ACCUEIL_TERRAIN = "/app/planning";
