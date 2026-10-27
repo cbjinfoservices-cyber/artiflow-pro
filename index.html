@@ -17,8 +17,8 @@
 
     <!-- Les polices et les icônes sont chargées par script plus bas, la
          feuille de style principale est importée par l'application. -->
-    <link rel="icon" type="image/png" href="https://readdy.ai/api/search-image?query=Minimal%20flat%20app%20icon%20mark%20for%20an%20AI%20construction%20assistant%2C%20geometric%20hammer%20and%20spark%20symbol%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%2C%20centered%20on%20clean%20off-white%20background%2C%20simple%20crisp%20vector%20style&width=512&height=512&seq=artiflow-pro-favicon&orientation=squarish" />
-    <link rel="apple-touch-icon" href="https://readdy.ai/api/search-image?query=Minimal%20flat%20app%20icon%20mark%20for%20an%20AI%20construction%20assistant%2C%20geometric%20hammer%20and%20spark%20symbol%2C%20warm%20amber%20orange%20and%20deep%20teal%20green%2C%20centered%20on%20clean%20off-white%20background%2C%20simple%20crisp%20vector%20style&width=512&height=512&seq=artiflow-pro-favicon&orientation=squarish" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ArtiFlow-pro — Assistant IA pour artisans du bâtiment</title>
     <meta
@@ -136,24 +136,30 @@
     })();
   </script>
 
-  <!-- Image du héros de l'accueil : préchargée pour qu'elle démarre avant même
-       l'exécution du script de la page. On sépare desktop / mobile pour ne
-       télécharger que la version utile selon la taille de l'écran. -->
-  <link rel="preconnect" href="https://readdy.ai" crossorigin />
+  <!-- Image du héros de l'accueil : hébergée sur le site (WebP, sans redirection
+       vers un service externe) et préchargée pour démarrer avant l'exécution du
+       script de la page. Une version mobile et une version desktop : seule la
+       version utile selon la taille de l'écran est téléchargée. -->
   <link
     rel="preload"
     as="image"
+    type="image/webp"
     media="(min-width: 768px)"
     fetchpriority="high"
-    href="https://readdy.ai/api/search-image?query=Stylized%20artistic%20construction%20worksite%20scene%20with%20scaffolding%2C%20brick%20masonry%20wall%2C%20plumbing%20pipes%2C%20electrical%20wiring%20and%20painting%20tools%2C%20crane%20and%20timber%20frames%2C%20warm%20orange%20and%20deep%20teal%20green%20accents%20on%20a%20deep%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20completely%20blank%20unmarked%20surfaces%2C%20no%20signage%2C%20no%20lettering%2C%20no%20words%2C%20no%20text%2C%20no%20poster%2C%20clean%20plain%20walls%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1920&height=1080&seq=artiflow-hero-clean-2&orientation=landscape"
+    imagesrcset="/images/hero-accueil-1280.webp 1280w, /images/hero-accueil-1920.webp 1920w"
+    imagesizes="100vw"
   />
   <link
     rel="preload"
     as="image"
+    type="image/webp"
     media="(max-width: 767px)"
     fetchpriority="high"
-    href="https://readdy.ai/api/search-image?query=Stylized%20artistic%20construction%20worksite%20scene%20with%20scaffolding%2C%20brick%20masonry%20wall%2C%20plumbing%20pipes%2C%20electrical%20wiring%20and%20painting%20tools%2C%20crane%20and%20timber%20frames%2C%20warm%20orange%20and%20deep%20teal%20green%20accents%2C%20cinematic%20moody%20lighting%2C%20completely%20blank%20unmarked%20surfaces%2C%20no%20signage%2C%20no%20lettering%2C%20no%20words%2C%20no%20text%2C%20clean%20plain%20walls%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=800&height=1000&seq=artiflow-hero-mobile&orientation=portrait"
+    imagesrcset="/images/hero-accueil-mobile-480.webp 480w, /images/hero-accueil-mobile-800.webp 800w"
+    imagesizes="100vw"
   />
+  <!-- Les autres images (plus bas dans les pages) viennent toujours de Readdy. -->
+  <link rel="preconnect" href="https://readdy.ai" />
     <meta name="google-site-verification" content="pczIPB55EGAWB1pTG6fVRgDkpwolCu5-XnnCFB2V4ks" />
 
     <!-- Données structurées : les entités du site (Organization,

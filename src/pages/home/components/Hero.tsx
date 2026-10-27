@@ -27,10 +27,14 @@ export default function Hero() {
       <picture>
         <source
           media="(max-width: 767px)"
-          srcSet="https://readdy.ai/api/search-image?query=Stylized%20artistic%20construction%20worksite%20scene%20with%20scaffolding%2C%20brick%20masonry%20wall%2C%20plumbing%20pipes%2C%20electrical%20wiring%20and%20painting%20tools%2C%20crane%20and%20timber%20frames%2C%20warm%20orange%20and%20deep%20teal%20green%20accents%2C%20cinematic%20moody%20lighting%2C%20completely%20blank%20unmarked%20surfaces%2C%20no%20signage%2C%20no%20lettering%2C%20no%20words%2C%20no%20text%2C%20clean%20plain%20walls%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=800&height=1000&seq=artiflow-hero-mobile&orientation=portrait"
+          srcSet="/images/hero-accueil-mobile-480.webp 480w, /images/hero-accueil-mobile-800.webp 800w"
+          sizes="100vw"
+          type="image/webp"
         />
         <img
-          src="https://readdy.ai/api/search-image?query=Stylized%20artistic%20construction%20worksite%20scene%20with%20scaffolding%2C%20brick%20masonry%20wall%2C%20plumbing%20pipes%2C%20electrical%20wiring%20and%20painting%20tools%2C%20crane%20and%20timber%20frames%2C%20warm%20orange%20and%20deep%20teal%20green%20accents%20on%20a%20deep%20dark%20charcoal%20background%2C%20cinematic%20moody%20lighting%2C%20completely%20blank%20unmarked%20surfaces%2C%20no%20signage%2C%20no%20lettering%2C%20no%20words%2C%20no%20text%2C%20no%20poster%2C%20clean%20plain%20walls%2C%20editorial%20minimal%20composition%2C%20high%20detail&width=1920&height=1080&seq=artiflow-hero-clean-2&orientation=landscape"
+          src="/images/hero-accueil-1920.webp"
+          srcSet="/images/hero-accueil-1280.webp 1280w, /images/hero-accueil-1920.webp 1920w"
+          sizes="100vw"
           alt="Chantier de bâtiment tout corps d'état stylisé : échafaudages, maçonnerie, plomberie et électricité — ArtiFlow-pro, assistant IA pour artisans"
           title="ArtiFlow-pro, assistant IA pour artisans du bâtiment"
           width={1920}
